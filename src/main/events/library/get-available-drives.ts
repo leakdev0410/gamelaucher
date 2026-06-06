@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from "node:fs/promises";
 import { registerEvent } from "../register-event";
 

@@ -7,7 +7,7 @@ const checkFolderWritePermission = async (
   _event: Electron.IpcMainInvokeEvent,
   testPath: string
 ) => {
-  const testFilePath = path.join(testPath, ".hydra-write-test");
+  const testFilePath = path.join(testPath, ".gl-write-test");
 
   try {
     fs.writeFileSync(testFilePath, "");

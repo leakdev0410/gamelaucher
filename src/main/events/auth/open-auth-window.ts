@@ -1,6 +1,6 @@
-import i18next from "i18next";
+﻿import i18next from "i18next";
 import { registerEvent } from "../register-event";
-import { HydraApi, WindowManager } from "@main/services";
+import { ApiClient, WindowManager } from "@main/services";
 import { AuthPage } from "@shared";
 
 const openAuthWindow = async (
@@ -12,7 +12,7 @@ const openAuthWindow = async (
   });
 
   if ([AuthPage.UpdateEmail, AuthPage.UpdatePassword].includes(page)) {
-    const { accessToken } = await HydraApi.refreshToken().catch(() => {
+    const { accessToken } = await ApiClient.refreshToken().catch(() => {
       return { accessToken: "" };
     });
     searchParams.set("token", accessToken);

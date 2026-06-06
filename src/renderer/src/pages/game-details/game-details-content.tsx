@@ -10,7 +10,6 @@ import { Sidebar } from "./sidebar/sidebar";
 import { GameReviews } from "./game-reviews";
 import { GameLogo } from "./game-logo";
 
-import { AuthPage } from "@shared";
 import { cloudSyncContext, gameDetailsContext } from "@renderer/context";
 
 import cloudIconAnimated from "@renderer/assets/icons/cloud-animated.gif";
@@ -109,18 +108,13 @@ export function GameDetailsContent() {
   }, [objectId]);
 
   const handleCloudSaveButtonClick = () => {
-    if (!userDetails) {
-      window.electron.openAuthWindow(AuthPage.SignIn);
-      return;
-    }
-
     if (!hasActiveSubscription) {
-      setGameOptionsInitialCategory("hydra_cloud");
+      setGameOptionsInitialCategory("cloud_save");
       setShowGameOptionsModal(true);
       return;
     }
 
-    setGameOptionsInitialCategory("hydra_cloud");
+    setGameOptionsInitialCategory("cloud_save");
     setShowGameOptionsModal(true);
   };
 

@@ -376,7 +376,6 @@ export function DownloadSettingsModal({
 
     return allDownloaders
       .filter((downloader) => {
-        if (downloader === Downloader.Hydra) return false; // Temporarily comment out Nimbus
         if (
           downloader === Downloader.Premiumize &&
           !isFeatureEnabled(Feature.Premiumize)
@@ -408,9 +407,6 @@ export function DownloadSettingsModal({
         } else if (downloader === Downloader.TorBox) {
           isConfigured = !!userPreferences?.torBoxApiToken;
         }
-        // } else if (downloader === Downloader.Hydra) {
-        //   isConfigured = isFeatureEnabled(Feature.Nimbus);
-        // }
 
         const isAvailableButNotConfigured =
           hasAvailableUri && !isConfigured && canHandle;

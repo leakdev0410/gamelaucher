@@ -128,7 +128,7 @@ export function Modal({
         role="dialog"
         aria-describedby={description}
         ref={modalContentRef}
-        data-hydra-dialog
+        data-gl-dialog
       >
         <div className="modal__header">
           <div className="modal__header-title">

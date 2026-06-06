@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   ptBR,
   enUS,
@@ -13,11 +14,14 @@ import {
   da,
 } from "date-fns/locale";
 
-import { charMap } from "./char-map";
+export const removeSymbolsFromName = (name: string) =>
+  name.replace(/[^A-Za-z 0-9]/g, "");
+
 import { Downloader } from "./constants";
 import { format } from "date-fns";
 import { AchievementNotificationInfo } from "@types";
 
+export * from "./config";
 export * from "./constants";
 export * from "./download-directories";
 export * from "./html-sanitizer";
@@ -33,7 +37,7 @@ export class UserNotLoggedInError extends Error {
 
 export class SubscriptionRequiredError extends Error {
   constructor() {
-    super("user does not have hydra cloud subscription");
+    super("user does not have cloud subscription");
     this.name = "SubscriptionRequiredError";
   }
 }
@@ -79,53 +83,6 @@ export const formatBytesToMbps = (bytesPerSecond: number): string => {
   return `${Math.trunc(mbps * 10) / 10} Mbps`;
 };
 
-export const pipe =
-  <T>(...fns: ((arg: T) => any)[]) =>
-  (arg: T) =>
-    fns.reduce((prev, fn) => fn(prev), arg);
-
-export const removeReleaseYearFromName = (name: string) =>
-  name.replace(/\(\d{4}\)/g, "");
-
-export const removeSymbolsFromName = (name: string) =>
-  name.replace(/[^A-Za-z 0-9]/g, "");
-
-export const removeSpecialEditionFromName = (name: string) =>
-  name.replace(
-    /(The |Digital )?(GOTY|Deluxe|Standard|Ultimate|Definitive|Enhanced|Collector's|Premium|Digital|Limited|Game of the Year|Reloaded|[0-9]{4}) Edition/gi,
-    ""
-  );
-
-export const removeDuplicateSpaces = (name: string) =>
-  name.replace(/\s{2,}/g, " ");
-
-export const replaceDotsWithSpace = (name: string) => name.replace(/\./g, " ");
-
-export const replaceNbspWithSpace = (name: string) =>
-  name.replace(new RegExp(String.fromCharCode(160), "g"), " ");
-
-export const replaceUnderscoreWithSpace = (name: string) =>
-  name.replace(/_/g, " ");
-
-export const formatName = pipe<string>(
-  (str) =>
-    str.replace(
-      new RegExp(Object.keys(charMap).join("|"), "g"),
-      (match) => charMap[match]
-    ),
-  (str) => str.toLowerCase(),
-  removeReleaseYearFromName,
-  removeSpecialEditionFromName,
-  replaceUnderscoreWithSpace,
-  replaceDotsWithSpace,
-  replaceNbspWithSpace,
-  (str) => str.replace(/DIRECTOR'S CUT/gi, ""),
-  (str) => str.replace(/Friend's Pass/gi, ""),
-  removeSymbolsFromName,
-  removeDuplicateSpaces,
-  (str) => str.trim()
-);
-
 const realDebridHosts = ["https://1fichier.com", "https://mediafire.com"];
 
 export const getDownloadersForUri = (uri: string) => {
@@ -161,7 +118,6 @@ export const getDownloadersForUri = (uri: string) => {
   if (uri.startsWith("magnet:")) {
     return [
       Downloader.Torrent,
-      Downloader.Hydra,
       Downloader.TorBox,
       Downloader.RealDebrid,
       Downloader.Premiumize,
@@ -221,7 +177,7 @@ export const generateAchievementCustomNotificationTest = (
       ns: "notifications",
       lng: language ?? "en",
     }),
-    iconUrl: "https://cdn.losbroxas.org/favicon.svg",
+    iconUrl: "",
     points: 2440,
     isHidden: options.isHidden ?? false,
     isRare: options.isRare ?? false,

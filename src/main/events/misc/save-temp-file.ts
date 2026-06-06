@@ -12,7 +12,7 @@ const saveTempFile = async (
     const tempDir = app.getPath("temp");
     const tempFilePath = path.join(
       tempDir,
-      `hydra-temp-${Date.now()}-${fileName}`
+      `gl-temp-${Date.now()}-${fileName}`
     );
 
     // Write the file data to temp directory

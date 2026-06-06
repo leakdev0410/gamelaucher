@@ -1,4 +1,4 @@
-import { HydraApi } from "@main/services";
+﻿import { ApiClient } from "@main/services";
 import { registerEvent } from "../register-event";
 import { downloadSourcesSublevel } from "@main/level";
 import type { DownloadSource } from "@types";
@@ -6,7 +6,7 @@ import type { DownloadSource } from "@types";
 const syncDownloadSources = async (_event: Electron.IpcMainInvokeEvent) => {
   const downloadSources = await downloadSourcesSublevel.values().all();
 
-  const response = await HydraApi.post<DownloadSource[]>(
+  const response = await ApiClient.post<DownloadSource[]>(
     "/download-sources/sync",
     {
       ids: downloadSources.map((downloadSource) => downloadSource.id),

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useState } from "react";
+﻿import { createContext, useCallback, useEffect, useState } from "react";
 
 import { setUserPreferences } from "@renderer/features";
 import { useAppDispatch } from "@renderer/hooks";
@@ -157,7 +157,7 @@ export function SettingsContextProvider({
   }, []);
 
   const fetchBlockedUsers = useCallback(async () => {
-    const blockedUsers = await window.electron.hydraApi
+    const blockedUsers = await window.electron.api
       .get<UserBlocks>("/profile/blocks", {
         params: { take: 12, skip: 0 },
       })

@@ -1,6 +1,6 @@
-import type { GameShop, ShopAssets } from "@types";
+﻿import type { GameShop, ShopAssets } from "@types";
 import { registerEvent } from "../register-event";
-import { HydraApi } from "@main/services";
+import { ApiClient } from "@main/services";
 import { gamesShopAssetsSublevel, levelKeys } from "@main/level";
 
 const LOCAL_CACHE_EXPIRATION = 1000 * 60 * 60 * 8; // 8 hours
@@ -21,7 +21,7 @@ export const getGameAssets = async (objectId: string, shop: GameShop) => {
     return cachedAssets;
   }
 
-  return HydraApi.get<ShopAssets | null>(
+  return ApiClient.get<ShopAssets | null>(
     `/games/${shop}/${objectId}/assets`,
     null,
     {

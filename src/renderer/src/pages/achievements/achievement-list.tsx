@@ -3,8 +3,7 @@ import type { UserAchievement } from "@types";
 import { useTranslation } from "react-i18next";
 import "./achievements.scss";
 import { EyeClosedIcon } from "@primer/octicons-react";
-import HydraIcon from "@renderer/assets/icons/hydra.svg?react";
-import { useSubscription } from "@renderer/hooks/use-subscription";
+import PointsIcon from "@renderer/assets/icons/star.svg?react";
 
 interface AchievementListProps {
   achievements: UserAchievement[];
@@ -14,7 +13,6 @@ export function AchievementList({
   achievements,
 }: Readonly<AchievementListProps>) {
   const { t } = useTranslation("achievement");
-  const { showHydraCloudModal } = useSubscription();
   const { formatDateTime } = useDate();
 
   return (
@@ -51,20 +49,19 @@ export function AchievementList({
                   points: achievement.points,
                 })}
               >
-                <HydraIcon className="achievements__item-points-icon" />
+                <PointsIcon className="achievements__item-points-icon" />
                 <p className="achievements__item-points-value">
                   {achievement.points}
                 </p>
               </div>
             ) : (
-              <button
-                onClick={() => showHydraCloudModal("achievements")}
+              <div
                 className="achievements__item-points achievements__item-points--locked"
                 title={t("achievement_earn_points", { points: "???" })}
               >
-                <HydraIcon className="achievements__item-points-icon" />
+                <PointsIcon className="achievements__item-points-icon" />
                 <p className="achievements__item-points-value">???</p>
-              </button>
+              </div>
             )}
             {achievement.unlockTime != null && (
               <div

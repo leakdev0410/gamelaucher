@@ -1,18 +1,19 @@
 export enum Downloader {
-  RealDebrid,
-  Torrent,
-  Gofile,
-  PixelDrain,
-  Datanodes,
-  Mediafire,
-  TorBox,
-  Hydra,
-  Buzzheavier,
-  FuckingFast,
-  VikingFile,
-  Rootz,
-  Premiumize,
-  AllDebrid,
+  RealDebrid = 0,
+  Torrent = 1,
+  Gofile = 2,
+  PixelDrain = 3,
+  Datanodes = 4,
+  Mediafire = 5,
+  TorBox = 6,
+  // 7 (Hydra/Nimbus) removed — value left as a gap so persisted download
+  // records keep their original numeric meaning.
+  Buzzheavier = 8,
+  FuckingFast = 9,
+  VikingFile = 10,
+  Rootz = 11,
+  Premiumize = 12,
+  AllDebrid = 13,
 }
 
 export enum DownloadSourceStatus {
@@ -65,7 +66,6 @@ export enum DownloadError {
   NotCachedOnTorBox = "download_error_not_cached_on_torbox",
   GofileQuotaExceeded = "download_error_gofile_quota_exceeded",
   RealDebridAccountNotAuthorized = "download_error_real_debrid_account_not_authorized",
-  NotCachedOnHydra = "download_error_not_cached_on_hydra",
   NotCachedOnPremiumize = "download_error_not_cached_on_premiumize",
   PremiumizeTransferStarted = "download_error_premiumize_transfer_started",
   NotCachedOnAllDebrid = "download_error_not_cached_on_alldebrid",

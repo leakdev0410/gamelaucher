@@ -1,12 +1,7 @@
 import { LibraryGame } from "@types";
 import { useGameCard } from "@renderer/hooks";
 import { memo, useEffect, useState } from "react";
-import {
-  ClockIcon,
-  AlertFillIcon,
-  TrophyIcon,
-  ImageIcon,
-} from "@primer/octicons-react";
+import { TrophyIcon, ImageIcon } from "@primer/octicons-react";
 import "./library-game-card.scss";
 import { logger } from "@renderer/logger";
 
@@ -28,8 +23,10 @@ export const LibraryGameCard = memo(function LibraryGameCard({
   onMouseLeave,
   onContextMenu,
 }: Readonly<LibraryGameCardProps>) {
-  const { formatPlayTime, handleCardClick, handleContextMenuClick } =
-    useGameCard(game, onContextMenu);
+  const { handleCardClick, handleContextMenuClick } = useGameCard(
+    game,
+    onContextMenu
+  );
 
   const sources = [
     game.customIconUrl, // Level 0
@@ -102,25 +99,6 @@ export const LibraryGameCard = memo(function LibraryGameCard({
       onContextMenu={handleContextMenuClick}
     >
       <div className="library-game-card__overlay">
-        <div className="library-game-card__top-section">
-          <div className="library-game-card__playtime">
-            {game.hasManuallyUpdatedPlaytime ? (
-              <AlertFillIcon
-                size={11}
-                className="library-game-card__manual-playtime"
-              />
-            ) : (
-              <ClockIcon size={11} />
-            )}
-            <span className="library-game-card__playtime-long">
-              {formatPlayTime(game.playTimeInMilliseconds)}
-            </span>
-            <span className="library-game-card__playtime-short">
-              {formatPlayTime(game.playTimeInMilliseconds, true)}
-            </span>
-          </div>
-        </div>
-
         {(game.achievementCount ?? 0) > 0 && (
           <div className="library-game-card__achievements">
             <div className="library-game-card__achievement-header">

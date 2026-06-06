@@ -6,7 +6,7 @@ import { logger } from "./logger";
 export class Lock {
   private static lockFilePath = path.join(
     SystemPath.getPath("temp"),
-    "hydra-launcher.lock"
+    "game-launcher.lock"
   );
 
   public static async acquireLock() {

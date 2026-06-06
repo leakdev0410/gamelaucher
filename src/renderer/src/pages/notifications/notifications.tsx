@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BellIcon } from "@primer/octicons-react";
 import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
@@ -62,7 +62,7 @@ export default function Notifications() {
     try {
       const language = i18n.language.split("-")[0];
       const params = new URLSearchParams({ locale: language });
-      const badgesResponse = await window.electron.hydraApi.get<Badge[]>(
+      const badgesResponse = await window.electron.api.get<Badge[]>(
         `/badges?${params.toString()}`,
         { needsAuth: false }
       );
@@ -82,14 +82,13 @@ export default function Notifications() {
 
       try {
         setIsLoading(true);
-        const response =
-          await window.electron.hydraApi.get<NotificationsResponse>(
-            "/profile/notifications",
-            {
-              params: { filter: filterParam, take: 20, skip },
-              needsAuth: true,
-            }
-          );
+        const response = await window.electron.api.get<NotificationsResponse>(
+          "/profile/notifications",
+          {
+            params: { filter: filterParam, take: 20, skip },
+            needsAuth: true,
+          }
+        );
 
         logger.log("Notifications API response:", response);
 
@@ -195,13 +194,10 @@ export default function Notifications() {
     async (id: string, source: "api" | "local") => {
       try {
         if (source === "api") {
-          await window.electron.hydraApi.patch(
-            `/profile/notifications/${id}/read`,
-            {
-              data: { id },
-              needsAuth: true,
-            }
-          );
+          await window.electron.api.patch(`/profile/notifications/${id}/read`, {
+            data: { id },
+            needsAuth: true,
+          });
           setApiNotifications((prev) =>
             prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
           );
@@ -223,10 +219,9 @@ export default function Notifications() {
     try {
       // Mark all API notifications as read
       if (userDetails && apiNotifications.some((n) => !n.isRead)) {
-        await window.electron.hydraApi.patch(
-          `/profile/notifications/all/read`,
-          { needsAuth: true }
-        );
+        await window.electron.api.patch(`/profile/notifications/all/read`, {
+          needsAuth: true,
+        });
         setApiNotifications((prev) =>
           prev.map((n) => ({ ...n, isRead: true }))
         );
@@ -257,10 +252,9 @@ export default function Notifications() {
     async (id: string, source: "api" | "local") => {
       try {
         if (source === "api") {
-          await window.electron.hydraApi.delete(
-            `/profile/notifications/${id}`,
-            { needsAuth: true }
-          );
+          await window.electron.api.delete(`/profile/notifications/${id}`, {
+            needsAuth: true,
+          });
           setApiNotifications((prev) => prev.filter((n) => n.id !== id));
           setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
         } else {
@@ -337,7 +331,7 @@ export default function Notifications() {
 
       // Perform actual backend deletions (state is already cleared by staggered removal)
       if (userDetails) {
-        await window.electron.hydraApi.delete(`/profile/notifications/all`, {
+        await window.electron.api.delete(`/profile/notifications/all`, {
           needsAuth: true,
         });
       }
@@ -379,14 +373,6 @@ export default function Notifications() {
     [filter]
   );
 
-  const handleAcceptFriendRequest = useCallback(() => {
-    showSuccessToast(t("friend_request_accepted"));
-  }, [showSuccessToast, t]);
-
-  const handleRefuseFriendRequest = useCallback(() => {
-    showSuccessToast(t("friend_request_refused"));
-  }, [showSuccessToast, t]);
-
   const renderNotification = (notification: MergedNotification) => {
     const key =
       notification.source === "local"
@@ -417,8 +403,6 @@ export default function Notifications() {
             badges={badges}
             onDismiss={(id) => handleDismiss(id, "api")}
             onMarkAsRead={(id) => handleMarkAsRead(id, "api")}
-            onAcceptFriendRequest={handleAcceptFriendRequest}
-            onRefuseFriendRequest={handleRefuseFriendRequest}
           />
         )}
       </motion.div>

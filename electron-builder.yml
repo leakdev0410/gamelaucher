@@ -1,19 +1,17 @@
-appId: gg.hydralauncher.hydra
-productName: Hydra
+appId: com.lequan.gamelaucher
+productName: gamelaucher
+forceCodeSigning: false
 directories:
   buildResources: build
 extraResources:
   - ludusavi
-  - hydra-python-rpc
-  - hydra-native
+  - gamelaucher-go-rpc
   - seeds
   - from: node_modules/create-desktop-shortcuts/src/windows.vbs
   - from: resources/achievement.wav
 files:
   - "!**/.vscode/*"
   - "!src/*"
-  - "!native/hydra-native/target"
-  - "!native/hydra-native/target/**"
   - "!electron.vite.config.{js,ts,mjs,cjs}"
   - "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
   - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
@@ -23,12 +21,13 @@ asarUnpack:
   - node_modules/sharp/**
   - node_modules/@img/sharp-libvips-*/**
 win:
-  executableName: Hydra
+  executableName: gamelaucher
+  verifyUpdateCodeSignature: false
+  signAndEditExecutable: false
   extraResources:
     - from: binaries/7z.exe
     - from: binaries/7z.dll
   target:
-    - nsis
     - portable
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
@@ -40,6 +39,7 @@ nsis:
   include: installer.nsh
 portable:
   artifactName: ${name}-${version}-portable.${ext}
+  splashImage: build/splash.bmp
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extraResources:
@@ -68,9 +68,5 @@ linux:
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
-publish:
-  provider: github
-  owner: hydralauncher
-  repo: hydra
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

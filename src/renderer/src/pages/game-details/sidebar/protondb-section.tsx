@@ -54,7 +54,7 @@ export function ProtonDBSection({
   if (!protonDBData && !isLoading) return null;
 
   return (
-    <SkeletonTheme baseColor="#1c1c1c" highlightColor="#444">
+    <SkeletonTheme baseColor="#e6e3da" highlightColor="#f3f1ea">
       <SidebarSection title={t("catalogue:protondb")}>
         <div className="protondb__content">
           {protonDBData ? (

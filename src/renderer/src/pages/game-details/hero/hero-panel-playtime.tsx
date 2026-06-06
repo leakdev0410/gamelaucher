@@ -89,7 +89,6 @@ export function HeroPanelPlaytime() {
   if (!game.lastTimePlayed) {
     return (
       <>
-        <p>{t("not_played_yet", { title: game?.title })}</p>
         {isExtracting && extractionInProgressInfo}
         {!isExtracting && hasDownload && downloadInProgressInfo}
       </>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Tooltip } from "react-tooltip";
@@ -20,7 +20,6 @@ import {
   useToast,
   useUserDetails,
 } from "@renderer/hooks";
-import { AuthPage } from "@shared";
 
 import { routes } from "./routes";
 
@@ -30,24 +29,19 @@ import { buildGameDetailsPath } from "@renderer/helpers";
 
 import {
   ChevronRightIcon,
-  CommentDiscussionIcon,
   FileDirectoryIcon,
   HeartIcon,
   PencilIcon,
   PlayIcon,
   PlusIcon,
   TrashIcon,
-  VideoIcon,
 } from "@primer/octicons-react";
-import deckyIcon from "@renderer/assets/icons/decky.png";
 import { setCollections } from "@renderer/features";
-import { setFriendRequestCount } from "@renderer/features/user-details-slice";
 import cn from "classnames";
 import { sortBy } from "lodash-es";
 import { useDispatch } from "react-redux";
 import { SidebarAddingCustomGameModal } from "./sidebar-adding-custom-game-modal";
 import { SidebarGameItem } from "./sidebar-game-item";
-import { SidebarProfile } from "./sidebar-profile";
 
 const SIDEBAR_MIN_WIDTH = 200;
 const SIDEBAR_INITIAL_WIDTH = 250;
@@ -65,13 +59,6 @@ export function Sidebar() {
 
   const { t } = useTranslation(["sidebar", "library"]);
   const { library, updateLibrary } = useLibrary();
-  const [deckyPluginInfo, setDeckyPluginInfo] = useState<{
-    installed: boolean;
-    version: string | null;
-    outdated: boolean;
-  }>({ installed: false, version: null, outdated: false });
-  const [homebrewFolderExists, setHomebrewFolderExists] = useState(false);
-  const [showDeckyConfirmModal, setShowDeckyConfirmModal] = useState(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -88,7 +75,7 @@ export function Sidebar() {
     return sortBy(library, (game) => game.title);
   }, [library]);
 
-  const { hasActiveSubscription, userDetails } = useUserDetails();
+  const { userDetails } = useUserDetails();
 
   const { lastPacket, progress } = useDownload();
 
@@ -134,11 +121,6 @@ export function Sidebar() {
   };
 
   const handleCreateCollectionButtonClick = () => {
-    if (!userDetails) {
-      window.electron.openAuthWindow(AuthPage.SignIn);
-      return;
-    }
-
     setShowCreateCollectionModal(true);
   };
 
@@ -146,82 +128,14 @@ export function Sidebar() {
     setShowAddGameModal(false);
   };
 
-  const loadDeckyPluginInfo = async () => {
-    if (window.electron.platform !== "linux") return;
-
-    try {
-      const [info, folderExists] = await Promise.all([
-        window.electron.getHydraDeckyPluginInfo(),
-        window.electron.checkHomebrewFolderExists(),
-      ]);
-
-      setDeckyPluginInfo({
-        installed: info.installed,
-        version: info.version,
-        outdated: info.outdated,
-      });
-      setHomebrewFolderExists(folderExists);
-    } catch (error) {
-      console.error("Failed to load Decky plugin info:", error);
-    }
-  };
-
-  const handleInstallHydraDeckyPlugin = () => {
-    if (deckyPluginInfo.installed && !deckyPluginInfo.outdated) {
-      return;
-    }
-    setShowDeckyConfirmModal(true);
-  };
-
-  const handleConfirmDeckyInstallation = async () => {
-    setShowDeckyConfirmModal(false);
-
-    try {
-      const result = await window.electron.installHydraDeckyPlugin();
-
-      if (result.success) {
-        showSuccessToast(
-          t("decky_plugin_installed", {
-            version: result.currentVersion,
-          })
-        );
-        await loadDeckyPluginInfo();
-      } else {
-        showErrorToast(
-          t("decky_plugin_installation_failed", {
-            error: result.error || "Unknown error",
-          })
-        );
-      }
-    } catch (error) {
-      showErrorToast(
-        t("decky_plugin_installation_error", { error: String(error) })
-      );
-    }
-  };
-
   useEffect(() => {
     updateLibrary();
   }, [lastPacket?.gameId, updateLibrary]);
 
   useEffect(() => {
-    loadDeckyPluginInfo();
-  }, []);
-
-  useEffect(() => {
     if (!userDetails || hasLoadedCollections) return;
     void loadCollections();
   }, [hasLoadedCollections, loadCollections, userDetails]);
-
-  useEffect(() => {
-    const unsubscribe = window.electron.onSyncFriendRequests((result) => {
-      dispatch(setFriendRequestCount(result.friendRequestCount));
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [dispatch]);
 
   const sidebarRef = useRef<HTMLElement>(null);
 
@@ -381,7 +295,7 @@ export function Sidebar() {
     return t(fallbackKey, { ns: "library" });
   };
 
-  const handleOpenRenameCollectionModal = () => {
+  const handleOpenRenameCollectionModal = useCallback(() => {
     const collection = collectionContextMenu.collection;
     if (!collection) return;
 
@@ -389,7 +303,7 @@ export function Sidebar() {
     setCollectionName(collection.name);
     setShowRenameCollectionModal(true);
     handleCloseCollectionContextMenu();
-  };
+  }, [collectionContextMenu.collection]);
 
   const handleCloseRenameCollectionModal = () => {
     if (isRenamingCollection) return;
@@ -418,7 +332,7 @@ export function Sidebar() {
     setIsRenamingCollection(true);
 
     try {
-      await window.electron.hydraApi.put(
+      await window.electron.api.put(
         `/profile/games/collections/${targetCollection.id}`,
         {
           data: { name: nextName },
@@ -426,7 +340,7 @@ export function Sidebar() {
         }
       );
 
-      const updatedCollections = await window.electron.hydraApi.get<
+      const updatedCollections = await window.electron.api.get<
         GameCollection[]
       >("/profile/games/collections", { needsAuth: true });
       dispatch(setCollections(updatedCollections));
@@ -441,14 +355,14 @@ export function Sidebar() {
     }
   };
 
-  const handleOpenDeleteCollectionModal = () => {
+  const handleOpenDeleteCollectionModal = useCallback(() => {
     const collection = collectionContextMenu.collection;
     if (!collection) return;
 
     setActiveCollection(collection);
     setShowDeleteCollectionModal(true);
     handleCloseCollectionContextMenu();
-  };
+  }, [collectionContextMenu.collection]);
 
   const handleCloseDeleteCollectionModal = () => {
     if (isDeletingCollection) return;
@@ -465,7 +379,7 @@ export function Sidebar() {
     setIsDeletingCollection(true);
 
     try {
-      await window.electron.hydraApi.delete(
+      await window.electron.api.delete(
         `/profile/games/collections/${targetCollection.id}`,
         { needsAuth: true }
       );
@@ -476,7 +390,7 @@ export function Sidebar() {
         setSearchParams(params, { replace: true });
       }
 
-      const updatedCollectionsPromise = window.electron.hydraApi.get<
+      const updatedCollectionsPromise = window.electron.api.get<
         GameCollection[]
       >("/profile/games/collections", { needsAuth: true });
       await updateLibrary();
@@ -519,6 +433,7 @@ export function Sidebar() {
     isDeletingCollection,
     isRenamingCollection,
     t,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   ]);
 
   const favoritesCount = useMemo(() => {
@@ -536,10 +451,6 @@ export function Sidebar() {
     ];
   }, [collections, favoritesCount, t]);
 
-  const handleOpenBigPictureWindow = () => {
-    globalThis.window.electron.openBigPictureWindow();
-  };
-
   return (
     <aside
       ref={sidebarRef}
@@ -554,8 +465,6 @@ export function Sidebar() {
       }}
     >
       <div className="sidebar__container">
-        <SidebarProfile />
-
         <div className="sidebar__content">
           <section className="sidebar__section">
             <ul className="sidebar__menu">
@@ -576,42 +485,6 @@ export function Sidebar() {
                   </button>
                 </li>
               ))}
-
-              <li className="sidebar__menu-item">
-                <button
-                  type="button"
-                  className="sidebar__menu-item-button"
-                  onClick={handleOpenBigPictureWindow}
-                >
-                  <VideoIcon />
-                  <span>{t("big_picture")}</span>
-                </button>
-              </li>
-
-              {window.electron.platform === "linux" && homebrewFolderExists && (
-                <li className="sidebar__menu-item sidebar__menu-item--decky">
-                  <button
-                    type="button"
-                    className="sidebar__menu-item-button"
-                    onClick={handleInstallHydraDeckyPlugin}
-                  >
-                    <img
-                      src={deckyIcon}
-                      alt=""
-                      style={{ width: 16, height: 16 }}
-                    />
-                    <span>
-                      {deckyPluginInfo.installed && !deckyPluginInfo.outdated
-                        ? t("decky_plugin_installed_version", {
-                            version: deckyPluginInfo.version,
-                          })
-                        : deckyPluginInfo.installed && deckyPluginInfo.outdated
-                          ? t("update_decky_plugin")
-                          : t("install_decky_plugin")}
-                    </span>
-                  </button>
-                </li>
-              )}
             </ul>
           </section>
 
@@ -782,21 +655,6 @@ export function Sidebar() {
         </div>
       </div>
 
-      <div className="sidebar__bottom-buttons">
-        {hasActiveSubscription && (
-          <button
-            type="button"
-            className="sidebar__help-button"
-            data-open-support-chat
-          >
-            <div className="sidebar__help-button-icon">
-              <CommentDiscussionIcon size={14} />
-            </div>
-            <span>{t("need_help")}</span>
-          </button>
-        )}
-      </div>
-
       <button
         type="button"
         className="sidebar__handle"
@@ -877,24 +735,6 @@ export function Sidebar() {
         cancelButtonLabel={t("cancel")}
         confirmButtonLabel={t("delete_collection", { ns: "library" })}
         buttonsIsDisabled={isDeletingCollection}
-      />
-
-      <ConfirmationModal
-        visible={showDeckyConfirmModal}
-        title={
-          deckyPluginInfo.installed && deckyPluginInfo.outdated
-            ? t("update_decky_plugin_title")
-            : t("install_decky_plugin_title")
-        }
-        descriptionText={
-          deckyPluginInfo.installed && deckyPluginInfo.outdated
-            ? t("update_decky_plugin_message")
-            : t("install_decky_plugin_message")
-        }
-        onClose={() => setShowDeckyConfirmModal(false)}
-        onConfirm={handleConfirmDeckyInstallation}
-        cancelButtonLabel={t("cancel")}
-        confirmButtonLabel={t("confirm")}
       />
 
       <Tooltip id="add-custom-game-tooltip" />

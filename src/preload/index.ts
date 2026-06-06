@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 import { contextBridge, ipcRenderer } from "electron";
@@ -6,15 +7,11 @@ import type {
   GameShop,
   DownloadProgress,
   UserPreferences,
-  AppUpdaterEvent,
   StartGameDownloadPayload,
   GameRunning,
-  FriendRequestAction,
-  UpdateProfileRequest,
   SeedingStatus,
   GameAchievement,
   Theme,
-  FriendRequestSync,
   NotificationSync,
   ShortcutLocation,
   CreateSteamShortcutOptions,
@@ -112,8 +109,6 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.on("on-seeding-status", listener);
     return () => ipcRenderer.removeListener("on-seeding-status", listener);
   },
-  checkDebridAvailability: (magnets: string[]) =>
-    ipcRenderer.invoke("checkDebridAvailability", magnets),
   getTorrentFiles: (magnet: string) =>
     ipcRenderer.invoke("getTorrentFiles", magnet) as Promise<
       { ok: true; data: TorrentFilesResponse } | { ok: false; error: string }
@@ -451,6 +446,8 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("downloadGameArtifact", objectId, shop, gameArtifactId),
   getGameArtifacts: (objectId: string, shop: GameShop) =>
     ipcRenderer.invoke("getGameArtifacts", objectId, shop),
+  deleteGameArtifact: (gameArtifactId: string) =>
+    ipcRenderer.invoke("deleteGameArtifact", gameArtifactId),
   getGameBackupPreview: (objectId: string, shop: GameShop) =>
     ipcRenderer.invoke("getGameBackupPreview", objectId, shop),
   selectGameBackupPath: (
@@ -504,14 +501,13 @@ contextBridge.exposeInMainWorld("electron", {
   isStaging: () => ipcRenderer.invoke("isStaging"),
   isPortableVersion: () => ipcRenderer.invoke("isPortableVersion"),
   openExternal: (src: string) => ipcRenderer.invoke("openExternal", src),
-  openCheckout: () => ipcRenderer.invoke("openCheckout"),
   showOpenDialog: (options: Electron.OpenDialogOptions) =>
     ipcRenderer.invoke("showOpenDialog", options),
   showItemInFolder: (path: string) =>
     ipcRenderer.invoke("showItemInFolder", path),
   getImageDataUrl: (imageUrl: string) =>
     ipcRenderer.invoke("getImageDataUrl", imageUrl),
-  hydraApi: {
+  api: {
     get: (
       url: string,
       options?: {
@@ -521,7 +517,7 @@ contextBridge.exposeInMainWorld("electron", {
         ifModifiedSince?: Date;
       }
     ) =>
-      ipcRenderer.invoke("hydraApiCall", {
+      ipcRenderer.invoke("apiCall", {
         method: "get",
         url,
         params: options?.params,
@@ -539,7 +535,7 @@ contextBridge.exposeInMainWorld("electron", {
         needsSubscription?: boolean;
       }
     ) =>
-      ipcRenderer.invoke("hydraApiCall", {
+      ipcRenderer.invoke("apiCall", {
         method: "post",
         url,
         data: options?.data,
@@ -556,7 +552,7 @@ contextBridge.exposeInMainWorld("electron", {
         needsSubscription?: boolean;
       }
     ) =>
-      ipcRenderer.invoke("hydraApiCall", {
+      ipcRenderer.invoke("apiCall", {
         method: "put",
         url,
         data: options?.data,
@@ -573,7 +569,7 @@ contextBridge.exposeInMainWorld("electron", {
         needsSubscription?: boolean;
       }
     ) =>
-      ipcRenderer.invoke("hydraApiCall", {
+      ipcRenderer.invoke("apiCall", {
         method: "patch",
         url,
         data: options?.data,
@@ -589,7 +585,7 @@ contextBridge.exposeInMainWorld("electron", {
         needsSubscription?: boolean;
       }
     ) =>
-      ipcRenderer.invoke("hydraApiCall", {
+      ipcRenderer.invoke("apiCall", {
         method: "delete",
         url,
         options: {
@@ -600,25 +596,8 @@ contextBridge.exposeInMainWorld("electron", {
   },
   canInstallCommonRedist: () => ipcRenderer.invoke("canInstallCommonRedist"),
   installCommonRedist: () => ipcRenderer.invoke("installCommonRedist"),
-  installHydraDeckyPlugin: () => ipcRenderer.invoke("installHydraDeckyPlugin"),
-  getHydraDeckyPluginInfo: () => ipcRenderer.invoke("getHydraDeckyPluginInfo"),
-  checkHomebrewFolderExists: () =>
-    ipcRenderer.invoke("checkHomebrewFolderExists"),
   platform: process.platform,
 
-  /* Auto update */
-  onAutoUpdaterEvent: (cb: (value: AppUpdaterEvent) => void) => {
-    const listener = (
-      _event: Electron.IpcRendererEvent,
-      value: AppUpdaterEvent
-    ) => cb(value);
-
-    ipcRenderer.on("autoUpdaterEvent", listener);
-
-    return () => {
-      ipcRenderer.removeListener("autoUpdaterEvent", listener);
-    };
-  },
   onCommonRedistProgress: (
     cb: (value: { log: string; complete: boolean }) => void
   ) => {
@@ -641,24 +620,9 @@ contextBridge.exposeInMainWorld("electron", {
   },
   resetCommonRedistPreflight: () =>
     ipcRenderer.invoke("resetCommonRedistPreflight"),
-  checkForUpdates: () => ipcRenderer.invoke("checkForUpdates"),
-  restartAndInstallUpdate: () => ipcRenderer.invoke("restartAndInstallUpdate"),
 
   /* Profile */
   getMe: () => ipcRenderer.invoke("getMe"),
-  updateProfile: (updateProfile: UpdateProfileRequest) =>
-    ipcRenderer.invoke("updateProfile", updateProfile),
-  processProfileImage: (imagePath: string) =>
-    ipcRenderer.invoke("processProfileImage", imagePath),
-  onSyncFriendRequests: (cb: (friendRequests: FriendRequestSync) => void) => {
-    const listener = (
-      _event: Electron.IpcRendererEvent,
-      friendRequests: FriendRequestSync
-    ) => cb(friendRequests);
-    ipcRenderer.on("on-sync-friend-requests", listener);
-    return () =>
-      ipcRenderer.removeListener("on-sync-friend-requests", listener);
-  },
   onSyncNotificationCount: (cb: (notification: NotificationSync) => void) => {
     const listener = (
       _event: Electron.IpcRendererEvent,
@@ -668,8 +632,6 @@ contextBridge.exposeInMainWorld("electron", {
     return () =>
       ipcRenderer.removeListener("on-sync-notification-count", listener);
   },
-  updateFriendRequest: (userId: string, action: FriendRequestAction) =>
-    ipcRenderer.invoke("updateFriendRequest", userId, action),
 
   /* User */
   getComparedUnlockedAchievements: (
@@ -765,8 +727,6 @@ contextBridge.exposeInMainWorld("electron", {
   },
   updateAchievementCustomNotificationWindow: () =>
     ipcRenderer.invoke("updateAchievementCustomNotificationWindow"),
-  showAchievementTestNotification: () =>
-    ipcRenderer.invoke("showAchievementTestNotification"),
 
   /* Themes */
   addCustomTheme: (theme: Theme) => ipcRenderer.invoke("addCustomTheme", theme),
@@ -789,17 +749,6 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("getThemeSoundPath", themeId),
   getThemeSoundDataUrl: (themeId: string) =>
     ipcRenderer.invoke("getThemeSoundDataUrl", themeId),
-  importThemeSoundFromStore: (
-    themeId: string,
-    themeName: string,
-    storeUrl: string
-  ) =>
-    ipcRenderer.invoke(
-      "importThemeSoundFromStore",
-      themeId,
-      themeName,
-      storeUrl
-    ),
 
   /* Editor */
   openEditorWindow: (themeId: string) =>
@@ -823,9 +772,6 @@ contextBridge.exposeInMainWorld("electron", {
   },
   closeEditorWindow: (themeId?: string) =>
     ipcRenderer.invoke("closeEditorWindow", themeId),
-
-  /* Big Picture */
-  openBigPictureWindow: () => ipcRenderer.invoke("openBigPictureWindow"),
 
   /* Game Launcher Window */
   showGameLauncherWindow: () => ipcRenderer.invoke("showGameLauncherWindow"),

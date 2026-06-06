@@ -37,7 +37,7 @@
   &__collapse-button {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(0, 0, 0, 0.7);
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
@@ -47,8 +47,8 @@
     flex-shrink: 0;
 
     &:hover {
-      color: rgba(255, 255, 255, 0.9);
-      background-color: rgba(255, 255, 255, 0.1);
+      color: rgba(0, 0, 0, 0.9);
+      background-color: rgba(0, 0, 0, 0.1);
     }
   }
 

@@ -2,7 +2,8 @@
 
 .button {
   padding: globals.$spacing-unit globals.$spacing-unit * 2;
-  background-color: globals.$muted-color;
+  background-color: globals.$brand-teal;
+  color: #faf9f5;
   border-radius: 8px;
   border: solid 1px transparent;
   transition: all ease 0.2s;
@@ -24,11 +25,11 @@
 
   &--primary {
     &:hover {
-      background-color: #dadbe1;
+      background-color: #d98a6f;
     }
 
     &:disabled {
-      background-color: globals.$muted-color;
+      background-color: globals.$brand-teal;
     }
   }
 
@@ -38,7 +39,7 @@
     color: globals.$muted-color;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(0, 0, 0, 0.06);
     }
 
     &:disabled {
@@ -54,7 +55,7 @@
   &--danger {
     border-color: transparent;
     background-color: globals.$danger-color;
-    color: globals.$muted-color;
+    color: #faf9f5;
 
     &:hover {
       background-color: #b3203f;

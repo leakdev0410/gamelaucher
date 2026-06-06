@@ -33,16 +33,10 @@ jobs:
       - name: Install dependencies
         run: yarn --frozen-lockfile
 
-      - name: Install Python
-        uses: actions/setup-python@v5
+      - name: Install Go
+        uses: actions/setup-go@v5
         with:
-          python-version: 3.9
-
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt
-
-      - name: Build Python RPC with cx_Freeze
-        run: python python_rpc/setup.py build
+          go-version-file: go_rpc/go.mod
 
       - name: Build Linux
         if: matrix.os == 'ubuntu-latest'

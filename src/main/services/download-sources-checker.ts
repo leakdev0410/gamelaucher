@@ -1,4 +1,4 @@
-import { HydraApi } from "./hydra-api";
+﻿import { ApiClient } from "./api-client";
 import {
   gamesSublevel,
   getDownloadSourcesCheckBaseline,
@@ -164,7 +164,7 @@ export class DownloadSourcesChecker {
         `Checking download sources changes for ${games.length} non-custom games since ${since}`
       );
       logger.info(
-        `Making API call to HydraApi.checkDownloadSourcesChanges with:`,
+        `Making API call to ApiClient.checkDownloadSourcesChanges with:`,
         {
           downloadSourceIds,
           gamesCount: games.length,
@@ -172,7 +172,7 @@ export class DownloadSourcesChecker {
         }
       );
 
-      const response = await HydraApi.checkDownloadSourcesChanges(
+      const response = await ApiClient.checkDownloadSourcesChanges(
         downloadSourceIds,
         games,
         since

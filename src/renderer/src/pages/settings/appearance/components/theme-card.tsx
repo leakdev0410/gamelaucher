@@ -7,7 +7,6 @@ import "./theme-card.scss";
 import { useState } from "react";
 import { DeleteThemeModal } from "../modals/delete-theme-modal";
 import { injectCustomCss, removeCustomCss } from "@renderer/helpers";
-import { THEME_WEB_STORE_URL } from "@renderer/constants";
 import { levelDBService } from "@renderer/services/leveldb.service";
 
 interface ThemeCardProps {
@@ -111,11 +110,6 @@ export const ThemeCard = ({ theme, onListUpdated }: ThemeCardProps) => {
 
           <div className="theme-card__actions__right">
             <Button
-              className={
-                theme.code.startsWith(THEME_WEB_STORE_URL)
-                  ? "theme-card__actions__right--external"
-                  : ""
-              }
               onClick={() => window.electron.openEditorWindow(theme.id)}
               title={t("edit_theme")}
               theme="outline"

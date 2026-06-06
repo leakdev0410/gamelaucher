@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AuthPage } from "@shared";
+
 import type { GameCollection } from "@types";
 
 import { Button, Modal, TextField } from "@renderer/components";
-import { useGameCollections, useToast, useUserDetails } from "@renderer/hooks";
+import { useGameCollections, useToast } from "@renderer/hooks";
 
 import "./create-collection-modal.scss";
 
@@ -21,7 +21,6 @@ export function CreateCollectionModal({
 }: Readonly<CreateCollectionModalProps>) {
   const { t } = useTranslation("sidebar");
   const { showSuccessToast, showErrorToast } = useToast();
-  const { userDetails } = useUserDetails();
   const { createCollection } = useGameCollections();
 
   const [name, setName] = useState("");
@@ -83,12 +82,6 @@ export function CreateCollectionModal({
   };
 
   const handleCreate = async () => {
-    if (!userDetails) {
-      window.electron.openAuthWindow(AuthPage.SignIn);
-      handleClose();
-      return;
-    }
-
     const collectionName = name.trim();
 
     if (!collectionName) {

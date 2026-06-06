@@ -1,12 +1,12 @@
-import { User, type ProfileVisibility, type UserDetails } from "@types";
-import { HydraApi } from "../hydra-api";
+﻿import { User, type ProfileVisibility, type UserDetails } from "@types";
+import { ApiClient } from "../api-client";
 import { UserNotLoggedInError } from "@shared";
 import { logger } from "../logger";
 import { db } from "@main/level";
 import { levelKeys } from "@main/level/sublevels";
 
 export const getUserData = async () => {
-  return HydraApi.get<UserDetails>(`/profile/me`)
+  return ApiClient.get<UserDetails>(`/profile/me`)
     .then(async (me) => {
       try {
         const user = await db.get<string, User>(levelKeys.user, {

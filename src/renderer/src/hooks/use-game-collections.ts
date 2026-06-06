@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+﻿import { useCallback, useRef } from "react";
 import type { GameCollection, LibraryGame } from "@types";
 import { useAppDispatch, useAppSelector } from "./redux";
 import {
@@ -40,7 +40,7 @@ export function useGameCollections() {
       dispatch(setCollectionsLoading(true));
 
       try {
-        const response = await window.electron.hydraApi.get<GameCollection[]>(
+        const response = await window.electron.api.get<GameCollection[]>(
           "/profile/games/collections",
           { needsAuth: true }
         );
@@ -110,7 +110,7 @@ export function useGameCollections() {
         throw new Error("game/collection-name-already-in-use");
       }
 
-      const response = await window.electron.hydraApi.post<GameCollection>(
+      const response = await window.electron.api.post<GameCollection>(
         "/profile/games/collections",
         {
           data: { name },

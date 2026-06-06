@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { AuthPage } from "@shared";
 import type {
-  AppUpdaterEvent,
   GameShop,
   Steam250Game,
   DownloadProgress,
@@ -10,12 +10,8 @@ import type {
   RealDebridUser,
   PremiumizeUser,
   AllDebridUser,
-  UserProfile,
-  FriendRequestAction,
-  UpdateProfileRequest,
   GameStats,
   UserDetails,
-  FriendRequestSync,
   NotificationSync,
   GameArtifact,
   LudusaviBackup,
@@ -101,9 +97,6 @@ declare global {
       cb: (value: SeedingStatus[]) => void
     ) => () => Electron.IpcRenderer;
     onHardDelete: (cb: () => void) => () => Electron.IpcRenderer;
-    checkDebridAvailability: (
-      magnets: string[]
-    ) => Promise<Record<string, boolean>>;
     getTorrentFiles: (
       magnet: string
     ) => Promise<
@@ -358,6 +351,7 @@ declare global {
       objectId: string,
       shop: GameShop
     ) => Promise<GameArtifact[]>;
+    deleteGameArtifact: (gameArtifactId: string) => Promise<{ ok: boolean }>;
     getGameBackupPreview: (
       objectId: string,
       shop: GameShop
@@ -385,7 +379,6 @@ declare global {
 
     /* Misc */
     openExternal: (src: string) => Promise<void>;
-    openCheckout: () => Promise<void>;
     getVersion: () => Promise<string>;
     isStaging: () => Promise<boolean>;
     ping: () => string;
@@ -396,7 +389,7 @@ declare global {
     ) => Promise<Electron.OpenDialogReturnValue>;
     showItemInFolder: (path: string) => Promise<void>;
     getImageDataUrl: (imageUrl: string) => Promise<string | null>;
-    hydraApi: {
+    api: {
       get: <T = unknown>(
         url: string,
         options?: {
@@ -440,21 +433,6 @@ declare global {
     };
     canInstallCommonRedist: () => Promise<boolean>;
     installCommonRedist: () => Promise<void>;
-    installHydraDeckyPlugin: () => Promise<{
-      success: boolean;
-      path: string;
-      currentVersion: string | null;
-      expectedVersion: string;
-      error?: string;
-    }>;
-    getHydraDeckyPluginInfo: () => Promise<{
-      installed: boolean;
-      version: string | null;
-      path: string;
-      outdated: boolean;
-      expectedVersion: string | null;
-    }>;
-    checkHomebrewFolderExists: () => Promise<boolean>;
     onCommonRedistProgress: (
       cb: (value: { log: string; complete: boolean }) => void
     ) => () => Electron.IpcRenderer;
@@ -465,13 +443,6 @@ declare global {
     saveTempFile: (fileName: string, fileData: Uint8Array) => Promise<string>;
     deleteTempFile: (filePath: string) => Promise<void>;
     platform: NodeJS.Platform;
-
-    /* Auto update */
-    onAutoUpdaterEvent: (
-      cb: (event: AppUpdaterEvent) => void
-    ) => () => Electron.IpcRenderer;
-    checkForUpdates: () => Promise<boolean>;
-    restartAndInstallUpdate: () => Promise<void>;
 
     /* Auth */
     getAuth: () => Promise<Auth | null>;
@@ -495,23 +466,9 @@ declare global {
 
     /* Profile */
     getMe: () => Promise<UserDetails | null>;
-    updateProfile: (
-      updateProfile: UpdateProfileRequest
-    ) => Promise<UserProfile>;
-    updateProfile: (updateProfile: UpdateProfileProps) => Promise<UserProfile>;
-    processProfileImage: (
-      path: string
-    ) => Promise<{ imagePath: string; mimeType: string }>;
-    onSyncFriendRequests: (
-      cb: (friendRequests: FriendRequestSync) => void
-    ) => () => Electron.IpcRenderer;
     onSyncNotificationCount: (
       cb: (notification: NotificationSync) => void
     ) => () => Electron.IpcRenderer;
-    updateFriendRequest: (
-      userId: string,
-      action: FriendRequestAction
-    ) => Promise<void>;
 
     /* Notifications */
     publishNewRepacksNotification: (newRepacksCount: number) => Promise<void>;
@@ -538,7 +495,6 @@ declare global {
       ) => void
     ) => () => Electron.IpcRenderer;
     updateAchievementCustomNotificationWindow: () => Promise<void>;
-    showAchievementTestNotification: () => Promise<void>;
 
     /* Themes */
     addCustomTheme: (theme: Theme) => Promise<void>;
@@ -556,11 +512,6 @@ declare global {
     removeThemeAchievementSound: (themeId: string) => Promise<void>;
     getThemeSoundPath: (themeId: string) => Promise<string | null>;
     getThemeSoundDataUrl: (themeId: string) => Promise<string | null>;
-    importThemeSoundFromStore: (
-      themeId: string,
-      themeName: string,
-      storeUrl: string
-    ) => Promise<void>;
 
     /* Editor */
     openEditorWindow: (themeId: string) => Promise<void>;
@@ -572,9 +523,6 @@ declare global {
     closeGameLauncherWindow: () => Promise<void>;
     openMainWindow: () => Promise<void>;
     isMainWindowOpen: () => Promise<boolean>;
-
-    /* Big Picture Window */
-    openBigPictureWindow: () => Promise<void>;
 
     /* Download Options */
     onNewDownloadOptions: (

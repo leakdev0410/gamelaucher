@@ -1,4 +1,4 @@
-import { HydraApi } from "@main/services";
+﻿import { ApiClient } from "@main/services";
 import { downloadSourcesSublevel } from "@main/level";
 import { registerEvent } from "../register-event";
 
@@ -13,8 +13,8 @@ const removeDownloadSource = async (
 
   if (downloadSourceId) params.set("downloadSourceId", downloadSourceId);
 
-  if (HydraApi.isLoggedIn() && HydraApi.hasActiveSubscription()) {
-    void HydraApi.delete(`/profile/download-sources?${params.toString()}`);
+  if (ApiClient.isLoggedIn() && ApiClient.hasActiveSubscription()) {
+    void ApiClient.delete(`/profile/download-sources?${params.toString()}`);
   }
 
   if (removeAll) {

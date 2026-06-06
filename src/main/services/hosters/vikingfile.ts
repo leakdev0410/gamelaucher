@@ -1,5 +1,6 @@
 import axios from "axios";
 import { logger } from "../logger";
+import { appConfig } from "@shared";
 
 interface UnlockResponse {
   link: string;
@@ -9,7 +10,7 @@ interface UnlockResponse {
 export class VikingFileApi {
   public static async getDownloadUrl(uri: string): Promise<string> {
     const unlockResponse = await axios.post<UnlockResponse>(
-      `${import.meta.env.MAIN_VITE_NIMBUS_API_URL}/hosters/unlock`,
+      `${appConfig.nimbusApiUrl}/hosters/unlock`,
       { url: uri }
     );
 

@@ -1,12 +1,12 @@
 @use "../../../scss/globals.scss";
 
 .game-language-section {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: rgba(0, 0, 0, 0.02);
   overflow: hidden;
 
   &__header {
     display: flex;
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(0, 0, 0, 0.05);
     border-bottom: 1px solid globals.$border-color;
   }
 
@@ -33,10 +33,10 @@
   &__row {
     display: flex;
     transition: background-color 0.2s ease;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.03);
+      background-color: rgba(0, 0, 0, 0.03);
     }
 
     &:last-child {

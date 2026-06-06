@@ -3,7 +3,7 @@ import {
   AchievementNotificationInfo,
 } from "@types";
 import cn from "classnames";
-import HydraIcon from "@renderer/assets/icons/hydra.svg?react";
+import PointsIcon from "@renderer/assets/icons/star.svg?react";
 import { EyeClosedIcon } from "@primer/octicons-react";
 import Ellipses from "@renderer/assets/icons/ellipses.png";
 import "./achievement-notification.scss";
@@ -33,7 +33,7 @@ export function AchievementNotificationItem({
     >
       {achievement.points !== undefined && (
         <div className="achievement-notification__chip">
-          <HydraIcon className="achievement-notification__chip__icon" />
+          <PointsIcon className="achievement-notification__chip__icon" />
           <span className="achievement-notification__chip__label">
             +{achievement.points}
           </span>
@@ -43,11 +43,13 @@ export function AchievementNotificationItem({
       <div className="achievement-notification__outer-container">
         <div className="achievement-notification__container">
           <div className="achievement-notification__content">
-            <img
-              src={achievement.iconUrl}
-              alt={achievement.title}
-              className="achievement-notification__icon"
-            />
+            {achievement.iconUrl && (
+              <img
+                src={achievement.iconUrl}
+                alt={achievement.title}
+                className="achievement-notification__icon"
+              />
+            )}
             <div className="achievement-notification__text-container">
               <p className="achievement-notification__title">
                 {achievement.isHidden && (

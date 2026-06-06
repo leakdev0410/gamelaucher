@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ipcMain } from "electron";
 
 export const registerEvent = (

@@ -3,7 +3,7 @@
 .game-item {
   background-color: globals.$dark-background-color;
   width: 100%;
-  color: #fff;
+  color: #3d3d3a;
   overflow: hidden;
   position: relative;
   border-radius: 4px;
@@ -11,7 +11,7 @@
   min-height: 103px;
 
   &:hover .game-item__content-link {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(0, 0, 0, 0.05);
   }
 
   &:hover,
@@ -96,9 +96,9 @@
     height: 103px;
     background: linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      rgba(255, 255, 255, 0.1) 100%
+      rgba(0, 0, 0, 0.1) 0%,
+      rgba(0, 0, 0, 0.05) 50%,
+      rgba(0, 0, 0, 0.1) 100%
     );
   }
 
@@ -175,7 +175,7 @@
     margin-bottom: 4px;
 
     &--empty {
-      color: rgba(255, 255, 255, 0.35);
+      color: rgba(0, 0, 0, 0.35);
       font-style: italic;
     }
   }

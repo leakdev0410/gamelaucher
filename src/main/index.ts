@@ -1,5 +1,4 @@
 import { app, BrowserWindow, net, protocol } from "electron";
-import updater from "electron-updater";
 import i18n from "i18next";
 import path from "node:path";
 import url from "node:url";
@@ -18,16 +17,6 @@ import { GameShop, UserPreferences } from "@types";
 import { launchGame } from "./helpers";
 import { loadState } from "./main";
 
-const { autoUpdater } = updater;
-
-autoUpdater.setFeedURL({
-  provider: "github",
-  owner: "hydralauncher",
-  repo: "hydra",
-});
-
-autoUpdater.logger = logger;
-
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) app.quit();
 
@@ -37,7 +26,7 @@ if (process.platform !== "linux") {
 
 i18n.init({
   resources,
-  lng: "en",
+  lng: "vi",
   fallbackLng: "en",
   interpolation: {
     escapeValue: false,
@@ -60,7 +49,11 @@ if (process.defaultApp) {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  electronApp.setAppUserModelId("gg.hydralauncher.hydra");
+  electronApp.setAppUserModelId("com.lequan.gamelaucher");
+
+  // Show a splash window immediately so the user sees the app is starting,
+  // instead of waiting for the heavy renderer to load with no feedback.
+  WindowManager.openSplashWindow();
 
   protocol.handle("local", (request) => {
     const filePath = request.url.slice("local:".length);
@@ -138,7 +131,7 @@ app.whenReady().then(async () => {
     .get<string, string>(levelKeys.language, {
       valueEncoding: "utf8",
     })
-    .catch(() => "en");
+    .catch(() => "vi");
 
   if (language) i18n.changeLanguage(language);
 
@@ -150,6 +143,8 @@ app.whenReady().then(async () => {
 
   if (!process.argv.includes("--hidden") && !isRunDeepLink) {
     WindowManager.createMainWindow();
+  } else {
+    WindowManager.closeSplashWindow();
   }
 
   WindowManager.createNotificationWindow();
@@ -211,28 +206,6 @@ const handleDeepLinkPath = (uri?: string) => {
     if (url.host === "install-source") {
       WindowManager.redirect(`settings${url.search}`);
       return;
-    }
-
-    if (url.host === "profile") {
-      const userId = url.searchParams.get("userId");
-
-      if (userId) {
-        WindowManager.redirect(`profile/${userId}`);
-      }
-
-      return;
-    }
-
-    if (url.host === "install-theme") {
-      const themeName = url.searchParams.get("theme");
-      const authorId = url.searchParams.get("authorId");
-      const authorName = url.searchParams.get("authorName");
-
-      if (themeName && authorId && authorName) {
-        WindowManager.redirect(
-          `settings?theme=${themeName}&authorId=${authorId}&authorName=${authorName}`
-        );
-      }
     }
   } catch (error) {
     logger.error("Error handling deep link", uri, error);

@@ -8,7 +8,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Button, CheckboxField, SelectField } from "@renderer/components";
+import { CheckboxField, SelectField } from "@renderer/components";
 import { settingsContext } from "@renderer/context";
 import { useAppSelector } from "@renderer/hooks";
 import type { AchievementCustomNotificationPosition } from "@types";
@@ -29,8 +29,6 @@ export function SettingsContextNotifications() {
   const [form, setForm] = useState({
     downloadNotificationsEnabled: false,
     repackUpdatesNotificationsEnabled: false,
-    friendRequestNotificationsEnabled: false,
-    friendStartGameNotificationsEnabled: true,
     achievementNotificationsEnabled: true,
     achievementCustomNotificationsEnabled: true,
     achievementCustomNotificationPosition:
@@ -56,10 +54,6 @@ export function SettingsContextNotifications() {
       achievementSoundVolume: Math.round(
         (userPreferences.achievementSoundVolume ?? 0.15) * 100
       ),
-      friendRequestNotificationsEnabled:
-        userPreferences.friendRequestNotificationsEnabled ?? false,
-      friendStartGameNotificationsEnabled:
-        userPreferences.friendStartGameNotificationsEnabled ?? true,
     }));
   }, [userPreferences]);
 
@@ -140,28 +134,6 @@ export function SettingsContextNotifications() {
             })
           }
         />
-
-        <CheckboxField
-          label={t("enable_friend_request_notifications")}
-          checked={form.friendRequestNotificationsEnabled}
-          onChange={() =>
-            handleChange({
-              friendRequestNotificationsEnabled:
-                !form.friendRequestNotificationsEnabled,
-            })
-          }
-        />
-
-        <CheckboxField
-          label={t("enable_friend_start_game_notifications")}
-          checked={form.friendStartGameNotificationsEnabled}
-          onChange={() =>
-            handleChange({
-              friendStartGameNotificationsEnabled:
-                !form.friendStartGameNotificationsEnabled,
-            })
-          }
-        />
       </div>
 
       <div className="settings-context-panel__group">
@@ -204,15 +176,6 @@ export function SettingsContextNotifications() {
                 onChange={handleChangeAchievementCustomNotificationPosition}
                 options={achievementCustomNotificationPositionOptions}
               />
-
-              <Button
-                className="settings-general__test-achievement-notification-button"
-                onClick={() =>
-                  window.electron.showAchievementTestNotification()
-                }
-              >
-                {t("test_notification")}
-              </Button>
             </>
           )}
 

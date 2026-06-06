@@ -1,14 +1,14 @@
-import { HydraApi, logger } from "../";
+﻿import { ApiClient, logger } from "../";
 import { downloadSourcesSublevel } from "@main/level";
 import type { DownloadSource } from "@types";
 
 export const syncDownloadSourcesFromApi = async () => {
-  if (!HydraApi.isLoggedIn() || !HydraApi.hasActiveSubscription()) {
+  if (!ApiClient.isLoggedIn() || !ApiClient.hasActiveSubscription()) {
     return;
   }
 
   try {
-    const profileSources = await HydraApi.get<DownloadSource[]>(
+    const profileSources = await ApiClient.get<DownloadSource[]>(
       "/profile/download-sources"
     );
 

@@ -20,6 +20,7 @@ import { store } from "./store";
 import resources from "@locales";
 
 import { logger } from "./logger";
+import { appConfig } from "@shared";
 import { addCookieInterceptor } from "./cookies";
 import * as Sentry from "@sentry/react";
 import { levelDBService } from "./services/leveldb.service";
@@ -28,26 +29,17 @@ import Home from "./pages/home/home";
 import Downloads from "./pages/downloads/downloads";
 import GameDetails from "./pages/game-details/game-details";
 import Settings from "./pages/settings/settings";
-import Profile from "./pages/profile/profile";
 import Achievements from "./pages/achievements/achievements";
 import ThemeEditor from "./pages/theme-editor/theme-editor";
 import Library from "./pages/library/library";
 import Notifications from "./pages/notifications/notifications";
 import { AchievementNotification } from "./pages/achievements/notification/achievement-notification";
 import GameLauncher from "./pages/game-launcher/game-launcher";
-import BigPictureApp from "../../big-picture/src/app";
-import BigPictureCatalogue from "../../big-picture/src/pages/catalogue/catalogue";
-import BigPictureDownloads from "../../big-picture/src/pages/downloads/downloads";
-import BigPictureHome from "../../big-picture/src/pages/home/home";
-import BigPictureSettings from "../../big-picture/src/pages/settings/settings";
-import BigPictureLibrary from "../../big-picture/src/pages/library/page";
-import BigPictureGame from "../../big-picture/src/pages/game/game";
-import BigPictureGameAchievements from "../../big-picture/src/pages/game-achievements/game-achievements";
 
 console.log = logger.log;
 
 Sentry.init({
-  dsn: import.meta.env.RENDERER_VITE_SENTRY_DSN,
+  dsn: appConfig.sentryDsn || undefined,
   integrations: [
     Sentry.browserTracingIntegration(),
     Sentry.replayIntegration(),
@@ -55,7 +47,7 @@ Sentry.init({
   tracesSampleRate: 0.5,
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 0,
-  release: "hydra-launcher@" + (await globalThis.electron.getVersion()),
+  release: "game-launcher@" + (await globalThis.electron.getVersion()),
 });
 
 const isStaging = await globalThis.electron.isStaging();
@@ -71,6 +63,7 @@ await i18n
   .use(initReactI18next)
   .init({
     resources,
+    lng: "vi",
     fallbackLng: "en",
     interpolation: {
       escapeValue: false,
@@ -86,7 +79,8 @@ const userPreferences = (await levelDBService.get(
 if (userPreferences?.language) {
   await i18n.changeLanguage(userPreferences.language);
 } else {
-  globalThis.electron.updateUserPreferences({ language: i18n.language });
+  await i18n.changeLanguage("vi");
+  globalThis.electron.updateUserPreferences({ language: "vi" });
 }
 
 syncDocumentLanguage(i18n.language);
@@ -104,7 +98,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <Route path="/downloads" element={<Downloads />} />
             <Route path="/game/:shop/:objectId" element={<GameDetails />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/achievements" element={<Achievements />} />
             <Route path="/notifications" element={<Notifications />} />
           </Route>
@@ -115,19 +108,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             element={<AchievementNotification />}
           />
           <Route path="/game-launcher" element={<GameLauncher />} />
-
-          <Route path="/big-picture" element={<BigPictureApp />}>
-            <Route index element={<BigPictureHome />} />
-            <Route path="catalogue" element={<BigPictureCatalogue />} />
-            <Route path="downloads" element={<BigPictureDownloads />} />
-            <Route path="settings" element={<BigPictureSettings />} />
-            <Route path="library" element={<BigPictureLibrary />} />
-            <Route path="game/:shop/:objectId" element={<BigPictureGame />} />
-            <Route
-              path="game/:shop/:objectId/achievements"
-              element={<BigPictureGameAchievements />}
-            />
-          </Route>
         </Routes>
       </HashRouter>
     </Provider>

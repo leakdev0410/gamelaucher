@@ -59,7 +59,7 @@ $hero-height: 350px;
 
   &__edit-custom-game-button {
     padding: calc(globals.$spacing-unit * 1.5);
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(250, 249, 245, 0.85);
     backdrop-filter: blur(20px);
     border-radius: 8px;
     transition: all ease 0.2s;
@@ -71,7 +71,7 @@ $hero-height: 350px;
     justify-content: center;
     color: globals.$muted-color;
     border: solid 1px globals.$border-color;
-    box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.12);
     animation: slide-in 0.3s cubic-bezier(0.33, 1, 0.68, 1);
 
     &:active {
@@ -79,7 +79,7 @@ $hero-height: 350px;
     }
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.5);
+      background-color: rgba(250, 249, 245, 0.95);
       color: globals.$body-color;
     }
   }
@@ -109,11 +109,7 @@ $hero-height: 350px;
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(
-        0deg,
-        rgba(0, 0, 0, 0.3) 60%,
-        transparent 100%
-      );
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0) 60%, transparent 100%);
       z-index: 1;
       pointer-events: none;
       border-radius: inherit;
@@ -185,7 +181,7 @@ $hero-height: 350px;
 
   &__cloud-sync-button {
     padding: calc(globals.$spacing-unit * 1.5) calc(globals.$spacing-unit * 2);
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(250, 249, 245, 0.85);
     backdrop-filter: blur(20px);
     border-radius: 8px;
     transition: all ease 0.2s;
@@ -198,7 +194,7 @@ $hero-height: 350px;
     color: globals.$muted-color;
     font-size: globals.$small-font-size;
     border: solid 1px globals.$border-color;
-    box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.12);
     animation: slide-in 0.3s cubic-bezier(0.33, 1, 0.68, 1);
 
     &:active {
@@ -211,7 +207,7 @@ $hero-height: 350px;
     }
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.5);
+      background-color: rgba(250, 249, 245, 0.95);
     }
   }
 
@@ -228,6 +224,9 @@ $hero-height: 350px;
     width: 26px;
     position: absolute;
     top: -3px;
+    // The cloud gif is white (made for the old dark theme); darken it so it is
+    // visible on the cream button.
+    filter: brightness(0.35) saturate(0.6);
   }
 
   &__randomizer-button {
@@ -236,7 +235,7 @@ $hero-height: 350px;
     right: calc(globals.$spacing-unit * 2);
     z-index: 100;
     padding: calc(globals.$spacing-unit * 1.5) calc(globals.$spacing-unit * 2);
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(250, 249, 245, 0.85);
     backdrop-filter: blur(20px);
     border-radius: 8px;
     transition: all ease 0.2s;
@@ -248,9 +247,7 @@ $hero-height: 350px;
     gap: globals.$spacing-unit;
     color: globals.$muted-color;
     border: solid 1px globals.$border-color;
-    box-shadow:
-      0px 0px 10px 0px rgba(0, 0, 0, 0.8),
-      0px 2px 8px 0px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.12);
     animation: slide-in 0.3s cubic-bezier(0.33, 1, 0.68, 1);
     overflow: visible;
 
@@ -260,7 +257,7 @@ $hero-height: 350px;
     }
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.12);
+      background-color: rgba(250, 249, 245, 0.95);
       color: globals.$body-color;
     }
   }

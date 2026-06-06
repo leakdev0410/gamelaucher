@@ -5,7 +5,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.86);
+    color: rgba(0, 0, 0, 0.86);
     font-weight: 600;
   }
 
@@ -46,7 +46,7 @@
       width: 16px;
       height: 16px;
       border-radius: 50%;
-      background: #fff;
+      background: #cc785c;
       cursor: pointer;
       pointer-events: all;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
@@ -62,7 +62,7 @@
       width: 16px;
       height: 16px;
       border-radius: 50%;
-      background: #fff;
+      background: #cc785c;
       cursor: pointer;
       pointer-events: all;
       border: none;
@@ -73,12 +73,12 @@
       outline: none;
 
       &::-webkit-slider-thumb {
-        outline: 2px solid rgba(255, 255, 255, 0.5);
+        outline: 2px solid rgba(0, 0, 0, 0.5);
         outline-offset: 2px;
       }
 
       &::-moz-range-thumb {
-        outline: 2px solid rgba(255, 255, 255, 0.5);
+        outline: 2px solid rgba(0, 0, 0, 0.5);
         outline-offset: 2px;
       }
     }

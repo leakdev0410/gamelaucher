@@ -40,7 +40,7 @@ export function GameReviews({
   hasUserReviewed,
   onUserReviewedChange,
 }: Readonly<GameReviewsProps>) {
-  const { t, i18n } = useTranslation("game_details");
+  const { t } = useTranslation("game_details");
   const { showSuccessToast, showErrorToast } = useToast();
 
   const [reviews, setReviews] = useState<GameReview[]>([]);
@@ -120,7 +120,7 @@ export function GameReviews({
     if (!objectId || !userDetailsId || shop === "custom") return;
 
     try {
-      const response = await window.electron.hydraApi.get<{
+      const response = await window.electron.api.get<{
         hasReviewed: boolean;
       }>(`/games/${shop}/${objectId}/reviews/check`, {
         needsAuth: true,
@@ -165,7 +165,7 @@ export function GameReviews({
           sortBy: reviewsSortBy,
         });
 
-        const response = await window.electron.hydraApi.get(
+        const response = await window.electron.api.get(
           `/games/${shop}/${objectId}/reviews?${params.toString()}`,
           { needsAuth: false }
         );
@@ -199,7 +199,7 @@ export function GameReviews({
         }
       }
     },
-    [objectId, shop, reviewsPage, reviewsSortBy, i18n.language]
+    [objectId, shop, reviewsPage, reviewsSortBy]
   );
 
   const handleVoteReview = async (
@@ -258,7 +258,7 @@ export function GameReviews({
     setReviews(updatedReviews);
 
     try {
-      await window.electron.hydraApi.put(
+      await window.electron.api.put(
         `/games/${shop}/${objectId}/reviews/${reviewId}/${voteType}`,
         { data: {} }
       );
@@ -285,7 +285,7 @@ export function GameReviews({
     if (!objectId) return;
 
     try {
-      await window.electron.hydraApi.delete(
+      await window.electron.api.delete(
         `/games/${shop}/${objectId}/reviews/${reviewId}`
       );
       loadReviews(true);
@@ -320,15 +320,12 @@ export function GameReviews({
     setSubmittingReview(true);
 
     try {
-      await window.electron.hydraApi.post(
-        `/games/${shop}/${objectId}/reviews`,
-        {
-          data: {
-            reviewHtml,
-            score: reviewScore,
-          },
-        }
-      );
+      await window.electron.api.post(`/games/${shop}/${objectId}/reviews`, {
+        data: {
+          reviewHtml,
+          score: reviewScore,
+        },
+      });
 
       editor?.commands.clearContent();
       setReviewScore(null);

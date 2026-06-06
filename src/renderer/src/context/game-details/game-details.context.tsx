@@ -170,7 +170,7 @@ export function GameDetailsContextProvider({
       window.electron.off("on-game-transfer-cancelled", onTransferCancelled);
       window.electron.off("on-game-transfer-error", onTransferError);
     };
-  }, [game]);
+  }, [game, updateGame]);
 
   useEffect(() => {
     if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -225,7 +225,7 @@ export function GameDetailsContextProvider({
         setIsLoading(false);
       });
 
-    if (userDetails && shop !== "custom") {
+    if (shop !== "custom") {
       window.electron
         .getUnlockedAchievements(objectId, shop)
         .then((achievements) => {
@@ -313,10 +313,10 @@ export function GameDetailsContextProvider({
       }
     };
 
-    window.addEventListener("hydra:openRepacks", handler as EventListener);
+    window.addEventListener("gl:openRepacks", handler as EventListener);
 
     return () => {
-      window.removeEventListener("hydra:openRepacks", handler as EventListener);
+      window.removeEventListener("gl:openRepacks", handler as EventListener);
     };
   }, [objectId]);
 
@@ -333,11 +333,11 @@ export function GameDetailsContextProvider({
       }
     };
 
-    window.addEventListener("hydra:openGameOptions", handler as EventListener);
+    window.addEventListener("gl:openGameOptions", handler as EventListener);
 
     return () => {
       window.removeEventListener(
-        "hydra:openGameOptions",
+        "gl:openGameOptions",
         handler as EventListener
       );
     };
@@ -363,7 +363,6 @@ export function GameDetailsContextProvider({
       objectId,
       shop,
       (achievements) => {
-        if (!userDetails) return;
         setAchievements(achievements);
       }
     );
@@ -389,7 +388,7 @@ export function GameDetailsContextProvider({
           downloadSourceIds: sources.map((source) => source.id),
         };
 
-        const downloads = await window.electron.hydraApi.get<GameRepack[]>(
+        const downloads = await window.electron.api.get<GameRepack[]>(
           `/games/${shop}/${objectId}/download-sources`,
           {
             params,

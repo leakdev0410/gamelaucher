@@ -901,6 +901,7 @@ export function DownloadGroup({
     return actions.filter((action) => action.show !== false);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const downloadInfo = useMemo(
     () =>
       library.map((game) => ({
@@ -909,6 +910,7 @@ export function DownloadGroup({
         progress: game.download?.progress || 0,
         isSeeding: isGameSeeding(game),
       })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       library,
       lastPacket?.gameId,

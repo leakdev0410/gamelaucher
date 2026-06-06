@@ -40,11 +40,7 @@ const hasSupportedPythonVersion = (version: [number, number]) => {
 };
 
 const getCompatiblePythonPath = (): string | null => {
-  const candidates = [
-    process.env.HYDRA_UMU_PYTHON,
-    "/usr/bin/python3",
-    "python3",
-  ]
+  const candidates = [process.env.GL_UMU_PYTHON, "/usr/bin/python3", "python3"]
     .filter((value): value is string => Boolean(value))
     .filter((value, index, arr) => arr.indexOf(value) === index);
 

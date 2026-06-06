@@ -3,8 +3,6 @@ import {
   SettingsContextConsumer,
   SettingsContextProvider,
 } from "@renderer/context";
-import { SettingsAccount } from "./settings-account";
-import { useUserDetails } from "@renderer/hooks";
 import { useMemo } from "react";
 import "./settings.scss";
 import {
@@ -13,7 +11,6 @@ import {
   DownloadIcon,
   GearIcon,
   PlayIcon,
-  ShieldCheckIcon,
 } from "@primer/octicons-react";
 import { Wrench } from "lucide-react";
 import { SettingsContextGeneral } from "./settings-context-general";
@@ -25,8 +22,6 @@ import { SettingsContextCompatibility } from "./settings-context-compatibility";
 
 export default function Settings() {
   const { t } = useTranslation("settings");
-
-  const { userDetails } = useUserDetails();
 
   const categories = useMemo(
     () => [
@@ -60,23 +55,14 @@ export default function Settings() {
         label: t("compatibility"),
         icon: <Wrench size={16} />,
       },
-      ...(userDetails
-        ? [
-            {
-              id: "account_privacy" as const,
-              label: `${t("account")} & ${t("privacy")}`,
-              icon: <ShieldCheckIcon size={16} />,
-            },
-          ]
-        : []),
     ],
-    [t, userDetails]
+    [t]
   );
 
   return (
     <SettingsContextProvider>
       <SettingsContextConsumer>
-        {({ currentCategoryId, setCurrentCategoryId, appearance }) => {
+        {({ currentCategoryId, setCurrentCategoryId }) => {
           const currentCategory =
             categories.find((category) => category.id === currentCategoryId) ??
             categories[0];
@@ -84,7 +70,7 @@ export default function Settings() {
 
           const renderCategory = () => {
             if (selectedCategoryId === "general") {
-              return <SettingsContextGeneral appearance={appearance} />;
+              return <SettingsContextGeneral />;
             }
 
             if (selectedCategoryId === "downloads") {
@@ -107,7 +93,7 @@ export default function Settings() {
               return <SettingsContextCompatibility />;
             }
 
-            return <SettingsAccount />;
+            return <SettingsContextGeneral />;
           };
 
           return (

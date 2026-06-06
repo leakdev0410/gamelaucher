@@ -62,7 +62,7 @@ export function AchievementNotification() {
             isHidden: false,
             isRare: false,
             isPlatinum: false,
-            iconUrl: "https://cdn.losbroxas.org/favicon.svg",
+            iconUrl: "",
           },
         ]);
 

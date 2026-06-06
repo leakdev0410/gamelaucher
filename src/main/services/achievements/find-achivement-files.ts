@@ -1,5 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
+import { fileExists } from "@main/helpers";
 import type { Game, AchievementFile } from "@types";
 import { Cracker } from "@shared";
 import { achievementsLogger } from "../logger";
@@ -250,7 +251,7 @@ export const getAlternativeObjectIds = (objectId: string) => {
   return [objectId];
 };
 
-export const findAchievementFiles = (game: Game) => {
+export const findAchievementFiles = async (game: Game) => {
   const achievementFiles: AchievementFile[] = [];
   const effectiveWinePrefixPath =
     Wine.getEffectivePrefixPath(game.winePrefixPath, game.objectId) ?? "";
@@ -264,7 +265,7 @@ export const findAchievementFiles = (game: Game) => {
           ...mapFileLocationWithObjectId(fileLocation, objectId)
         );
 
-        if (fs.existsSync(filePath)) {
+        if (await fileExists(filePath)) {
           achievementFiles.push({
             type: cracker,
             filePath,
@@ -275,7 +276,7 @@ export const findAchievementFiles = (game: Game) => {
   }
 
   const achievementFileInsideDirectory =
-    findAchievementFileInExecutableDirectory(game);
+    await findAchievementFileInExecutableDirectory(game);
 
   return achievementFiles.concat(achievementFileInsideDirectory);
 };
@@ -283,7 +284,7 @@ export const findAchievementFiles = (game: Game) => {
 const steamUserIds = await getSteamUsersIds();
 const steamPath = await getSteamLocation().catch(() => null);
 
-export const findAchievementFileInSteamPath = (game: Game) => {
+export const findAchievementFileInSteamPath = async (game: Game) => {
   if (!steamUserIds.length) {
     return [];
   }
@@ -304,7 +305,7 @@ export const findAchievementFileInSteamPath = (game: Game) => {
       `${game.objectId}.json`
     );
 
-    if (fs.existsSync(gameAchievementPath)) {
+    if (await fileExists(gameAchievementPath)) {
       achievementFiles.push({
         type: Cracker.Steam,
         filePath: gameAchievementPath,
@@ -315,9 +316,9 @@ export const findAchievementFileInSteamPath = (game: Game) => {
   return achievementFiles;
 };
 
-export const findAchievementFileInExecutableDirectory = (
+export const findAchievementFileInExecutableDirectory = async (
   game: Game
-): AchievementFile[] => {
+): Promise<AchievementFile[]> => {
   if (!game.executablePath) {
     return [];
   }
@@ -325,7 +326,7 @@ export const findAchievementFileInExecutableDirectory = (
   const effectiveWinePrefixPath =
     Wine.getEffectivePrefixPath(game.winePrefixPath, game.objectId) ?? "";
 
-  return [
+  const files = [
     {
       type: Cracker.userstats,
       filePath: path.join(
@@ -348,7 +349,15 @@ export const findAchievementFileInExecutableDirectory = (
         "achievements.ini"
       ),
     },
-  ].filter((file) => fs.existsSync(file.filePath)) as AchievementFile[];
+  ];
+
+  const results: AchievementFile[] = [];
+  for (const file of files) {
+    if (await fileExists(file.filePath)) {
+      results.push(file as AchievementFile);
+    }
+  }
+  return results;
 };
 
 const mapFileLocationWithObjectId = (
@@ -360,16 +369,16 @@ const mapFileLocationWithObjectId = (
   );
 };
 
-export const findAllAchievementFiles = () => {
+export const findAllAchievementFiles = async () => {
   const gameAchievementFiles = new Map<string, AchievementFile[]>();
 
   for (const cracker of crackers) {
     for (const { folderPath, fileLocation } of getPathFromCracker(cracker)) {
-      if (!fs.existsSync(folderPath)) {
+      if (!(await fileExists(folderPath))) {
         continue;
       }
 
-      const objectIds = fs.readdirSync(folderPath);
+      const objectIds = await fs.promises.readdir(folderPath).catch(() => []);
 
       for (const objectId of objectIds) {
         const filePath = path.join(
@@ -377,7 +386,7 @@ export const findAllAchievementFiles = () => {
           ...mapFileLocationWithObjectId(fileLocation, objectId)
         );
 
-        if (!fs.existsSync(filePath)) continue;
+        if (!(await fileExists(filePath))) continue;
 
         const achivementFile = {
           type: cracker,

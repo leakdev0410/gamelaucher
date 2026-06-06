@@ -1,5 +1,5 @@
-import { ShopAssets } from "@types";
-import { HydraApi } from "../hydra-api";
+﻿import { ShopAssets } from "@types";
+import { ApiClient } from "../api-client";
 import { gamesShopAssetsSublevel, gamesSublevel, levelKeys } from "@main/level";
 
 type ProfileGame = {
@@ -42,7 +42,7 @@ const getLocalCollectionIds = (
 };
 
 export const mergeWithRemoteGames = async () => {
-  return HydraApi.get<ProfileGame[]>("/profile/games")
+  return ApiClient.get<ProfileGame[]>("/profile/games")
     .then(async (response) => {
       for (const game of response) {
         const gameKey = levelKeys.game(game.shop, game.objectId);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { levelDBService } from "@renderer/services/leveldb.service";
 import { orderBy } from "lodash-es";
@@ -53,7 +53,7 @@ export default function Home() {
         downloadSourceIds: downloadSources.map((source) => source.id),
       };
 
-      const catalogue = await window.electron.hydraApi.get<ShopAssets[]>(
+      const catalogue = await window.electron.api.get<ShopAssets[]>(
         `/catalogue/${category}`,
         {
           params,
@@ -114,7 +114,7 @@ export default function Home() {
   };
 
   return (
-    <SkeletonTheme baseColor="#1c1c1c" highlightColor="#444">
+    <SkeletonTheme baseColor="#e6e3da" highlightColor="#f3f1ea">
       <section className="home__content">
         <Hero />
 

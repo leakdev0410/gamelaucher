@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useAppSelector } from "./redux";
 import { debounce } from "lodash-es";
 import { logger } from "@renderer/logger";
@@ -104,7 +104,7 @@ export function useSearchSuggestions(
       setIsLoading(true);
 
       try {
-        const response = await window.electron.hydraApi.get<
+        const response = await window.electron.api.get<
           {
             title: string;
             objectId: string;

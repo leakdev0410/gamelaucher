@@ -3,21 +3,16 @@ import { useAppDispatch, useAppSelector } from "./redux";
 import {
   setProfileBackground,
   setUserDetails,
-  setFriendRequests,
   clearCollections,
 } from "@renderer/features";
-import type {
-  FriendRequestAction,
-  UpdateProfileRequest,
-  UserDetails,
-  FriendRequest,
-} from "@types";
+import type { UserDetails } from "@types";
 
 export function useUserDetails() {
   const dispatch = useAppDispatch();
 
-  const { userDetails, profileBackground, friendRequests, friendRequestCount } =
-    useAppSelector((state) => state.userDetails);
+  const { userDetails, profileBackground } = useAppSelector(
+    (state) => state.userDetails
+  );
 
   const clearUserDetails = useCallback(async () => {
     dispatch(setUserDetails(null));
@@ -56,76 +51,6 @@ export function useUserDetails() {
     });
   }, [clearUserDetails]);
 
-  const patchUser = useCallback(
-    async (values: UpdateProfileRequest) => {
-      const response = await globalThis.window.electron.updateProfile(values);
-      return updateUserDetails({
-        ...response,
-        username: userDetails?.username || "",
-        subscription: userDetails?.subscription || null,
-        workwondersJwt: userDetails?.workwondersJwt || "",
-        karma: userDetails?.karma || 0,
-      });
-    },
-    [
-      updateUserDetails,
-      userDetails?.username,
-      userDetails?.subscription,
-      userDetails?.workwondersJwt,
-      userDetails?.karma,
-    ]
-  );
-
-  const fetchFriendRequests = useCallback(async () => {
-    return globalThis.window.electron.hydraApi
-      .get<FriendRequest[]>("/profile/friend-requests")
-      .then((friendRequests) => {
-        dispatch(setFriendRequests(friendRequests));
-      })
-      .catch(() => {});
-  }, [dispatch]);
-
-  const sendFriendRequest = useCallback(
-    async (userId: string) => {
-      return globalThis.window.electron.hydraApi
-        .post("/profile/friend-requests", {
-          data: { friendCode: userId },
-        })
-        .then(() => fetchFriendRequests());
-    },
-    [fetchFriendRequests]
-  );
-
-  const updateFriendRequestState = useCallback(
-    async (userId: string, action: FriendRequestAction) => {
-      if (action === "CANCEL") {
-        return globalThis.window.electron.hydraApi
-          .delete(`/profile/friend-requests/${userId}`)
-          .then(() => fetchFriendRequests());
-      }
-
-      return globalThis.window.electron.hydraApi
-        .patch(`/profile/friend-requests/${userId}`, {
-          data: {
-            requestState: action,
-          },
-        })
-        .then(() => fetchFriendRequests());
-    },
-    [fetchFriendRequests]
-  );
-
-  const undoFriendship = (userId: string) =>
-    globalThis.window.electron.hydraApi.delete(
-      `/profile/friend-requests/${userId}`
-    );
-
-  const blockUser = (userId: string) =>
-    globalThis.window.electron.hydraApi.post(`/users/${userId}/block`);
-
-  const unblockUser = (userId: string) =>
-    globalThis.window.electron.hydraApi.post(`/users/${userId}/unblock`);
-
   const hasActiveSubscription = useMemo(() => {
     const expiresAt = new Date(userDetails?.subscription?.expiresAt ?? 0);
     return expiresAt > new Date();
@@ -134,19 +59,10 @@ export function useUserDetails() {
   return {
     userDetails,
     profileBackground,
-    friendRequests,
-    friendRequestCount,
     hasActiveSubscription,
     fetchUserDetails,
     signOut,
     clearUserDetails,
     updateUserDetails,
-    patchUser,
-    sendFriendRequest,
-    fetchFriendRequests,
-    updateFriendRequestState,
-    blockUser,
-    unblockUser,
-    undoFriendship,
   };
 }

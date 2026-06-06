@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Cracker } from "@shared";
 import { UnlockedAchievement } from "@types";
 import { existsSync, readFileSync, readdirSync } from "node:fs";

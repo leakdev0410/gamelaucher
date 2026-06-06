@@ -1,10 +1,9 @@
-import { GlobeIcon, TrashIcon, PlusIcon } from "@primer/octicons-react";
+import { TrashIcon, PlusIcon } from "@primer/octicons-react";
 import { Button } from "@renderer/components/button/button";
 import { useTranslation } from "react-i18next";
 import { AddThemeModal, DeleteAllThemesModal } from "../index";
 import "./theme-actions.scss";
 import { useState } from "react";
-import { THEME_WEB_STORE_URL } from "@renderer/constants";
 
 interface ThemeActionsProps {
   onListUpdated: () => void;
@@ -37,17 +36,6 @@ export const ThemeActions = ({
 
       <div className="settings-appearance__actions">
         <div className="settings-appearance__actions-left">
-          <Button
-            theme="primary"
-            className="settings-appearance__button"
-            onClick={() => {
-              window.open(THEME_WEB_STORE_URL, "_blank");
-            }}
-          >
-            <GlobeIcon />
-            {t("web_store")}
-          </Button>
-
           <Button
             theme="danger"
             className="settings-appearance__button"

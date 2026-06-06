@@ -3,13 +3,9 @@ import type { SteamAppDetails } from "./steam.types";
 import type { Download, Game, Subscription } from "./level.types";
 import type { GameShop, UnlockedAchievement } from "./game.types";
 
-export type FriendRequestAction = "ACCEPTED" | "REFUSED" | "CANCEL";
 export * from "./download-contract";
 
-export type HydraCloudFeature =
-  | "achievements"
-  | "backup"
-  | "achievements-points";
+export type CloudFeature = "achievements" | "backup" | "achievements-points";
 
 export interface DiskUsage {
   free: number;
@@ -126,10 +122,6 @@ export interface SteamGame {
   clientIcon: string | null;
 }
 
-export type AppUpdaterEvent =
-  | { type: "update-available"; info: { version: string } }
-  | { type: "update-downloaded" };
-
 /* Events */
 export interface StartGameDownloadPayload {
   objectId: string;
@@ -145,40 +137,17 @@ export interface StartGameDownloadPayload {
   selectedFilesSize?: number | null;
 }
 
-export interface UserFriend {
-  id: string;
-  displayName: string;
-  profileImageUrl: string | null;
-  currentGame:
-    | (ShopAssets & {
-        sessionDurationInSeconds: number;
-      })
-    | null;
-}
-
-export interface UserFriends {
-  totalFriends: number;
-  friends: UserFriend[];
-}
-
 export interface UserBlocks {
   totalBlocks: number;
-  blocks: UserFriend[];
-}
-
-export interface FriendRequestSync {
-  friendRequestCount: number;
+  blocks: {
+    id: string;
+    displayName: string;
+    profileImageUrl: string | null;
+  }[];
 }
 
 export interface NotificationSync {
   notificationCount: number;
-}
-
-export interface FriendRequest {
-  id: string;
-  displayName: string;
-  profileImageUrl: string | null;
-  type: "SENT" | "RECEIVED";
 }
 
 export interface UserRelation {
@@ -212,7 +181,6 @@ export interface UserDetails {
   backgroundImageUrl: string | null;
   profileVisibility: ProfileVisibility;
   bio: string;
-  workwondersJwt: string;
   subscription: Subscription | null;
   karma: number;
   quirks?: {
@@ -229,8 +197,6 @@ export interface UserProfile {
   profileVisibility: ProfileVisibility;
   libraryGames: UserGame[];
   recentGames: UserGame[];
-  friends: UserFriend[];
-  totalFriends: number;
   relation: UserRelation | null;
   currentGame: UserProfileCurrentGame | null;
   bio: string;
@@ -301,7 +267,6 @@ export interface UserStatsPercentile {
 
 export interface UserStats {
   libraryCount: number;
-  friendsCount: number;
   totalPlayTimeInSeconds: UserStatsPercentile;
   achievementsPointsEarnedSum?: UserStatsPercentile;
   unlockedAchievementSum?: number;
@@ -344,16 +309,11 @@ export interface GameArtifact {
   isFrozen: boolean;
 }
 
-export type NotificationType =
-  | "FRIEND_REQUEST_RECEIVED"
-  | "FRIEND_REQUEST_ACCEPTED"
-  | "BADGE_RECEIVED"
-  | "REVIEW_UPVOTE";
+export type NotificationType = "BADGE_RECEIVED" | "REVIEW_UPVOTE";
 
 export type LocalNotificationType =
   | "EXTRACTION_COMPLETE"
   | "DOWNLOAD_COMPLETE"
-  | "UPDATE_AVAILABLE"
   | "ACHIEVEMENT_UNLOCKED"
   | "SCAN_GAMES_COMPLETE";
 
@@ -493,13 +453,6 @@ export type UserGameDetails = ShopAssets & {
   lastTimePlayed: Date | null;
   isDeleted: boolean;
   isFavorite: boolean;
-  friendsWhoPlayed: {
-    id: string;
-    displayName: string;
-    profileImageUrl: string | null;
-    lastTimePlayed: Date | null;
-    playTimeInSeconds: number;
-  }[];
 };
 
 export * from "./game.types";

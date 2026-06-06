@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button, Link, Modal } from "@renderer/components";
 import { LinkExternalIcon } from "@primer/octicons-react";
 import "./real-debrid-info-modal.scss";
+import { appConfig } from "@shared";
 
-const realDebridReferralId = import.meta.env
-  .RENDERER_VITE_REAL_DEBRID_REFERRAL_ID;
+const realDebridReferralId = appConfig.realDebridReferralId;
 
 const REAL_DEBRID_URL = realDebridReferralId
   ? `https://real-debrid.com/?id=${realDebridReferralId}`

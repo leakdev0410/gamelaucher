@@ -19,9 +19,9 @@ interface GamePayload {
 }
 
 const binaryNameByPlatform: Partial<Record<NodeJS.Platform, string>> = {
-  darwin: "hydra-python-rpc",
-  linux: "hydra-python-rpc",
-  win32: "hydra-python-rpc.exe",
+  darwin: "gamelaucher-go-rpc",
+  linux: "gamelaucher-go-rpc",
+  win32: "gamelaucher-go-rpc.exe",
 };
 
 type PythonRpcMethod = "status" | "seed_status" | "torrent_files" | "action";
@@ -96,7 +96,6 @@ export class PythonRPC {
   private static nextRequestId = 1;
   private static stdoutBuffer = "";
   private static rpcPassword = "";
-  private static pythonExecutable: string | null = null;
   private static ready = false;
   private static readyPromise: Promise<void> | null = null;
   private static readyResolver: (() => void) | null = null;
@@ -317,18 +316,18 @@ export class PythonRPC {
       const binaryName = binaryNameByPlatform[process.platform]!;
       const binaryPath = path.join(
         process.resourcesPath,
-        "hydra-python-rpc",
+        "gamelaucher-go-rpc",
         binaryName
       );
 
       if (!fs.existsSync(binaryPath)) {
         dialog.showErrorBox(
           "Fatal",
-          "Hydra Python Instance binary not found. Please check if it has been removed by Windows Defender."
+          "Game Launcher RPC binary not found. Please check if it has been removed by Windows Defender."
         );
 
         app.quit();
-        throw new Error(`Hydra Python RPC binary not found at ${binaryPath}`);
+        throw new Error(`Game Launcher RPC binary not found at ${binaryPath}`);
       }
 
       const childProcess = cp.spawn(binaryPath, commonArgs, {
@@ -346,27 +345,14 @@ export class PythonRPC {
 
       this.pythonProcess = childProcess;
     } else {
-      const pythonExecutable = this.resolvePythonExecutable();
-      const scriptPath = path.join(
-        __dirname,
-        "..",
-        "..",
-        "python_rpc",
-        "main.py"
-      );
+      const scriptPath = path.join(__dirname, "..", "..", "go_rpc", "main.go");
 
-      const childProcess = cp.spawn(
-        pythonExecutable,
-        [scriptPath, ...commonArgs],
-        {
-          stdio: ["pipe", "pipe", "pipe"],
-          env: {
-            ...process.env,
-            PYTHONIOENCODING: "utf-8",
-            PYTHONUTF8: "1",
-          },
-        }
-      );
+      const childProcess = cp.spawn("go", ["run", scriptPath, ...commonArgs], {
+        stdio: ["pipe", "pipe", "pipe"],
+        env: {
+          ...process.env,
+        },
+      });
 
       this.logStderr(childProcess.stderr);
       this.logStdout(childProcess.stdout);
@@ -389,34 +375,6 @@ export class PythonRPC {
     }
 
     await this.ensureReady();
-  }
-
-  private static resolvePythonExecutable() {
-    if (this.pythonExecutable) {
-      return this.pythonExecutable;
-    }
-
-    const candidates = [
-      process.env.HYDRA_PYTHON_BIN,
-      process.env.PYTHON,
-      "python3",
-      "python",
-    ].filter((value): value is string => Boolean(value));
-
-    for (const candidate of candidates) {
-      const check = cp.spawnSync(candidate, ["--version"], {
-        stdio: "ignore",
-      });
-
-      if (!check.error) {
-        this.pythonExecutable = candidate;
-        return candidate;
-      }
-    }
-
-    throw new Error(
-      "Python executable not found. Set HYDRA_PYTHON_BIN or install python3/python."
-    );
   }
 
   public static kill() {

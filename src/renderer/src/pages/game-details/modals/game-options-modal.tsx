@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal } from "@renderer/components";
@@ -43,7 +44,7 @@ import { GeneralSettingsSection } from "./game-options-modal/general-section";
 import { CompatibilitySettingsSection } from "./game-options-modal/compatibility-section";
 import { DownloadsSettingsSection } from "./game-options-modal/downloads-section";
 import { DangerZoneSection } from "./game-options-modal/danger-zone-section";
-import { HydraCloudSettingsSection } from "./game-options-modal/hydra-cloud-section";
+import { CloudSaveSettingsSection } from "./game-options-modal/cloud-save-section";
 import type { GameSettingsCategoryId } from "./game-options-modal/types";
 import { CreateSteamShortcutModal } from "./create-steam-shortcut-modal";
 
@@ -95,9 +96,6 @@ export function GameOptionsModal({
     useState(false);
   const [showChangePlaytimeModal, setShowChangePlaytimeModal] = useState(false);
   const [isDeletingAchievements, setIsDeletingAchievements] = useState(false);
-  const [automaticCloudSync, setAutomaticCloudSync] = useState(
-    game.automaticCloudSync ?? false
-  );
   const [creatingSteamShortcut, setCreatingSteamShortcut] = useState(false);
   const [saveFolderPath, setSaveFolderPath] = useState<string | null>(null);
   const [loadingSaveFolder, setLoadingSaveFolder] = useState(false);
@@ -613,11 +611,11 @@ export function GameOptionsModal({
 
   const shouldShowWinePrefixConfiguration =
     window.electron.platform === "linux";
-  const defaultHydraWinePrefixPath = defaultWinePrefixPath
+  const effectiveWinePrefixPath = defaultWinePrefixPath
     ? `${defaultWinePrefixPath}/${game.objectId}`
     : null;
   const displayedWinePrefixPath =
-    game.winePrefixPath ?? defaultHydraWinePrefixPath;
+    game.winePrefixPath ?? effectiveWinePrefixPath;
 
   const categories = useMemo(
     () => [
@@ -637,8 +635,8 @@ export function GameOptionsModal({
         icon: <ImageIcon size={16} />,
       },
       {
-        id: "hydra_cloud" as const,
-        label: t("settings_category_hydra_cloud"),
+        id: "cloud_save" as const,
+        label: t("settings_category_cloud_save"),
         icon: <CloudIcon size={16} />,
       },
       ...(shouldShowWinePrefixConfiguration
@@ -691,24 +689,6 @@ export function GameOptionsModal({
     } catch {
       showErrorToast(t("update_playtime_error"));
     }
-  };
-
-  const handleToggleAutomaticCloudSync = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setAutomaticCloudSync(event.target.checked);
-    const gameKey = getGameKey(game.shop, game.objectId);
-    const gameData = (await levelDBService.get(
-      gameKey,
-      "games"
-    )) as Game | null;
-    if (gameData)
-      await levelDBService.put(
-        gameKey,
-        { ...gameData, automaticCloudSync: event.target.checked },
-        "games"
-      );
-    updateGame();
   };
 
   return (
@@ -849,12 +829,8 @@ export function GameOptionsModal({
                 onGameUpdated={updateGame}
               />
             )}
-            {selectedCategory === "hydra_cloud" && (
-              <HydraCloudSettingsSection
-                game={game}
-                automaticCloudSync={automaticCloudSync}
-                onToggleAutomaticCloudSync={handleToggleAutomaticCloudSync}
-              />
+            {selectedCategory === "cloud_save" && (
+              <CloudSaveSettingsSection game={game} />
             )}
             {selectedCategory === "compatibility" &&
               shouldShowWinePrefixConfiguration && (

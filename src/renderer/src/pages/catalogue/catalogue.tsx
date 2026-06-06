@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   CatalogueSearchPayload,
   CatalogueSearchResult,
   DownloadSource,
@@ -163,7 +163,7 @@ export default function Catalogue() {
         };
 
         try {
-          const response = await window.electron.hydraApi.post<{
+          const response = await window.electron.api.post<{
             edges: CatalogueSearchResult[];
             count: number;
           }>("/catalogue/search", {
@@ -557,7 +557,7 @@ export default function Catalogue() {
       <div className="catalogue__content">
         <div className="catalogue__games-container">
           {isLoading ? (
-            <SkeletonTheme baseColor="#1c1c1c" highlightColor="#444">
+            <SkeletonTheme baseColor="#e6e3da" highlightColor="#f3f1ea">
               {Array.from({ length: PAGE_SIZE }).map((_, i) => (
                 <Skeleton key={i} className="catalogue__skeleton" />
               ))}

@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   AchievementNotificationInfo,
   Game,
   GameShop,
@@ -7,7 +7,7 @@ import type {
   UserPreferences,
 } from "@types";
 import { WindowManager } from "../window-manager";
-import { HydraApi } from "../hydra-api";
+import { ApiClient } from "../api-client";
 import { getUnlockedAchievements } from "@main/events/user/get-unlocked-achievements";
 import { publishNewAchievementNotification } from "../notifications";
 import { SubscriptionRequiredError } from "@shared";
@@ -169,7 +169,7 @@ export const mergeAchievements = async (
     (newAchievements.length || AchievementWatcherManager.hasFinishedPreSearch);
 
   if (shouldSyncWithRemote) {
-    await HydraApi.put<UpdatedUnlockedAchievements | undefined>(
+    await ApiClient.put<UpdatedUnlockedAchievements | undefined>(
       "/profile/games/achievements",
       {
         id: game.remoteId,

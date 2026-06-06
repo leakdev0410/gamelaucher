@@ -3,12 +3,12 @@ import { createGame, trackGamePlaytime } from "./library-sync";
 import type { Game, GameRunning, UserPreferences } from "@types";
 import axios from "axios";
 import { db, gamesSublevel, levelKeys } from "@main/level";
-import { CloudSync } from "./cloud-sync";
 import { logger, networkLogger } from "./logger";
 import { PowerSaveBlockerManager } from "./power-save-blocker";
 import path from "node:path";
 import { AchievementWatcherManager } from "./achievements/achievement-watcher-manager";
 import { INTERVALS } from "@main/constants";
+import { appConfig } from "@shared";
 import { Wine } from "./wine";
 import { NativeAddon } from "./native-addon";
 
@@ -63,10 +63,7 @@ const logPlaytimeTrace = (
 const getGameExecutables = async () => {
   const gameExecutables = (
     await axios
-      .get(
-        import.meta.env.MAIN_VITE_EXTERNAL_RESOURCES_URL +
-          "/game-executables.json"
-      )
+      .get(appConfig.externalResourcesUrl + "/game-executables.json")
       .catch(() => {
         return { data: {} };
       })
@@ -283,7 +280,7 @@ function onOpenGame(game: Game) {
     WindowManager.closeGameLauncherWindow();
   }
 
-  // Hide Hydra to tray on game startup if enabled
+  // Hide app to tray on game startup if enabled
   db.get<string, UserPreferences | null>(levelKeys.userPreferences, {
     valueEncoding: "json",
   })
@@ -327,15 +324,6 @@ function onOpenGame(game: Game) {
           error: error instanceof Error ? error.message : String(error),
         });
       });
-
-    if (game.automaticCloudSync) {
-      CloudSync.uploadSaveGame(
-        game.objectId,
-        game.shop,
-        null,
-        CloudSync.getBackupLabel(true)
-      );
-    }
   } else {
     const payload = { ...game, lastTimePlayed: new Date() };
 
@@ -459,15 +447,6 @@ const onCloseGame = (game: Game) => {
   if (game.shop === "custom") return;
 
   if (game.remoteId) {
-    if (game.automaticCloudSync) {
-      CloudSync.uploadSaveGame(
-        game.objectId,
-        game.shop,
-        null,
-        CloudSync.getBackupLabel(true)
-      );
-    }
-
     const deltaToSync =
       now -
       gamePlaytime.lastSyncTick +

@@ -1,10 +1,9 @@
-import { WebSocket } from "ws";
-import { HydraApi } from "../hydra-api";
+﻿import { WebSocket } from "ws";
+import { ApiClient } from "../api-client";
 import { Envelope } from "@main/generated/envelope";
 import { logger } from "../logger";
-import { friendRequestEvent } from "./events/friend-request";
-import { friendGameSessionEvent } from "./events/friend-game-session";
 import { notificationEvent } from "./events/notification";
+import { appConfig } from "@shared";
 
 export class WSClient {
   private static ws: WebSocket | null = null;
@@ -18,9 +17,9 @@ export class WSClient {
     this.shouldReconnect = true;
 
     try {
-      const { token } = await HydraApi.post<{ token: string }>("/auth/ws");
+      const { token } = await ApiClient.post<{ token: string }>("/auth/ws");
 
-      this.ws = new WebSocket(import.meta.env.MAIN_VITE_WS_URL, {
+      this.ws = new WebSocket(appConfig.wsUrl, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -44,14 +43,6 @@ export class WSClient {
         );
 
         logger.info("Received WS envelope:", envelope);
-
-        if (envelope.payload.oneofKind === "friendRequest") {
-          friendRequestEvent(envelope.payload.friendRequest);
-        }
-
-        if (envelope.payload.oneofKind === "friendGameSession") {
-          friendGameSessionEvent(envelope.payload.friendGameSession);
-        }
 
         if (envelope.payload.oneofKind === "notification") {
           notificationEvent(envelope.payload.notification);

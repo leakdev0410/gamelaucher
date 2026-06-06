@@ -3,7 +3,6 @@ import type { GameShop } from "@types";
 import Color from "color";
 import i18next from "i18next";
 import { v4 as uuidv4 } from "uuid";
-import { THEME_WEB_STORE_URL } from "./constants";
 import { levelDBService } from "./services/leveldb.service";
 
 export const formatDownloadProgress = (
@@ -65,20 +64,12 @@ export const injectCustomCss = (
   try {
     target.querySelector("#custom-css")?.remove();
 
-    if (css.startsWith(THEME_WEB_STORE_URL)) {
-      const link = document.createElement("link");
-      link.id = "custom-css";
-      link.rel = "stylesheet";
-      link.href = css;
-      target.appendChild(link);
-    } else {
-      const style = document.createElement("style");
-      style.id = "custom-css";
-      style.textContent = `
+    const style = document.createElement("style");
+    style.id = "custom-css";
+    style.textContent = `
         ${css}
       `;
-      target.appendChild(style);
-    }
+    target.appendChild(style);
   } catch (error) {
     console.error("failed to inject custom css:", error);
   }

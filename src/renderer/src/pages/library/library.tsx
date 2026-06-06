@@ -1,4 +1,4 @@
-import {
+﻿import {
   useDeferredValue,
   useEffect,
   useMemo,
@@ -247,7 +247,7 @@ export default function Library() {
     setIsRenamingCollection(true);
 
     try {
-      await window.electron.hydraApi.put(
+      await window.electron.api.put(
         `/profile/games/collections/${activeCollection.id}`,
         {
           data: { name: nextName },
@@ -298,7 +298,7 @@ export default function Library() {
     setIsDeletingCollection(true);
 
     try {
-      await window.electron.hydraApi.delete(
+      await window.electron.api.delete(
         `/profile/games/collections/${activeCollection.id}`,
         { needsAuth: true }
       );

@@ -1,9 +1,9 @@
-import { registerEvent } from "../register-event";
+﻿import { registerEvent } from "../register-event";
 import type { Download, StartGameDownloadPayload } from "@types";
 import {
   DownloadManager,
   DownloadOrchestrator,
-  HydraApi,
+  ApiClient,
   logger,
 } from "@main/services";
 import { createGame } from "@main/services/library-sync";
@@ -82,7 +82,7 @@ const addGameToQueue = async (
 
     await Promise.all([
       createGame(updatedGame!).catch(() => {}),
-      HydraApi.post(`/games/${shop}/${objectId}/download`, null, {
+      ApiClient.post(`/games/${shop}/${objectId}/download`, null, {
         needsAuth: false,
       }).catch(() => {}),
     ]);

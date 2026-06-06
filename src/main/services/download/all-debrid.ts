@@ -103,7 +103,7 @@ export class AllDebridClient {
   private static instance: AxiosInstance;
   private static apiToken: string;
   private static readonly baseURL = "https://api.alldebrid.com/v4";
-  private static readonly agent = `Hydra/${appVersion}`;
+  private static readonly agent = `GameLauncher/${appVersion}`;
 
   private static readonly RL_PER_SECOND = 10;
   private static readonly RL_PER_MINUTE = 500;

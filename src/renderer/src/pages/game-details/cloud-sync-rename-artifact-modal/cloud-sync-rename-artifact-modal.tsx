@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect } from "react";
+﻿import { useCallback, useContext, useEffect } from "react";
 import { Button, Modal, ModalProps, TextField } from "@renderer/components";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -58,7 +58,7 @@ export function CloudSyncRenameArtifactModal({
       try {
         if (!artifact) return;
 
-        await window.electron.hydraApi.put(
+        await window.electron.api.put(
           `/profile/games/artifacts/${artifact.id}`,
           {
             data: {

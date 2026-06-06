@@ -1,6 +1,5 @@
 import { TrashIcon, ClockIcon } from "@primer/octicons-react";
 import { ThumbsUp, ThumbsDown, Star, Languages } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
@@ -59,7 +58,6 @@ export function ReviewItem({
   onToggleVisibility,
   onAnimationComplete,
 }: Readonly<ReviewItemProps>) {
-  const navigate = useNavigate();
   const { t, i18n } = useTranslation("game_details");
   const { formatDistance } = useDate();
   const { numberFormatter } = useFormat();
@@ -128,25 +126,17 @@ export function ReviewItem({
       <div className="game-details__review-header">
         <div className="game-details__review-header-top">
           <div className="game-details__review-user">
-            <button
-              onClick={() => navigate(`/profile/${review.user.id}`)}
-              title={review.user.displayName}
-            >
+            <div title={review.user.displayName}>
               <Avatar
                 src={review.user.profileImageUrl}
                 alt={review.user.displayName || "User"}
                 size={44}
               />
-            </button>
+            </div>
             <div className="game-details__review-user-info">
-              <button
-                className="game-details__review-display-name game-details__review-display-name--clickable"
-                onClick={() =>
-                  review.user.id && navigate(`/profile/${review.user.id}`)
-                }
-              >
+              <span className="game-details__review-display-name">
                 {review.user.displayName || "Anonymous"}
-              </button>
+              </span>
               <div className="game-details__review-meta-row">
                 <div className="game-details__review-meta-left">
                   <div

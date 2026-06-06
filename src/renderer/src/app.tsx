@@ -10,7 +10,6 @@ import {
 import { useDownloadOptionsListener } from "@renderer/hooks/use-download-options-listener";
 import i18n from "i18next";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WorkWonders } from "workwonders-sdk";
 
 import {
   clearExtraction,
@@ -24,9 +23,7 @@ import {
 } from "@renderer/features";
 import { useTranslation } from "react-i18next";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useSubscription } from "./hooks/use-subscription";
 import { ArchiveDeletionModal } from "./pages/downloads/archive-deletion-error-modal";
-import { HydraCloudModal } from "./pages/shared-modals/hydra-cloud/hydra-cloud-modal";
 
 import type { UserPreferences } from "@types";
 import "./app.scss";
@@ -37,17 +34,11 @@ import {
   removeCustomCss,
 } from "./helpers";
 import { levelDBService } from "./services/leveldb.service";
+import { appConfig } from "@shared";
 
 export interface AppProps {
   children: React.ReactNode;
 }
-
-type WorkWondersWithKnowledge = WorkWonders & {
-  knowledge?: {
-    initKnowledgeWidget?: () => void;
-    showArticle?: (articleId: number) => void;
-  };
-};
 
 export function App() {
   const contentRef = useRef<HTMLDivElement>(null);
@@ -60,17 +51,8 @@ export function App() {
 
   const { clearDownload, setLastPacket, lastPacket } = useDownload();
 
-  const workwondersRef = useRef<WorkWonders | null>(null);
-
-  const {
-    hasActiveSubscription,
-    fetchUserDetails,
-    updateUserDetails,
-    clearUserDetails,
-  } = useUserDetails();
-
-  const { hideHydraCloudModal, isHydraCloudModalVisible, hydraCloudFeature } =
-    useSubscription();
+  const { fetchUserDetails, updateUserDetails, clearUserDetails } =
+    useUserDetails();
 
   const dispatch = useAppDispatch();
 
@@ -159,82 +141,6 @@ export function App() {
     }
   }, [clearDownload, lastPacket?.gameId, library]);
 
-  const setupWorkWonders = useCallback(
-    async (token?: string, locale?: string) => {
-      if (workwondersRef.current) return;
-
-      workwondersRef.current = new WorkWonders();
-
-      const possibleLocales = ["en", "pt", "ru"];
-
-      const parsedLocale =
-        possibleLocales.find((l) => l === locale?.slice(0, 2)) ?? "en";
-
-      await workwondersRef.current.init({
-        organization: "hydra",
-        token,
-        locale: parsedLocale,
-      });
-
-      workwondersRef.current.changelog.initChangelogWidget();
-      workwondersRef.current.changelog.initChangelogWidgetMini();
-      const workWondersWithKnowledge =
-        workwondersRef.current as WorkWondersWithKnowledge;
-      workWondersWithKnowledge.knowledge?.initKnowledgeWidget?.();
-
-      if (token) {
-        workwondersRef.current.feedback.initFeedbackWidget();
-      }
-    },
-    [workwondersRef]
-  );
-
-  useEffect(() => {
-    const onClick = async (event: MouseEvent) => {
-      const userPreferences = await window.electron.getUserPreferences();
-      const language = userPreferences?.language ?? "en";
-
-      const articleMapping = {
-        pt: {
-          "cannot-write-directory": 1429,
-          seeding: 1442,
-          "peers-and-seeds": 1449,
-          "steam-achievements": 1412,
-        },
-        en: {
-          "cannot-write-directory": 4122,
-          seeding: 4116,
-          "peers-and-seeds": 4119,
-          "steam-achievements": 4140,
-        },
-      };
-
-      const $helpCenterTarget = (event.target as HTMLElement).closest(
-        "[data-open-article]"
-      );
-
-      if ($helpCenterTarget) {
-        const article = $helpCenterTarget.getAttribute("data-open-article");
-        const articleId =
-          articleMapping[language.slice(0, 2)]?.[
-            article as keyof typeof articleMapping
-          ] ?? articleMapping["en"]?.[article as keyof typeof articleMapping];
-
-        if (articleId) {
-          const workWondersWithKnowledge =
-            workwondersRef.current as WorkWondersWithKnowledge | null;
-          workWondersWithKnowledge?.knowledge?.showArticle?.(articleId);
-        }
-      }
-    };
-
-    window.addEventListener("click", onClick);
-
-    return () => {
-      window.removeEventListener("click", onClick);
-    };
-  }, []);
-
   const setupExternalResources = useCallback(async () => {
     const cachedUserDetails = window.localStorage.getItem("userDetails");
 
@@ -246,22 +152,19 @@ export function App() {
       dispatch(setProfileBackground(profileBackground));
     }
 
-    const userPreferences = await window.electron.getUserPreferences();
     const userDetails = await fetchUserDetails().catch(() => null);
 
     if (userDetails) {
       updateUserDetails(userDetails);
     }
 
-    setupWorkWonders(userDetails?.workwondersJwt, userPreferences?.language);
-
     if (!document.getElementById("external-resources")) {
       const $script = document.createElement("script");
       $script.id = "external-resources";
-      $script.src = `${import.meta.env.RENDERER_VITE_EXTERNAL_RESOURCES_URL}/bundle.js?t=${Date.now()}`;
+      $script.src = `${appConfig.externalResourcesUrl}/bundle.js?t=${Date.now()}`;
       document.head.appendChild($script);
     }
-  }, [fetchUserDetails, updateUserDetails, dispatch, setupWorkWonders]);
+  }, [fetchUserDetails, updateUserDetails, dispatch]);
 
   useEffect(() => {
     setupExternalResources();
@@ -339,16 +242,12 @@ export function App() {
   }, [onSignIn, updateLibrary, clearUserDetails, dispatch, showErrorToast, t]);
 
   useEffect(() => {
-    const asyncScrollAndNotify = async () => {
-      if (contentRef.current) contentRef.current.scrollTop = 0;
-      await workwondersRef.current?.notifyUrlChange?.();
-    };
-    asyncScrollAndNotify();
+    if (contentRef.current) contentRef.current.scrollTop = 0;
   }, [location.pathname, location.search]);
 
   useEffect(() => {
     new MutationObserver(() => {
-      const modal = document.body.querySelector("[data-hydra-dialog]");
+      const modal = document.body.querySelector("[data-gl-dialog]");
 
       dispatch(toggleDraggingDisabled(Boolean(modal)));
     }).observe(document.body, {
@@ -409,10 +308,10 @@ export function App() {
       {window.electron.platform === "win32" && (
         <div className="title-bar">
           <h4>
-            Hydra
-            {hasActiveSubscription && (
-              <span className="title-bar__cloud-text"> Cloud</span>
-            )}
+            Game Launcher{" "}
+            <span style={{ opacity: 0.55, fontWeight: 400, fontSize: "12px" }}>
+              by Lê Quân
+            </span>
           </h4>
         </div>
       )}
@@ -424,12 +323,6 @@ export function App() {
         type={toast.type}
         onClose={handleToastClose}
         duration={toast.duration}
-      />
-
-      <HydraCloudModal
-        visible={isHydraCloudModalVisible}
-        onClose={hideHydraCloudModal}
-        feature={hydraCloudFeature}
       />
 
       <ArchiveDeletionModal

@@ -1,9 +1,9 @@
-import { is } from "@electron-toolkit/utils";
+﻿import { is } from "@electron-toolkit/utils";
 import { isStaging } from "@main/constants";
 import { db, gamesSublevel, levelKeys } from "@main/level";
 import icon from "@resources/icon.png?asset";
 import trayIcon from "@resources/tray-icon.png?asset";
-import { AuthPage, generateAchievementCustomNotificationTest } from "@shared";
+import { AuthPage, appConfig } from "@shared";
 import type {
   AchievementCustomNotificationPosition,
   ScreenState,
@@ -22,17 +22,17 @@ import {
 } from "electron";
 import { t } from "i18next";
 import { orderBy, slice } from "lodash-es";
+import fs from "node:fs";
 import path from "node:path";
 import UserAgent from "user-agents";
-import { HydraApi } from "./hydra-api";
+import { ApiClient } from "./api-client";
 import { logger } from "./logger";
 
 export class WindowManager {
   public static mainWindow: Electron.BrowserWindow | null = null;
   public static notificationWindow: Electron.BrowserWindow | null = null;
   public static gameLauncherWindow: Electron.BrowserWindow | null = null;
-  private static bigPicture: Electron.BrowserWindow | null = null;
-  private static deferredMainMaximize = false;
+  private static splashWindow: Electron.BrowserWindow | null = null;
 
   private static readonly editorWindows: Map<string, BrowserWindow> = new Map();
 
@@ -42,12 +42,12 @@ export class WindowManager {
       height: 860,
       minWidth: 1024,
       minHeight: 860,
-      backgroundColor: "#1c1c1c",
+      backgroundColor: "#faf9f5",
       titleBarStyle: process.platform === "linux" ? "default" : "hidden",
       icon,
       trafficLightPosition: { x: 16, y: 16 },
       titleBarOverlay: {
-        symbolColor: "#DADBE1",
+        symbolColor: "#3d3d3a",
         color: "#00000000",
         height: 34,
       },
@@ -67,16 +67,16 @@ export class WindowManager {
     // Load the remote URL for development or the local html file for production.
     if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
       window.loadURL(`${process.env["ELECTRON_RENDERER_URL"]}#/${hash}`);
-    } else if (import.meta.env.MAIN_VITE_LAUNCHER_SUBDOMAIN) {
+    } else if (appConfig.launcherSubdomain) {
       // Try to load from remote URL in production
       try {
         await window.loadURL(
-          `https://release-v${this.formatVersionNumber(app.getVersion())}.${import.meta.env.MAIN_VITE_LAUNCHER_SUBDOMAIN}#/${hash}`
+          `https://release-v${this.formatVersionNumber(app.getVersion())}.${appConfig.launcherSubdomain}#/${hash}`
         );
       } catch (error) {
         // Fall back to local file if remote URL fails
         logger.error(
-          "Failed to load from MAIN_VITE_LAUNCHER_SUBDOMAIN, falling back to local file:",
+          "Failed to load from launcher subdomain, falling back to local file:",
           error
         );
         window.loadFile(path.join(__dirname, "../renderer/index.html"), {
@@ -96,28 +96,8 @@ export class WindowManager {
     }
   }
 
-  private static disableMainWindowWhileBigPictureIsOpen() {
-    const main = this.mainWindow;
-
-    if (!main || main.isDestroyed()) return;
-
-    main.setFocusable(false);
-    main.setIgnoreMouseEvents(true);
-    main.hide();
-  }
-
-  private static restoreMainWindowAfterBigPictureCloses() {
-    const main = this.mainWindow;
-
-    if (!main || main.isDestroyed()) return;
-
-    main.setIgnoreMouseEvents(false);
-    main.setFocusable(true);
-    main.setSkipTaskbar(false);
-  }
-
   public static sendToAppWindows(channel: string, ...args: unknown[]) {
-    const windows = [this.mainWindow, this.bigPicture];
+    const windows = [this.mainWindow];
 
     for (const window of windows) {
       if (!window || window.isDestroyed()) continue;
@@ -154,6 +134,65 @@ export class WindowManager {
     };
   }
 
+  public static openSplashWindow() {
+    if (this.splashWindow) return;
+
+    let logoBase64 = "";
+    try {
+      logoBase64 = fs.readFileSync(icon).toString("base64");
+    } catch {
+      logoBase64 = "";
+    }
+
+    this.splashWindow = new BrowserWindow({
+      width: 380,
+      height: 440,
+      frame: false,
+      resizable: false,
+      center: true,
+      backgroundColor: "#faf9f5",
+      title: "Game Launcher",
+      icon,
+      webPreferences: { sandbox: true },
+    });
+    this.splashWindow.removeMenu();
+
+    const html = `<!doctype html><html><head><meta charset="utf-8"><style>
+      html,body{margin:0;height:100%;}
+      body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+        background:#faf9f5;font-family:'Segoe UI',Roboto,sans-serif;color:#3d3d3a;
+        -webkit-app-region:drag;user-select:none;overflow:hidden;}
+      .logo{width:96px;height:96px;border-radius:22px;box-shadow:0 4px 16px rgba(0,0,0,.12);}
+      .name{font-size:21px;font-weight:700;color:#2b2a27;letter-spacing:.3px;}
+      .author{font-size:12px;color:#9a978f;margin-top:-14px;}
+      .spinner{width:26px;height:26px;border:3px solid rgba(0,0,0,.12);
+        border-top-color:#cc785c;border-radius:50%;animation:spin .8s linear infinite;}
+      .status{font-size:13px;color:#6b6b66;}
+      @keyframes spin{to{transform:rotate(360deg);}}
+    </style></head><body>
+      ${logoBase64 ? `<img class="logo" src="data:image/png;base64,${logoBase64}"/>` : ""}
+      <div class="name">Game Launcher</div>
+      <div class="author">by Lê Quân</div>
+      <div class="spinner"></div>
+      <div class="status">Đang khởi động…</div>
+    </body></html>`;
+
+    this.splashWindow.loadURL(
+      "data:text/html;charset=utf-8," + encodeURIComponent(html)
+    );
+
+    this.splashWindow.on("closed", () => {
+      this.splashWindow = null;
+    });
+  }
+
+  public static closeSplashWindow() {
+    if (this.splashWindow && !this.splashWindow.isDestroyed()) {
+      this.splashWindow.close();
+    }
+    this.splashWindow = null;
+  }
+
   public static async createMainWindow() {
     if (this.mainWindow) return;
 
@@ -172,15 +211,7 @@ export class WindowManager {
       this.initialConfigInitializationMainWindow
     );
 
-    this.deferredMainMaximize = false;
-
-    if (userPreferences?.launchInBigPicture) {
-      this.mainWindow.setOpacity(0);
-      this.mainWindow.setSkipTaskbar(true);
-      if (isMaximized) {
-        this.deferredMainMaximize = true;
-      }
-    } else if (isMaximized) {
+    if (isMaximized) {
       this.mainWindow.maximize();
     }
 
@@ -191,16 +222,6 @@ export class WindowManager {
           details.url.includes("chatwoot")
         ) {
           return callback(details);
-        }
-
-        if (details.url.includes("workwonders")) {
-          return callback({
-            ...details,
-            requestHeaders: {
-              Origin: "https://workwonders.app",
-              ...details.requestHeaders,
-            },
-          });
         }
 
         const userAgent = new UserAgent();
@@ -219,8 +240,7 @@ export class WindowManager {
         if (
           details.webContentsId !== this.mainWindow?.webContents.id ||
           details.url.includes("featurebase") ||
-          details.url.includes("chatwoot") ||
-          details.url.includes("workwonders")
+          details.url.includes("chatwoot")
         ) {
           return callback(details);
         }
@@ -262,11 +282,8 @@ export class WindowManager {
     this.mainWindow.on("ready-to-show", () => {
       if (!app.isPackaged || isStaging)
         WindowManager.mainWindow?.webContents.openDevTools();
-      if (userPreferences?.launchInBigPicture) {
-        void WindowManager.openBigPictureWindow();
-      } else {
-        WindowManager.mainWindow?.show();
-      }
+      WindowManager.closeSplashWindow();
+      WindowManager.mainWindow?.show();
     });
 
     this.mainWindow.on("close", async () => {
@@ -309,76 +326,12 @@ export class WindowManager {
     });
   }
 
-  public static async openBigPictureWindow() {
-    if (this.bigPicture) {
-      this.bigPicture.focus();
-      return;
-    }
-
-    const targetDisplay = this.mainWindow?.isDestroyed()
-      ? null
-      : this.mainWindow
-        ? screen.getDisplayMatching(this.mainWindow.getBounds())
-        : screen.getPrimaryDisplay();
-    const targetBounds =
-      targetDisplay?.bounds ?? screen.getPrimaryDisplay().bounds;
-
-    this.bigPicture = new BrowserWindow({
-      x: targetBounds.x,
-      y: targetBounds.y,
-      width: targetBounds.width,
-      height: targetBounds.height,
-      backgroundColor: "#0a0a0a",
-      icon,
-      frame: false,
-      fullscreen: true,
-      show: false,
-      webPreferences: {
-        preload: path.join(__dirname, "../preload/index.mjs"),
-        sandbox: false,
-      },
-    });
-
-    this.bigPicture.removeMenu();
-
-    if (!app.isPackaged || isStaging) {
-      this.bigPicture.webContents.openDevTools();
-    }
-
-    this.loadWindowURL(this.bigPicture, "big-picture");
-
-    this.bigPicture.once("ready-to-show", () => {
-      const main = this.mainWindow;
-      if (main && !main.isDestroyed()) {
-        main.setOpacity(1);
-        this.disableMainWindowWhileBigPictureIsOpen();
-      }
-      this.bigPicture?.setBounds(targetBounds);
-      this.bigPicture?.show();
-      this.bigPicture?.focus();
-    });
-
-    this.bigPicture.on("closed", () => {
-      this.bigPicture = null;
-      const main = this.mainWindow;
-      if (main && !main.isDestroyed()) {
-        this.restoreMainWindowAfterBigPictureCloses();
-        if (WindowManager.deferredMainMaximize) {
-          main.maximize();
-          WindowManager.deferredMainMaximize = false;
-        }
-        main.show();
-        main.focus();
-      }
-    });
-  }
-
   public static openAuthWindow(page: AuthPage, searchParams: URLSearchParams) {
     if (this.mainWindow) {
       const authWindow = new BrowserWindow({
         width: 600,
         height: 640,
-        backgroundColor: "#1c1c1c",
+        backgroundColor: "#faf9f5",
         parent: this.mainWindow,
         modal: true,
         show: false,
@@ -396,7 +349,7 @@ export class WindowManager {
       if (!app.isPackaged) authWindow.webContents.openDevTools();
 
       authWindow.loadURL(
-        `${import.meta.env.MAIN_VITE_AUTH_URL}${page}?${searchParams.toString()}`
+        `${appConfig.authUrl}${page}?${searchParams.toString()}`
       );
 
       authWindow.once("ready-to-show", () => {
@@ -407,7 +360,7 @@ export class WindowManager {
         if (url.startsWith("hydralauncher://auth")) {
           authWindow.close();
 
-          HydraApi.handleExternalAuth(url);
+          ApiClient.handleExternalAuth(url);
           return;
         }
 
@@ -535,32 +488,6 @@ export class WindowManager {
     }
   }
 
-  public static async showAchievementTestNotification() {
-    const userPreferences = await db.get<string, UserPreferences>(
-      levelKeys.userPreferences,
-      {
-        valueEncoding: "json",
-      }
-    );
-
-    const language = userPreferences.language ?? "en";
-
-    this.notificationWindow?.webContents.send(
-      "on-achievement-unlocked",
-      userPreferences.achievementCustomNotificationPosition ?? "top-left",
-      [
-        generateAchievementCustomNotificationTest(t, language),
-        generateAchievementCustomNotificationTest(t, language, {
-          isRare: true,
-          isHidden: true,
-        }),
-        generateAchievementCustomNotificationTest(t, language, {
-          isPlatinum: true,
-        }),
-      ]
-    );
-  }
-
   public static async closeNotificationWindow() {
     if (this.notificationWindow) {
       this.notificationWindow.close();
@@ -584,13 +511,13 @@ export class WindowManager {
         height: 720,
         minWidth: 600,
         minHeight: 540,
-        backgroundColor: "#1c1c1c",
+        backgroundColor: "#faf9f5",
         titleBarStyle: process.platform === "linux" ? "default" : "hidden",
         icon,
         trafficLightPosition: { x: 16, y: 16 },
         titleBarOverlay: {
-          symbolColor: "#DADBE1",
-          color: "#151515",
+          symbolColor: "#3d3d3a",
+          color: "#f0eee6",
           height: 34,
         },
         webPreferences: {
@@ -667,7 +594,7 @@ export class WindowManager {
       minimizable: false,
       fullscreenable: false,
       frame: false,
-      backgroundColor: "#1c1c1c",
+      backgroundColor: "#faf9f5",
       icon,
       skipTaskbar: false,
       webPreferences: {
@@ -707,11 +634,6 @@ export class WindowManager {
   }
 
   public static openMainWindow() {
-    if (this.bigPicture && !this.bigPicture.isDestroyed()) {
-      this.bigPicture.focus();
-      return;
-    }
-
     if (this.mainWindow) {
       this.mainWindow.show();
       if (this.mainWindow.isMinimized()) {
@@ -726,10 +648,6 @@ export class WindowManager {
   public static redirect(hash: string) {
     if (!this.mainWindow) this.createMainWindow();
     this.loadMainWindowURL(hash);
-
-    if (this.bigPicture && !this.bigPicture.isDestroyed()) {
-      return;
-    }
 
     if (this.mainWindow?.isMinimized()) this.mainWindow.restore();
     this.mainWindow?.focus();
@@ -817,7 +735,7 @@ export class WindowManager {
       tray.popUpContextMenu(contextMenu);
     };
 
-    tray.setToolTip("Hydra Launcher");
+    tray.setToolTip("Game Launcher");
 
     if (process.platform === "win32") {
       await updateSystemTray();

@@ -1,5 +1,5 @@
-import type { Game } from "@types";
-import { HydraApi } from "../hydra-api";
+﻿import type { Game } from "@types";
+import { ApiClient } from "../api-client";
 
 export const trackGamePlaytime = async (
   game: Game,
@@ -10,7 +10,7 @@ export const trackGamePlaytime = async (
     return;
   }
 
-  return HydraApi.put(`/profile/games/${game.shop}/${game.objectId}`, {
+  return ApiClient.put(`/profile/games/${game.shop}/${game.objectId}`, {
     playTimeDeltaInSeconds: Math.trunc(deltaInMillis / 1000),
     lastTimePlayed,
   });

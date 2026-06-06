@@ -57,11 +57,11 @@
     border-radius: 4px;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.15);
+      background-color: rgba(0, 0, 0, 0.15);
     }
 
     &--active {
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(0, 0, 0, 0.1);
     }
 
     &--muted {
@@ -69,23 +69,6 @@
 
       &:hover {
         opacity: 1;
-      }
-    }
-
-    &--decky {
-      background: linear-gradient(
-        135deg,
-        rgba(22, 177, 149, 0.2) 0%,
-        rgba(62, 98, 192, 0.1) 100%
-      );
-      color: globals.$muted-color;
-
-      &:hover {
-        background: linear-gradient(
-          135deg,
-          rgba(22, 177, 149, 0.3) 0%,
-          rgba(62, 98, 192, 0.15) 100%
-        );
       }
     }
   }
@@ -135,7 +118,7 @@
 
   &__collection-count {
     margin-left: auto;
-    background-color: #fff;
+    background-color: #cc785c;
     color: globals.$background-color;
     font-size: 10px;
     font-weight: 700;
@@ -186,7 +169,7 @@
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(0, 0, 0, 0.5);
     font-size: 12px;
     line-height: 1.4;
     padding: 9px 0;
@@ -223,7 +206,7 @@
     transition: background-color ease 0.1s;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.15);
+      background-color: rgba(0, 0, 0, 0.15);
     }
   }
 
@@ -250,7 +233,7 @@
     padding: 0;
 
     &:active {
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(0, 0, 0, 0.5);
     }
 
     &--active {
@@ -270,11 +253,11 @@
     padding: 0;
 
     &:hover {
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(0, 0, 0, 0.8);
     }
 
     &:active {
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(0, 0, 0, 0.5);
     }
 
     svg {

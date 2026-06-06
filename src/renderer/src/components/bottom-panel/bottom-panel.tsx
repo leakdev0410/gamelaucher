@@ -6,20 +6,16 @@ import {
   useDownload,
   useLibrary,
   useToast,
-  useUserDetails,
 } from "@renderer/hooks";
 
 import "./bottom-panel.scss";
 
 import { useNavigate } from "react-router-dom";
-import { VERSION_CODENAME } from "@renderer/constants";
 
 export function BottomPanel() {
   const { t } = useTranslation("bottom_panel");
 
   const navigate = useNavigate();
-
-  const { userDetails } = useUserDetails();
 
   const { library } = useLibrary();
 
@@ -29,15 +25,9 @@ export function BottomPanel() {
 
   const extraction = useAppSelector((state) => state.download.extraction);
 
-  const [version, setVersion] = useState("");
-  const [sessionHash, setSessionHash] = useState<null | string>("");
   const [commonRedistStatus, setCommonRedistStatus] = useState<string | null>(
     null
   );
-
-  useEffect(() => {
-    window.electron.getVersion().then((result) => setVersion(result));
-  }, []);
 
   useEffect(() => {
     const unlisten = window.electron.onCommonRedistProgress(
@@ -61,10 +51,6 @@ export function BottomPanel() {
 
     return () => unlisten();
   }, [t, showSuccessToast]);
-
-  useEffect(() => {
-    window.electron.getSessionHash().then((result) => setSessionHash(result));
-  }, [userDetails?.id]);
 
   const status = useMemo(() => {
     if (commonRedistStatus) {
@@ -159,16 +145,6 @@ export function BottomPanel() {
         onClick={() => navigate("/downloads")}
       >
         <small>{status}</small>
-      </button>
-
-      <button
-        data-open-workwonders-changelog-mini
-        className="bottom-panel__version-button"
-      >
-        <small>
-          {sessionHash ? `${sessionHash} -` : ""} v{version} &quot;
-          {VERSION_CODENAME}&quot;
-        </small>
       </button>
     </footer>
   );

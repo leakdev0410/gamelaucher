@@ -1,4 +1,4 @@
-import { useToast } from "@renderer/hooks";
+﻿import { useToast } from "@renderer/hooks";
 import { logger } from "@renderer/logger";
 import type { LudusaviBackup, GameArtifact, GameShop } from "@types";
 import React, {
@@ -98,15 +98,8 @@ export function CloudSyncContextProvider({
       return;
     }
 
-    const params = new URLSearchParams({
-      objectId,
-      shop,
-    });
-
-    const results = await window.electron.hydraApi
-      .get<GameArtifact[]>(`/profile/games/artifacts?${params.toString()}`, {
-        needsSubscription: true,
-      })
+    const results = await window.electron
+      .getGameArtifacts(objectId, shop)
       .catch(() => {
         return [];
       });
@@ -149,7 +142,7 @@ export function CloudSyncContextProvider({
       setFreezingArtifact(true);
       try {
         const endpoint = freeze ? "freeze" : "unfreeze";
-        await window.electron.hydraApi.put(
+        await window.electron.api.put(
           `/profile/games/artifacts/${gameArtifactId}/${endpoint}`
         );
         getGameArtifacts();
@@ -199,12 +192,9 @@ export function CloudSyncContextProvider({
 
   const deleteGameArtifact = useCallback(
     async (gameArtifactId: string) => {
-      return window.electron.hydraApi
-        .delete<{ ok: boolean }>(`/profile/games/artifacts/${gameArtifactId}`)
-        .then(() => {
-          getGameBackupPreview();
-          getGameArtifacts();
-        });
+      await window.electron.deleteGameArtifact(gameArtifactId);
+      getGameBackupPreview();
+      getGameArtifacts();
     },
     [getGameBackupPreview, getGameArtifacts]
   );

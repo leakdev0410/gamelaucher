@@ -1,5 +1,5 @@
-import { chunk } from "lodash-es";
-import { HydraApi } from "../hydra-api";
+﻿import { chunk } from "lodash-es";
+import { ApiClient } from "../api-client";
 import { mergeWithRemoteGames } from "./merge-with-remote-games";
 import { WindowManager } from "../window-manager";
 import { AchievementWatcherManager } from "../achievements/achievement-watcher-manager";
@@ -19,7 +19,7 @@ export const uploadGamesBatch = async () => {
   const gamesChunks = chunk(games, 30);
 
   for (const chunk of gamesChunks) {
-    await HydraApi.post(
+    await ApiClient.post(
       "/profile/games/batch",
       chunk.map((game) => {
         return {

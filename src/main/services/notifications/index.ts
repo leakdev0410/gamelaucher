@@ -10,9 +10,8 @@ import icon from "@resources/icon.png?asset";
 import { NotificationOptions, toXmlString } from "./xml";
 import { logger } from "../logger";
 import { WindowManager } from "../window-manager";
-import type { Game, UserPreferences, UserProfile } from "@types";
+import type { Game, UserPreferences } from "@types";
 import { db, levelKeys, themesSublevel } from "@main/level";
-import { restartAndInstallUpdate } from "@main/events/autoupdater/restart-and-install-update";
 import { SystemPath } from "../system-path";
 import { getThemeSoundPath } from "@main/helpers";
 import { processProfileImage } from "@main/events/profile/process-profile-image";
@@ -103,76 +102,6 @@ export const publishDownloadCompleteNotification = async (game: Game) => {
       url: `/game/${game.shop}/${game.objectId}`,
     }
   );
-};
-
-export const publishNotificationUpdateReadyToInstall = async (
-  version: string
-) => {
-  const title = t("new_update_available", {
-    ns: "notifications",
-    version,
-  });
-  const body = t("restart_to_install_update", {
-    ns: "notifications",
-  });
-
-  new Notification({
-    title,
-    body,
-    icon: trayIcon,
-  })
-    .on("click", () => {
-      restartAndInstallUpdate();
-    })
-    .show();
-
-  // Create local notification
-  await LocalNotificationManager.createNotification(
-    "UPDATE_AVAILABLE",
-    title,
-    body
-  );
-};
-
-export const publishNewFriendRequestNotification = async (
-  user: UserProfile
-) => {
-  const userPreferences = await db.get<string, UserPreferences | null>(
-    levelKeys.userPreferences,
-    {
-      valueEncoding: "json",
-    }
-  );
-
-  if (!userPreferences?.friendRequestNotificationsEnabled) return;
-
-  new Notification({
-    title: t("new_friend_request_title", {
-      ns: "notifications",
-    }),
-    body: t("new_friend_request_description", {
-      ns: "notifications",
-      displayName: user.displayName,
-    }),
-    icon: user?.profileImageUrl
-      ? await downloadImage(user.profileImageUrl)
-      : trayIcon,
-  }).show();
-};
-
-export const publishFriendStartedPlayingGameNotification = async (
-  friend: UserProfile
-) => {
-  new Notification({
-    title: t("friend_started_playing_game", {
-      ns: "notifications",
-      displayName: friend.displayName,
-    }),
-    body: friend?.currentGame?.title,
-    icon: friend?.profileImageUrl
-      ? await downloadImage(friend.profileImageUrl)
-      : trayIcon,
-  }).show();
 };
 
 export const publishCombinedNewAchievementNotification = async (

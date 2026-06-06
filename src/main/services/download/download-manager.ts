@@ -24,7 +24,6 @@ import { logger } from "../logger";
 import { db, downloadsSublevel, gamesSublevel, levelKeys } from "@main/level";
 import { TorBoxClient } from "./torbox";
 import { GameFilesManager } from "../game-files-manager";
-import { HydraDebridClient } from "./hydra-debrid";
 import { PremiumizeClient } from "./premiumize";
 import { AllDebridClient } from "./all-debrid";
 import { BuzzheavierApi, FuckingFastApi } from "@main/services/hosters";
@@ -180,37 +179,6 @@ export class DownloadManager {
     }
 
     logger.log(`[DownloadManager] Resolved URL: ${sanitizedUrl}`);
-  }
-
-  private static createDownloadPayload(
-    directUrl: string,
-    originalUrl: string,
-    downloadId: string,
-    savePath: string
-  ) {
-    const filename =
-      this.extractFilename(originalUrl, directUrl) ||
-      this.extractFilename(directUrl);
-    const sanitizedFilename = filename
-      ? this.sanitizeFilename(filename)
-      : undefined;
-
-    if (sanitizedFilename) {
-      logger.log(`[DownloadManager] Using filename: ${sanitizedFilename}`);
-    } else {
-      logger.log(
-        `[DownloadManager] No filename extracted, downloader will use default`
-      );
-    }
-
-    return {
-      action: "start" as const,
-      game_id: downloadId,
-      url: directUrl,
-      save_path: savePath,
-      out: sanitizedFilename,
-      allow_multiple_connections: true,
-    };
   }
 
   private static isHttpDownloader(downloader: Downloader): boolean {
@@ -878,8 +846,6 @@ export class DownloadManager {
         return this.getAllDebridDownloadOptions(download, resumingFilename);
       case Downloader.TorBox:
         return this.getTorBoxDownloadOptions(download, resumingFilename);
-      case Downloader.Hydra:
-        return this.getHydraDownloadOptions(download, resumingFilename);
       case Downloader.VikingFile:
         return this.getVikingFileDownloadOptions(download, resumingFilename);
       case Downloader.Rootz:
@@ -1170,24 +1136,6 @@ export class DownloadManager {
     );
   }
 
-  private static async getHydraDownloadOptions(
-    download: Download,
-    resumingFilename?: string
-  ) {
-    const downloadUrl = await HydraDebridClient.getDownloadUrl(download.uri);
-    if (!downloadUrl) throw new Error(DownloadError.NotCachedOnHydra);
-    const filename = this.resolveFilename(
-      resumingFilename,
-      download.uri,
-      downloadUrl
-    );
-    return this.buildDownloadOptions(
-      downloadUrl,
-      download.downloadPath,
-      filename
-    );
-  }
-
   private static async getVikingFileDownloadOptions(
     download: Download,
     resumingFilename?: string
@@ -1226,208 +1174,21 @@ export class DownloadManager {
   }
 
   private static async getDownloadPayload(download: Download) {
+    // Only Torrent downloader reaches this path — all other downloaders use the JS HTTP downloader.
+    if (download.downloader !== Downloader.Torrent) return undefined;
+
     const downloadId = levelKeys.game(download.shop, download.objectId);
+    const hasSelectedFileIndices =
+      Array.isArray(download.fileIndices) && download.fileIndices.length > 0;
 
-    switch (download.downloader) {
-      case Downloader.Gofile: {
-        const { id, password } = this.parseGofileUri(download.uri);
-        if (!id) {
-          throw new Error("Invalid gofile URL");
-        }
-
-        const downloadLink = await GofileApi.getDownloadLink(id, password);
-        await GofileApi.checkDownloadUrl(downloadLink);
-        const token = await GofileApi.authorize();
-
-        return {
-          action: "start",
-          game_id: downloadId,
-          url: downloadLink,
-          save_path: download.downloadPath,
-          header: `Cookie: accountToken=${token}`,
-          allow_multiple_connections: true,
-          connections_limit: 8,
-        };
-      }
-      case Downloader.PixelDrain: {
-        const downloadUrl = await PixelDrainApi.unlock(download.uri);
-
-        return {
-          action: "start",
-          game_id: downloadId,
-          url: downloadUrl,
-          save_path: download.downloadPath,
-        };
-      }
-      case Downloader.Datanodes: {
-        const downloadUrl = await DatanodesApi.getDownloadUrl(download.uri);
-        return {
-          action: "start",
-          game_id: downloadId,
-          url: downloadUrl,
-          save_path: download.downloadPath,
-        };
-      }
-      case Downloader.Buzzheavier: {
-        logger.log(
-          `[DownloadManager] Processing Buzzheavier download for URI: ${download.uri}`
-        );
-        try {
-          const directUrl = await BuzzheavierApi.getDirectLink(download.uri);
-          logger.log(`[DownloadManager] Buzzheavier direct URL obtained`);
-          return this.createDownloadPayload(
-            directUrl,
-            download.uri,
-            downloadId,
-            download.downloadPath
-          );
-        } catch (error) {
-          logger.error(
-            `[DownloadManager] Error processing Buzzheavier download:`,
-            error
-          );
-          throw error;
-        }
-      }
-      case Downloader.FuckingFast: {
-        logger.log(
-          `[DownloadManager] Processing FuckingFast download for URI: ${download.uri}`
-        );
-        try {
-          const directUrl = await FuckingFastApi.getDirectLink(download.uri);
-          logger.log(`[DownloadManager] FuckingFast direct URL obtained`);
-          return this.createDownloadPayload(
-            directUrl,
-            download.uri,
-            downloadId,
-            download.downloadPath
-          );
-        } catch (error) {
-          logger.error(
-            `[DownloadManager] Error processing FuckingFast download:`,
-            error
-          );
-          throw error;
-        }
-      }
-      case Downloader.Mediafire: {
-        const downloadUrl = await MediafireApi.getDownloadUrl(download.uri);
-        return {
-          action: "start",
-          game_id: downloadId,
-          url: downloadUrl,
-          save_path: download.downloadPath,
-        };
-      }
-      case Downloader.Torrent: {
-        const hasSelectedFileIndices =
-          Array.isArray(download.fileIndices) &&
-          download.fileIndices.length > 0;
-
-        return {
-          action: "start",
-          game_id: downloadId,
-          url: download.uri,
-          save_path: download.downloadPath,
-          file_indices: hasSelectedFileIndices
-            ? download.fileIndices
-            : undefined,
-          metadata_timeout_ms: hasSelectedFileIndices ? 60_000 : undefined,
-        };
-      }
-      case Downloader.RealDebrid: {
-        const downloadUrl = await RealDebridClient.getDownloadUrl(download.uri);
-        if (!downloadUrl) throw new Error(DownloadError.NotCachedOnRealDebrid);
-
-        return {
-          action: "start",
-          game_id: downloadId,
-          url: downloadUrl,
-          save_path: download.downloadPath,
-          allow_multiple_connections: true,
-        };
-      }
-      case Downloader.Premiumize: {
-        const downloadUrl = await PremiumizeClient.getDownloadUrl(download.uri);
-        if (!downloadUrl) throw new Error(DownloadError.NotCachedOnPremiumize);
-
-        return {
-          action: "start",
-          game_id: downloadId,
-          url: downloadUrl,
-          save_path: download.downloadPath,
-          allow_multiple_connections: true,
-        };
-      }
-      case Downloader.AllDebrid: {
-        const downloadInfo = await AllDebridClient.getDownloadInfo(
-          download.uri
-        );
-        if (!downloadInfo?.url)
-          throw new Error(DownloadError.NotCachedOnAllDebrid);
-
-        const filename = downloadInfo.filename
-          ? this.sanitizeRelativePath(downloadInfo.filename)
-          : undefined;
-        return {
-          action: "start",
-          game_id: downloadId,
-          url: downloadInfo.url,
-          save_path: download.downloadPath,
-          out: filename,
-          allow_multiple_connections: true,
-        };
-      }
-      case Downloader.TorBox: {
-        const { name, url } = await TorBoxClient.getDownloadInfo(download.uri);
-        if (!url) return;
-        return {
-          action: "start",
-          game_id: downloadId,
-          url,
-          save_path: download.downloadPath,
-          out: name,
-          allow_multiple_connections: true,
-        };
-      }
-      case Downloader.Hydra: {
-        const downloadUrl = await HydraDebridClient.getDownloadUrl(
-          download.uri
-        );
-        if (!downloadUrl) throw new Error(DownloadError.NotCachedOnHydra);
-
-        return {
-          action: "start",
-          game_id: downloadId,
-          url: downloadUrl,
-          save_path: download.downloadPath,
-          allow_multiple_connections: true,
-        };
-      }
-      case Downloader.VikingFile: {
-        logger.log(
-          `[DownloadManager] Processing VikingFile download for URI: ${download.uri}`
-        );
-        const downloadUrl = await VikingFileApi.getDownloadUrl(download.uri);
-        return this.createDownloadPayload(
-          downloadUrl,
-          download.uri,
-          downloadId,
-          download.downloadPath
-        );
-      }
-      case Downloader.Rootz: {
-        const downloadUrl = await RootzApi.getDownloadUrl(download.uri);
-        return {
-          action: "start",
-          game_id: downloadId,
-          url: downloadUrl,
-          save_path: download.downloadPath,
-        };
-      }
-      default:
-        return undefined;
-    }
+    return {
+      action: "start",
+      game_id: downloadId,
+      url: download.uri,
+      save_path: download.downloadPath,
+      file_indices: hasSelectedFileIndices ? download.fileIndices : undefined,
+      metadata_timeout_ms: hasSelectedFileIndices ? 60_000 : undefined,
+    };
   }
 
   static async validateDownloadUrl(download: Download): Promise<void> {

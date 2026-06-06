@@ -1,13 +1,7 @@
 import { LibraryGame } from "@types";
 import { useGameCard } from "@renderer/hooks";
 import { formatBytes } from "@shared";
-import {
-  ClockIcon,
-  AlertFillIcon,
-  TrophyIcon,
-  DatabaseIcon,
-  FileZipIcon,
-} from "@primer/octicons-react";
+import { TrophyIcon, DatabaseIcon, FileZipIcon } from "@primer/octicons-react";
 import { memo, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import "./library-game-card-large.scss";
@@ -30,8 +24,10 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
   onContextMenu,
 }: Readonly<LibraryGameCardLargeProps>) {
   const { t } = useTranslation("library");
-  const { formatPlayTime, handleCardClick, handleContextMenuClick } =
-    useGameCard(game, onContextMenu);
+  const { handleCardClick, handleContextMenuClick } = useGameCard(
+    game,
+    onContextMenu
+  );
 
   const sizeBars = useMemo(() => {
     const items: {
@@ -170,20 +166,6 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
               ))}
             </div>
           )}
-
-          <div className="library-game-card-large__playtime">
-            {game.hasManuallyUpdatedPlaytime ? (
-              <AlertFillIcon
-                size={11}
-                className="library-game-card-large__manual-playtime"
-              />
-            ) : (
-              <ClockIcon size={11} />
-            )}
-            <span className="library-game-card-large__playtime-text">
-              {formatPlayTime(game.playTimeInMilliseconds)}
-            </span>
-          </div>
         </div>
 
         <div className="library-game-card-large__logo-container">

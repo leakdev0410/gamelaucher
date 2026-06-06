@@ -199,7 +199,7 @@ const buildLegacyDownloadDirectoryRecords = (
     );
 };
 
-export function resolveDownloadDirectories(
+function resolveDownloadDirectories(
   preferences: DownloadDirectoryPreferences | null | undefined,
   fallbackDefaultPath: string
 ): ResolvedDownloadDirectories {
@@ -267,48 +267,6 @@ export function getDownloadDirectoryPreferences(
       (directory) => directory.path
     ),
   };
-}
-
-export function setDefaultDownloadDirectory(
-  preferences: DownloadDirectoryPreferences | null | undefined,
-  nextDefaultPath: string,
-  fallbackDefaultPath: string
-): DownloadDirectoryPreferences {
-  const resolvedDirectories = resolveDownloadDirectories(
-    preferences,
-    fallbackDefaultPath
-  );
-  const sanitizedNextDefaultPath = sanitizePath(nextDefaultPath);
-
-  if (!sanitizedNextDefaultPath) {
-    return getDownloadDirectoryPreferences(preferences, fallbackDefaultPath);
-  }
-
-  if (sanitizedNextDefaultPath === resolvedDirectories.defaultPath) {
-    return getDownloadDirectoryPreferences(preferences, fallbackDefaultPath);
-  }
-
-  if (sanitizedNextDefaultPath === fallbackDefaultPath) {
-    return getDownloadDirectoryPreferences(
-      {
-        downloadsPath: null,
-        downloadDirectories: resolvedDirectories.directories,
-      },
-      fallbackDefaultPath
-    );
-  }
-
-  if (!resolvedDirectories.savedPaths.includes(sanitizedNextDefaultPath)) {
-    return getDownloadDirectoryPreferences(preferences, fallbackDefaultPath);
-  }
-
-  return getDownloadDirectoryPreferences(
-    {
-      downloadsPath: sanitizedNextDefaultPath,
-      downloadDirectories: resolvedDirectories.directories,
-    },
-    fallbackDefaultPath
-  );
 }
 
 export function prepareDefaultDownloadPathSync(
@@ -476,89 +434,6 @@ export function replaceSavedDownloadDirectoryAndSetDefault(
     ),
     nextDefaultPath: sanitizedNextPath,
   };
-}
-
-export function addOptionalDownloadDirectory(
-  preferences: DownloadDirectoryPreferences | null | undefined,
-  nextPath: string,
-  fallbackDefaultPath: string
-): DownloadDirectoryPreferences {
-  const resolvedDirectories = resolveDownloadDirectories(
-    preferences,
-    fallbackDefaultPath
-  );
-  const sanitizedNextPath = sanitizePath(nextPath);
-
-  if (
-    !sanitizedNextPath ||
-    sanitizedNextPath === fallbackDefaultPath ||
-    resolvedDirectories.allPaths.includes(sanitizedNextPath) ||
-    resolvedDirectories.savedPaths.length >= MAX_OPTIONAL_DOWNLOAD_DIRECTORIES
-  ) {
-    return getDownloadDirectoryPreferences(preferences, fallbackDefaultPath);
-  }
-
-  return getDownloadDirectoryPreferences(
-    {
-      downloadsPath: resolvedDirectories.persistedDefaultPath,
-      downloadDirectories: [
-        createDownloadDirectoryRecord(
-          sanitizedNextPath,
-          new Date().toISOString(),
-          "manual"
-        ),
-        ...resolvedDirectories.directories,
-      ],
-    },
-    fallbackDefaultPath
-  );
-}
-
-export function removeDownloadDirectory(
-  preferences: DownloadDirectoryPreferences | null | undefined,
-  pathToRemove: string,
-  fallbackDefaultPath: string
-): DownloadDirectoryPreferences {
-  const resolvedDirectories = resolveDownloadDirectories(
-    preferences,
-    fallbackDefaultPath
-  );
-  const sanitizedPathToRemove = sanitizePath(pathToRemove);
-
-  if (!sanitizedPathToRemove) {
-    return getDownloadDirectoryPreferences(preferences, fallbackDefaultPath);
-  }
-
-  if (
-    sanitizedPathToRemove === fallbackDefaultPath ||
-    !resolvedDirectories.savedPaths.includes(sanitizedPathToRemove)
-  ) {
-    return getDownloadDirectoryPreferences(preferences, fallbackDefaultPath);
-  }
-
-  if (sanitizedPathToRemove !== resolvedDirectories.defaultPath) {
-    return getDownloadDirectoryPreferences(
-      {
-        downloadsPath: resolvedDirectories.persistedDefaultPath,
-        downloadDirectories: resolvedDirectories.directories.filter(
-          (directory) => directory.path !== sanitizedPathToRemove
-        ),
-      },
-      fallbackDefaultPath
-    );
-  }
-
-  const remainingDirectories = resolvedDirectories.directories.filter(
-    (directory) => directory.path !== sanitizedPathToRemove
-  );
-
-  return getDownloadDirectoryPreferences(
-    {
-      downloadsPath: null,
-      downloadDirectories: remainingDirectories,
-    },
-    fallbackDefaultPath
-  );
 }
 
 export function getDownloadDirectoryTitle(path: string) {

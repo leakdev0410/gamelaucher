@@ -4,9 +4,10 @@ import { levelDBService } from "@renderer/services/leveldb.service";
 import type { DownloadSource } from "@types";
 import { useAppDispatch } from "./redux";
 import { setGenres, setTags } from "@renderer/features";
+import { appConfig } from "@shared";
 
 export const externalResourcesInstance = axios.create({
-  baseURL: import.meta.env.RENDERER_VITE_EXTERNAL_RESOURCES_URL,
+  baseURL: appConfig.externalResourcesUrl,
 });
 
 export function useCatalogue() {

@@ -10,7 +10,7 @@
   }
 
   &__label {
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(0, 0, 0, 0.6);
     font-size: 14px;
     font-weight: 400;
   }
@@ -30,7 +30,7 @@
   &__option {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(0, 0, 0, 0.4);
     cursor: pointer;
     padding: 4px 0;
     font-size: 14px;
@@ -41,11 +41,11 @@
     gap: 4px;
 
     &:hover:not(:disabled) {
-      color: rgba(255, 255, 255, 0.6);
+      color: rgba(0, 0, 0, 0.6);
     }
 
     &.active {
-      color: rgba(255, 255, 255, 0.9);
+      color: rgba(0, 0, 0, 0.9);
       font-weight: 500;
     }
 
@@ -63,7 +63,7 @@
   }
 
   &__separator {
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(0, 0, 0, 0.3);
     font-size: 14px;
 
     @media (max-width: 480px) {

@@ -1,6 +1,6 @@
-import { registerEvent } from "../register-event";
+﻿import { registerEvent } from "../register-event";
 import { gamesSublevel, levelKeys } from "@main/level";
-import { HydraApi, logger } from "@main/services";
+import { ApiClient, logger } from "@main/services";
 import type { GameShop, UserGame } from "@types";
 
 const toggleGamePin = async (
@@ -16,7 +16,7 @@ const toggleGamePin = async (
     if (!game) return;
 
     if (pin) {
-      const response = await HydraApi.put<UserGame>(
+      const response = await ApiClient.put<UserGame>(
         `/profile/games/${shop}/${objectId}/pin`
       );
 
@@ -26,7 +26,7 @@ const toggleGamePin = async (
         pinnedDate: new Date(response.pinnedDate!),
       });
     } else {
-      await HydraApi.put(`/profile/games/${shop}/${objectId}/unpin`);
+      await ApiClient.put(`/profile/games/${shop}/${objectId}/unpin`);
 
       await gamesSublevel.put(gameKey, {
         ...game,

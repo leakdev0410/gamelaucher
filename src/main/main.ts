@@ -1,4 +1,4 @@
-import { downloadsSublevel } from "./level/sublevels/downloads";
+﻿import { downloadsSublevel } from "./level/sublevels/downloads";
 import { orderBy } from "lodash-es";
 import { Downloader } from "@shared";
 import { levelKeys, db } from "./level";
@@ -13,12 +13,11 @@ import {
   PremiumizeClient,
   AllDebridClient,
   DownloadManager,
-  HydraApi,
+  ApiClient,
   uploadGamesBatch,
   startMainLoop,
   Ludusavi,
   Lock,
-  DeckyPlugin,
   DownloadSourcesChecker,
   DownloadOrchestrator,
   WSClient,
@@ -28,6 +27,7 @@ import {
 import { migrateDownloadSources } from "./helpers/migrate-download-sources";
 import { getDirSize } from "./services/download/helpers";
 import { GofileApi } from "./services/hosters";
+import { seedDownloadSources } from "./helpers/seed-download-sources";
 
 const hasMissingSeedFiles = async (download: Download): Promise<boolean> => {
   if (!download.folderName) return false;
@@ -84,16 +84,13 @@ export const loadState = async () => {
   Ludusavi.copyConfigFileToUserData();
   Ludusavi.copyBinaryToUserData();
 
-  if (process.platform === "linux") {
-    DeckyPlugin.checkAndUpdateIfOutdated();
-  }
-
-  await HydraApi.setupApi().then(async () => {
+  await ApiClient.setupApi().then(async () => {
     uploadGamesBatch();
     void migrateDownloadSources();
 
     const { syncDownloadSourcesFromApi } = await import("./services/user");
     void syncDownloadSourcesFromApi();
+    void seedDownloadSources();
 
     // Check for new download options on startup (if enabled)
     (async () => {

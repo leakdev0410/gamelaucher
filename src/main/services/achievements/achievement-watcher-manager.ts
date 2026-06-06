@@ -1,6 +1,6 @@
 import { parseAchievementFile } from "./parse-achievement-file";
 import { mergeAchievements } from "./merge-achievements";
-import fs, { readdirSync } from "node:fs";
+import fs from "node:fs";
 import {
   findAchievementFileInExecutableDirectory,
   findAchievementFileInSteamPath,
@@ -34,7 +34,7 @@ const watchAchievementsWindows = async () => {
 
   if (games.length === 0) return;
 
-  const achievementFiles = findAllAchievementFiles();
+  const achievementFiles = await findAllAchievementFiles();
 
   const userPreferences = await db.get<string, UserPreferences | null>(
     levelKeys.userPreferences,
@@ -52,11 +52,13 @@ const watchAchievementsWindows = async () => {
       gameAchievementFiles.push(...(achievementFiles.get(objectId) ?? []));
 
       gameAchievementFiles.push(
-        ...findAchievementFileInExecutableDirectory(game)
+        ...(await findAchievementFileInExecutableDirectory(game))
       );
 
       if (enableSteamAchievements) {
-        gameAchievementFiles.push(...findAchievementFileInSteamPath(game));
+        gameAchievementFiles.push(
+          ...(await findAchievementFileInSteamPath(game))
+        );
       }
     }
 
@@ -90,10 +92,12 @@ const watchAchievementsWithWine = async () => {
     userPreferences?.enableSteamAchievements ?? false;
 
   for (const game of games) {
-    const gameAchievementFiles = findAchievementFiles(game);
+    const gameAchievementFiles = await findAchievementFiles(game);
 
     if (enableSteamAchievements) {
-      gameAchievementFiles.push(...findAchievementFileInSteamPath(game));
+      gameAchievementFiles.push(
+        ...(await findAchievementFileInSteamPath(game))
+      );
     }
 
     for (const file of gameAchievementFiles) {
@@ -104,7 +108,8 @@ const watchAchievementsWithWine = async () => {
 
 const compareFltFolder = async (game: Game, file: AchievementFile) => {
   try {
-    const currentAchievements = new Set(readdirSync(file.filePath));
+    const files = await fs.promises.readdir(file.filePath);
+    const currentAchievements = new Set(files);
     const previousAchievements = fltFiles.get(file.filePath);
 
     fltFiles.set(file.filePath, currentAchievements);
@@ -123,13 +128,13 @@ const compareFltFolder = async (game: Game, file: AchievementFile) => {
   }
 };
 
-const compareFile = (game: Game, file: AchievementFile) => {
+const compareFile = async (game: Game, file: AchievementFile) => {
   if (file.type === Cracker.flt) {
     return compareFltFolder(game, file);
   }
 
   try {
-    const currentStat = fs.statSync(file.filePath);
+    const currentStat = await fs.promises.stat(file.filePath);
     const previousStat = fileStats.get(file.filePath);
     fileStats.set(file.filePath, currentStat.mtimeMs);
 
@@ -204,7 +209,7 @@ export class AchievementWatcherManager {
     const game = await gamesSublevel.get(gameKey).catch(() => null);
     if (!game || game.isDeleted) return;
 
-    const gameAchievementFiles = findAchievementFiles(game);
+    const gameAchievementFiles = await findAchievementFiles(game);
 
     const userPreferences = await db.get<string, UserPreferences | null>(
       levelKeys.userPreferences,
@@ -214,7 +219,9 @@ export class AchievementWatcherManager {
     );
 
     if (userPreferences?.enableSteamAchievements) {
-      gameAchievementFiles.push(...findAchievementFileInSteamPath(game));
+      gameAchievementFiles.push(
+        ...(await findAchievementFileInSteamPath(game))
+      );
     }
 
     const unlockedAchievements: UnlockedAchievement[] = [];
@@ -251,7 +258,7 @@ export class AchievementWatcherManager {
     return watchAchievementsWithWine();
   }
 
-  private static preProcessGameAchievementFiles(
+  private static async preProcessGameAchievementFiles(
     game: Game,
     gameAchievementFiles: AchievementFile[]
   ) {
@@ -263,7 +270,7 @@ export class AchievementWatcherManager {
       );
 
       try {
-        const currentStat = fs.statSync(achievementFile.filePath);
+        const currentStat = await fs.promises.stat(achievementFile.filePath);
         fileStats.set(achievementFile.filePath, currentStat.mtimeMs);
       } catch {
         fileStats.set(achievementFile.filePath, -1);
@@ -294,7 +301,7 @@ export class AchievementWatcherManager {
       .all()
       .then((games) => games.filter((game) => !game.isDeleted));
 
-    const gameAchievementFilesMap = findAllAchievementFiles();
+    const gameAchievementFilesMap = await findAllAchievementFiles();
 
     const userPreferences = await db.get<string, UserPreferences | null>(
       levelKeys.userPreferences,
@@ -315,11 +322,13 @@ export class AchievementWatcherManager {
           );
 
           achievementFiles.push(
-            ...findAchievementFileInExecutableDirectory(game)
+            ...(await findAchievementFileInExecutableDirectory(game))
           );
 
           if (enableSteamAchievements) {
-            achievementFiles.push(...findAchievementFileInSteamPath(game));
+            achievementFiles.push(
+              ...(await findAchievementFileInSteamPath(game))
+            );
           }
         }
 
@@ -345,10 +354,12 @@ export class AchievementWatcherManager {
 
     return Promise.all(
       games.map(async (game) => {
-        const achievementFiles = findAchievementFiles(game);
+        const achievementFiles = await findAchievementFiles(game);
 
         if (enableSteamAchievements) {
-          achievementFiles.push(...findAchievementFileInSteamPath(game));
+          achievementFiles.push(
+            ...(await findAchievementFileInSteamPath(game))
+          );
         }
 
         return { game, achievementFiles };

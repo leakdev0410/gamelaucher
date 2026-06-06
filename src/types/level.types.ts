@@ -20,7 +20,6 @@ export interface Auth {
   accessToken: string;
   refreshToken: string;
   tokenExpirationTimestamp: number;
-  workwondersJwt: string;
 }
 
 export interface User {
@@ -137,9 +136,7 @@ export interface UserPreferences {
   runAtStartup?: boolean;
   startMinimized?: boolean;
   launchToLibraryPage?: boolean;
-  launchInBigPicture?: boolean;
   disableNsfwAlert?: boolean;
-  enableAutoInstall?: boolean;
   seedAfterDownloadComplete?: boolean;
   showHiddenAchievementsDescription?: boolean;
   showDownloadSpeedInMegabits?: boolean;
@@ -149,8 +146,6 @@ export interface UserPreferences {
   achievementCustomNotificationsEnabled?: boolean;
   achievementCustomNotificationPosition?: AchievementCustomNotificationPosition;
   achievementSoundVolume?: number;
-  friendRequestNotificationsEnabled?: boolean;
-  friendStartGameNotificationsEnabled?: boolean;
   showDownloadSpeedInMegabytes?: boolean;
   extractFilesByDefault?: boolean;
   deleteArchiveFilesAfterExtractionByDefault?: boolean;

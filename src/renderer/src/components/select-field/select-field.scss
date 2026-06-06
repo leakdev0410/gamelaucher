@@ -15,11 +15,11 @@
   }
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.5);
+    border-color: rgba(0, 0, 0, 0.5);
   }
 
   &--focused {
-    border-color: #dadbe1;
+    border-color: #2b2a27;
   }
 
   &--primary {
@@ -38,7 +38,7 @@
     width: fit-content;
     height: 100%;
     outline: none;
-    color: #dadbe1;
+    color: #2b2a27;
     cursor: default;
     font-family: inherit;
     font-size: globals.$body-font-size;

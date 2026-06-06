@@ -1,6 +1,5 @@
-import { Button, CheckboxField } from "@renderer/components";
+import { Button } from "@renderer/components";
 import { useContext, useEffect, useMemo, useState } from "react";
-import type { ChangeEvent } from "react";
 import { cloudSyncContext, gameDetailsContext } from "@renderer/context";
 import "./cloud-sync-panel.scss";
 import { formatBytes } from "@shared";
@@ -10,38 +9,20 @@ import {
   HistoryIcon,
   InfoIcon,
   PencilIcon,
-  PinIcon,
-  PinSlashIcon,
   SyncIcon,
   TrashIcon,
   UploadIcon,
 } from "@primer/octicons-react";
-import {
-  useAppSelector,
-  useDate,
-  useFormat,
-  useToast,
-  useUserDetails,
-} from "@renderer/hooks";
+import { useAppSelector, useDate, useFormat, useToast } from "@renderer/hooks";
 import { useTranslation } from "react-i18next";
 import { AxiosProgressEvent } from "axios";
 import { formatDownloadProgress } from "@renderer/helpers";
 import { CloudSyncRenameArtifactModal } from "../cloud-sync-rename-artifact-modal/cloud-sync-rename-artifact-modal";
 import { GameArtifact } from "@types";
 import { orderBy } from "lodash-es";
-import { MoreVertical } from "lucide-react";
-import { DropdownMenu } from "@renderer/components/dropdown-menu/dropdown-menu";
 import { Tooltip } from "react-tooltip";
 
-interface CloudSyncPanelProps {
-  automaticCloudSync: boolean;
-  onToggleAutomaticCloudSync: (event: ChangeEvent<HTMLInputElement>) => void;
-}
-
-export function CloudSyncPanel({
-  automaticCloudSync,
-  onToggleAutomaticCloudSync,
-}: Readonly<CloudSyncPanelProps>) {
+export function CloudSyncPanel() {
   const [deletingArtifact, setDeletingArtifact] = useState(false);
   const [backupDownloadProgress, setBackupDownloadProgress] =
     useState<AxiosProgressEvent | null>(null);
@@ -50,10 +31,8 @@ export function CloudSyncPanel({
   );
 
   const { t } = useTranslation("game_details");
-  const { t: tHydraCloud } = useTranslation("hydra_cloud");
   const { formatDate, formatDateTime } = useDate();
   const { formatNumber } = useFormat();
-  const { hasActiveSubscription } = useUserDetails();
 
   const {
     artifacts,
@@ -61,17 +40,15 @@ export function CloudSyncPanel({
     uploadingBackup,
     restoringBackup,
     loadingPreview,
-    freezingArtifact,
     uploadSaveGame,
     downloadGameArtifact,
     deleteGameArtifact,
-    toggleArtifactFreeze,
     setShowCloudSyncFilesModal,
     getGameBackupPreview,
     getGameArtifacts,
   } = useContext(cloudSyncContext);
 
-  const { objectId, shop, lastDownloadedOption, game } =
+  const { objectId, shop, lastDownloadedOption } =
     useContext(gameDetailsContext);
 
   const { showSuccessToast, showErrorToast } = useToast();
@@ -107,30 +84,13 @@ export function CloudSyncPanel({
   }, [objectId, shop]);
 
   useEffect(() => {
-    if (!hasActiveSubscription) return;
-
     getGameBackupPreview();
     getGameArtifacts();
-  }, [getGameArtifacts, getGameBackupPreview, hasActiveSubscription]);
+  }, [getGameArtifacts, getGameBackupPreview]);
 
   const handleBackupInstallClick = async (artifactId: string) => {
     setBackupDownloadProgress(null);
     downloadGameArtifact(artifactId);
-  };
-
-  const handleFreezeArtifactClick = async (
-    artifactId: string,
-    isFrozen: boolean
-  ) => {
-    try {
-      await toggleArtifactFreeze(artifactId, isFrozen);
-      showSuccessToast(isFrozen ? t("backup_frozen") : t("backup_unfrozen"));
-    } catch (_err) {
-      showErrorToast(
-        t("backup_freeze_failed"),
-        t("backup_freeze_failed_description")
-      );
-    }
   };
 
   const hasReachedLimit =
@@ -186,19 +146,7 @@ export function CloudSyncPanel({
     uploadingBackup,
   ]);
 
-  const disableActions =
-    uploadingBackup || restoringBackup || deletingArtifact || freezingArtifact;
-
-  if (!hasActiveSubscription) {
-    return (
-      <div className="cloud-sync-panel__upgrade">
-        <p>{tHydraCloud("hydra_cloud_feature_found")}</p>
-        <Button onClick={() => window.electron.openCheckout()}>
-          {tHydraCloud("learn_more")}
-        </Button>
-      </div>
-    );
-  }
+  const disableActions = uploadingBackup || restoringBackup || deletingArtifact;
 
   return (
     <>
@@ -211,22 +159,6 @@ export function CloudSyncPanel({
       <div className="cloud-sync-panel__section-header">
         <h2>{t("cloud_save")}</h2>
         <p>{t("cloud_save_description")}</p>
-      </div>
-
-      <div className="cloud-sync-panel__automatic-sync">
-        <CheckboxField
-          label={
-            <div className="cloud-sync-panel__automatic-sync-label">
-              {t("enable_automatic_cloud_sync")}
-              <span className="cloud-sync-panel__automatic-sync-badge">
-                Hydra Cloud
-              </span>
-            </div>
-          }
-          checked={automaticCloudSync}
-          disabled={!hasActiveSubscription || !game?.executablePath}
-          onChange={onToggleAutomaticCloudSync}
-        />
       </div>
 
       <div className="cloud-sync-panel__header">
@@ -326,41 +258,15 @@ export function CloudSyncPanel({
                     )}
                     {t("install_backup")}
                   </Button>
-                  <DropdownMenu
-                    align="end"
-                    items={[
-                      {
-                        label: artifact.isFrozen
-                          ? t("unfreeze_backup")
-                          : t("freeze_backup"),
-                        icon: artifact.isFrozen ? (
-                          <PinSlashIcon />
-                        ) : (
-                          <PinIcon />
-                        ),
-                        onClick: () =>
-                          handleFreezeArtifactClick(
-                            artifact.id,
-                            !artifact.isFrozen
-                          ),
-                        disabled: disableActions,
-                      },
-                      {
-                        label: t("delete_backup"),
-                        icon: <TrashIcon />,
-                        onClick: () => handleDeleteArtifactClick(artifact.id),
-                        disabled: disableActions || artifact.isFrozen,
-                      },
-                    ]}
+                  <Button
+                    type="button"
+                    theme="outline"
+                    onClick={() => handleDeleteArtifactClick(artifact.id)}
+                    disabled={disableActions}
+                    tooltip={t("delete_backup")}
                   >
-                    <Button
-                      type="button"
-                      theme="outline"
-                      tooltip={t("options")}
-                    >
-                      <MoreVertical size={16} />
-                    </Button>
-                  </DropdownMenu>
+                    <TrashIcon />
+                  </Button>
                 </div>
               </li>
             );

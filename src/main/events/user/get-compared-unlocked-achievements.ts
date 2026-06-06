@@ -1,7 +1,7 @@
-import type { ComparedAchievements, GameShop, UserPreferences } from "@types";
+﻿import type { ComparedAchievements, GameShop, UserPreferences } from "@types";
 import { registerEvent } from "../register-event";
 
-import { HydraApi } from "@main/services";
+import { ApiClient } from "@main/services";
 import { db, levelKeys } from "@main/level";
 import { AchievementWatcherManager } from "@main/services/achievements/achievement-watcher-manager";
 
@@ -23,7 +23,7 @@ const getComparedUnlockedAchievements = async (
   const showHiddenAchievementsDescription =
     userPreferences?.showHiddenAchievementsDescription || false;
 
-  return HydraApi.get<ComparedAchievements>(
+  return ApiClient.get<ComparedAchievements>(
     `/users/${userId}/games/achievements/compare`,
     {
       shop,

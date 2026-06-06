@@ -1,5 +1,5 @@
-import type { Game } from "@types";
-import { HydraApi } from "../hydra-api";
+﻿import type { Game } from "@types";
+import { ApiClient } from "../api-client";
 import { gamesSublevel, levelKeys } from "@main/level";
 
 export const createGame = async (game: Game) => {
@@ -7,7 +7,7 @@ export const createGame = async (game: Game) => {
     return;
   }
 
-  return HydraApi.post(`/profile/games`, {
+  return ApiClient.post(`/profile/games`, {
     objectId: game.objectId,
     playTimeInMilliseconds: Math.trunc(game.playTimeInMilliseconds ?? 0),
     shop: game.shop,

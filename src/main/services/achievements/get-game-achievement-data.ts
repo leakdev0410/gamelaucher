@@ -1,4 +1,4 @@
-import { HydraApi } from "../hydra-api";
+﻿import { ApiClient } from "../api-client";
 import type { GameAchievement, GameShop, SteamAchievement } from "@types";
 import { UserNotLoggedInError } from "@shared";
 import { logger } from "../logger";
@@ -45,7 +45,7 @@ export const getGameAchievementData = async (
     })
     .then((language) => language || "en");
 
-  return HydraApi.get<SteamAchievement[]>(
+  return ApiClient.get<SteamAchievement[]>(
     `/games/${shop}/${objectId}/achievements`,
     {
       language,

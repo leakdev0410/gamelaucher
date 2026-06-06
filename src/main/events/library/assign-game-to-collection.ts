@@ -1,7 +1,7 @@
-import { registerEvent } from "../register-event";
+﻿import { registerEvent } from "../register-event";
 import { createGame } from "@main/services/library-sync";
 import { gamesSublevel, levelKeys } from "@main/level";
-import { HydraApi, logger } from "@main/services";
+import { ApiClient, logger } from "@main/services";
 import type { GameShop } from "@types";
 
 const isGameNotFoundError = (error: unknown) => {
@@ -29,7 +29,7 @@ const assignGameToCollection = async (
   try {
     if (shop !== "custom") {
       const syncCollection = () =>
-        HydraApi.put(`/profile/games/${shop}/${objectId}/collection`, {
+        ApiClient.put(`/profile/games/${shop}/${objectId}/collection`, {
           collectionIds,
         });
 

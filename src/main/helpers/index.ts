@@ -13,6 +13,12 @@ export const getFileBuffer = async (url: string) =>
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
+export const fileExists = async (path: string): Promise<boolean> =>
+  fs.promises
+    .stat(path)
+    .then(() => true)
+    .catch(() => false);
+
 export const requestWebPage = async (url: string) => {
   const userAgent = new UserAgent();
 
@@ -97,3 +103,4 @@ export * from "./reg-parser";
 export * from "./launch-game";
 export * from "./download-error-handler";
 export * from "./download-game-helper";
+export * from "./seed-download-sources";

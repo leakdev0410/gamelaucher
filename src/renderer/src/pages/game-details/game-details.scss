@@ -125,15 +125,15 @@
     align-self: center;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(0, 0, 0, 0.06);
+      border-color: rgba(0, 0, 0, 0.1);
     }
   }
 
   // Skeleton-specific styles
   &__skeleton {
     .react-loading-skeleton {
-      background: linear-gradient(90deg, #1c1c1c 25%, #2a2a2a 50%, #1c1c1c 75%);
+      background: linear-gradient(90deg, #e6e3da 25%, #f3f1ea 50%, #e6e3da 75%);
       background-size: 200% 100%;
       animation: skeleton-loading 1.5s infinite;
     }

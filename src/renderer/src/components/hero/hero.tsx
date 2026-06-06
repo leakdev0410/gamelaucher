@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+﻿import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import type { TrendingGame } from "@types";
 import { useTranslation } from "react-i18next";
@@ -20,7 +20,7 @@ export function Hero() {
 
     const language = i18n.language.split("-")[0];
 
-    window.electron.hydraApi
+    window.electron.api
       .get<TrendingGame[]>("/catalogue/featured", {
         params: { language },
         needsAuth: false,

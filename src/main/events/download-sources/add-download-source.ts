@@ -1,5 +1,5 @@
-import { registerEvent } from "../register-event";
-import { HydraApi } from "@main/services/hydra-api";
+﻿import { registerEvent } from "../register-event";
+import { ApiClient } from "@main/services/api-client";
 import { downloadSourcesSublevel } from "@main/level";
 import type { DownloadSource } from "@types";
 import { logger } from "@main/services";
@@ -16,7 +16,7 @@ const addDownloadSource = async (
       throw new Error("Download source with this URL already exists");
     }
 
-    const downloadSource = await HydraApi.post<DownloadSource>(
+    const downloadSource = await ApiClient.post<DownloadSource>(
       "/download-sources",
       {
         url,
@@ -24,9 +24,9 @@ const addDownloadSource = async (
       { needsAuth: false }
     );
 
-    if (HydraApi.isLoggedIn() && HydraApi.hasActiveSubscription()) {
+    if (ApiClient.isLoggedIn() && ApiClient.hasActiveSubscription()) {
       try {
-        await HydraApi.post("/profile/download-sources", {
+        await ApiClient.post("/profile/download-sources", {
           urls: [url],
         });
       } catch (error) {

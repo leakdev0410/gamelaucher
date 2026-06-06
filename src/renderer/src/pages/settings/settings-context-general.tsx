@@ -25,23 +25,13 @@ interface LanguageOption {
   nativeName: string;
 }
 
-interface SettingsContextGeneralProps {
-  appearance: {
-    theme: string | null;
-    authorId: string | null;
-    authorName: string | null;
-  };
-}
-
 interface DownloadDirectoryReplacementState {
   nextPath: string;
   replaceableDirectories: DownloadDirectoryPreference[];
   selectedReplacementPath: string;
 }
 
-export function SettingsContextGeneral({
-  appearance,
-}: Readonly<SettingsContextGeneralProps>) {
+export function SettingsContextGeneral() {
   const { t } = useTranslation("settings");
   const { updateUserPreferences } = useContext(settingsContext);
 
@@ -63,8 +53,6 @@ export function SettingsContextGeneral({
     startMinimized: false,
     hideToTrayOnGameStart: false,
     launchToLibraryPage: false,
-    launchInBigPicture: false,
-    enableAutoInstall: false,
   });
 
   useEffect(() => {
@@ -109,8 +97,6 @@ export function SettingsContextGeneral({
       startMinimized: userPreferences.startMinimized ?? false,
       hideToTrayOnGameStart: userPreferences.hideToTrayOnGameStart ?? false,
       launchToLibraryPage: userPreferences.launchToLibraryPage ?? false,
-      launchInBigPicture: userPreferences.launchInBigPicture ?? false,
-      enableAutoInstall: userPreferences.enableAutoInstall ?? false,
     });
   }, [userPreferences, defaultDownloadsPath]);
 
@@ -271,7 +257,7 @@ export function SettingsContextGeneral({
         )}
 
         <CheckboxField
-          label={t("launch_hydra_in_library_page")}
+          label={t("launch_in_library_page")}
           checked={form.launchToLibraryPage}
           onChange={() =>
             handleChange({
@@ -279,35 +265,11 @@ export function SettingsContextGeneral({
             })
           }
         />
-
-        <CheckboxField
-          label={t("launch_hydra_in_big_picture")}
-          checked={form.launchInBigPicture}
-          onChange={() =>
-            handleChange({
-              launchInBigPicture: !form.launchInBigPicture,
-            })
-          }
-        />
       </div>
-
-      {window.electron.platform === "linux" && (
-        <div className="settings-context-panel__group">
-          <h3>{t("behavior")}</h3>
-
-          <CheckboxField
-            label={t("enable_auto_install")}
-            checked={form.enableAutoInstall}
-            onChange={() =>
-              handleChange({ enableAutoInstall: !form.enableAutoInstall })
-            }
-          />
-        </div>
-      )}
 
       <div className="settings-context-panel__group">
         <h3>{t("appearance")}</h3>
-        <SettingsAppearance appearance={appearance} />
+        <SettingsAppearance />
       </div>
 
       <DownloadDirectoryReplacementModal

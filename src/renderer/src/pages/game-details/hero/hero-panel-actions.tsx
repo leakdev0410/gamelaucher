@@ -74,29 +74,29 @@ export function HeroPanelActions() {
     };
 
     window.addEventListener(
-      "hydra:game-favorite-toggled",
+      "gl:game-favorite-toggled",
       onFavoriteToggled as EventListener
     );
     window.addEventListener(
-      "hydra:game-removed-from-library",
+      "gl:game-removed-from-library",
       onGameRemoved as EventListener
     );
     window.addEventListener(
-      "hydra:game-files-removed",
+      "gl:game-files-removed",
       onFilesRemoved as EventListener
     );
 
     return () => {
       window.removeEventListener(
-        "hydra:game-favorite-toggled",
+        "gl:game-favorite-toggled",
         onFavoriteToggled as EventListener
       );
       window.removeEventListener(
-        "hydra:game-removed-from-library",
+        "gl:game-removed-from-library",
         onGameRemoved as EventListener
       );
       window.removeEventListener(
-        "hydra:game-files-removed",
+        "gl:game-files-removed",
         onFilesRemoved as EventListener
       );
     };

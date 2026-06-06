@@ -7,7 +7,6 @@ import {
   toastSlice,
   userDetailsSlice,
   gameRunningSlice,
-  subscriptionSlice,
   catalogueSearchSlice,
   collectionsSlice,
 } from "@renderer/features";
@@ -21,7 +20,6 @@ export const store = configureStore({
     toast: toastSlice.reducer,
     userDetails: userDetailsSlice.reducer,
     gameRunning: gameRunningSlice.reducer,
-    subscription: subscriptionSlice.reducer,
     catalogueSearch: catalogueSearchSlice.reducer,
     collections: collectionsSlice.reducer,
   },

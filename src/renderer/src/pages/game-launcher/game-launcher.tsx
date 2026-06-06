@@ -7,7 +7,7 @@ import {
   TrophyIcon,
   ToolsIcon,
 } from "@primer/octicons-react";
-import HydraIcon from "@renderer/assets/icons/hydra.svg?react";
+import PointsIcon from "@renderer/assets/icons/star.svg?react";
 import { MAX_MINUTES_TO_SHOW_IN_PLAYTIME } from "@renderer/constants";
 import { darkenColor } from "@renderer/helpers";
 import { logger } from "@renderer/logger";
@@ -124,7 +124,7 @@ export default function GameLauncher() {
     return () => clearTimeout(timer);
   }, [windowShown, canAutoClose]);
 
-  const handleOpenHydra = () => {
+  const handleOpenLauncher = () => {
     window.electron.openMainWindow();
     window.electron.closeGameLauncherWindow();
   };
@@ -290,7 +290,7 @@ export default function GameLauncher() {
       <div className="game-launcher__glow" style={glowStyle} />
 
       <div className="game-launcher__logo-badge">
-        <HydraIcon />
+        <PointsIcon />
       </div>
 
       <div className="game-launcher__content">
@@ -332,9 +332,9 @@ export default function GameLauncher() {
               <button
                 type="button"
                 className="game-launcher__button"
-                onClick={handleOpenHydra}
+                onClick={handleOpenLauncher}
               >
-                {t("open_hydra")}
+                {t("open_launcher")}
               </button>
             )}
           </div>

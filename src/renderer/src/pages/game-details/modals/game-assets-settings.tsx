@@ -415,31 +415,34 @@ export function GameAssetsSettings({
     }
   };
 
-  const prepareCustomGameAssets = (currentGame: LibraryGame | Game) => {
-    const iconUrl = removedAssets.icon
-      ? null
-      : assetPaths.icon
-        ? `local:${assetPaths.icon}`
-        : currentGame.iconUrl;
+  const prepareCustomGameAssets = useCallback(
+    (currentGame: LibraryGame | Game) => {
+      const iconUrl = removedAssets.icon
+        ? null
+        : assetPaths.icon
+          ? `local:${assetPaths.icon}`
+          : currentGame.iconUrl;
 
-    const logoImageUrl = removedAssets.logo
-      ? null
-      : assetPaths.logo
-        ? `local:${assetPaths.logo}`
-        : currentGame.logoImageUrl;
+      const logoImageUrl = removedAssets.logo
+        ? null
+        : assetPaths.logo
+          ? `local:${assetPaths.logo}`
+          : currentGame.logoImageUrl;
 
-    const libraryHeroImageUrl = removedAssets.hero
-      ? currentGame.libraryHeroImageUrl?.startsWith("data:image/svg+xml")
-        ? currentGame.libraryHeroImageUrl
-        : generateRandomGradient()
-      : assetPaths.hero
-        ? `local:${assetPaths.hero}`
-        : currentGame.libraryHeroImageUrl;
+      const libraryHeroImageUrl = removedAssets.hero
+        ? currentGame.libraryHeroImageUrl?.startsWith("data:image/svg+xml")
+          ? currentGame.libraryHeroImageUrl
+          : generateRandomGradient()
+        : assetPaths.hero
+          ? `local:${assetPaths.hero}`
+          : currentGame.libraryHeroImageUrl;
 
-    return { iconUrl, logoImageUrl, libraryHeroImageUrl };
-  };
+      return { iconUrl, logoImageUrl, libraryHeroImageUrl };
+    },
+    [removedAssets, assetPaths]
+  );
 
-  const prepareNonCustomGameAssets = () => {
+  const prepareNonCustomGameAssets = useCallback(() => {
     const customIconUrl =
       !removedAssets.icon && assetPaths.icon
         ? `local:${assetPaths.icon}`
@@ -460,47 +463,53 @@ export function GameAssetsSettings({
       customLogoImageUrl,
       customHeroImageUrl,
     };
-  };
+  }, [removedAssets, assetPaths]);
 
-  const updateCustomGame = async (currentGame: LibraryGame | Game) => {
-    const { iconUrl, logoImageUrl, libraryHeroImageUrl } =
-      prepareCustomGameAssets(currentGame);
+  const updateCustomGame = useCallback(
+    async (currentGame: LibraryGame | Game) => {
+      const { iconUrl, logoImageUrl, libraryHeroImageUrl } =
+        prepareCustomGameAssets(currentGame);
 
-    return window.electron.updateCustomGame({
-      shop: currentGame.shop,
-      objectId: currentGame.objectId,
-      title: game.title,
-      iconUrl: iconUrl || undefined,
-      logoImageUrl: logoImageUrl || undefined,
-      libraryHeroImageUrl: libraryHeroImageUrl || undefined,
-      originalIconPath: originalAssetPaths.icon || undefined,
-      originalLogoPath: originalAssetPaths.logo || undefined,
-      originalHeroPath: originalAssetPaths.hero || undefined,
-    });
-  };
+      return window.electron.updateCustomGame({
+        shop: currentGame.shop,
+        objectId: currentGame.objectId,
+        title: game.title,
+        iconUrl: iconUrl || undefined,
+        logoImageUrl: logoImageUrl || undefined,
+        libraryHeroImageUrl: libraryHeroImageUrl || undefined,
+        originalIconPath: originalAssetPaths.icon || undefined,
+        originalLogoPath: originalAssetPaths.logo || undefined,
+        originalHeroPath: originalAssetPaths.hero || undefined,
+      });
+    },
+    [prepareCustomGameAssets, game.title, originalAssetPaths]
+  );
 
-  const updateNonCustomGame = async (currentGame: LibraryGame) => {
-    const { customIconUrl, customLogoImageUrl, customHeroImageUrl } =
-      prepareNonCustomGameAssets();
+  const updateNonCustomGame = useCallback(
+    async (currentGame: LibraryGame) => {
+      const { customIconUrl, customLogoImageUrl, customHeroImageUrl } =
+        prepareNonCustomGameAssets();
 
-    return window.electron.updateGameCustomAssets({
-      shop: currentGame.shop,
-      objectId: currentGame.objectId,
-      title: game.title,
-      customIconUrl,
-      customLogoImageUrl,
-      customHeroImageUrl,
-      customOriginalIconPath: removedAssets.icon
-        ? undefined
-        : originalAssetPaths.icon || undefined,
-      customOriginalLogoPath: removedAssets.logo
-        ? undefined
-        : originalAssetPaths.logo || undefined,
-      customOriginalHeroPath: removedAssets.hero
-        ? undefined
-        : originalAssetPaths.hero || undefined,
-    });
-  };
+      return window.electron.updateGameCustomAssets({
+        shop: currentGame.shop,
+        objectId: currentGame.objectId,
+        title: game.title,
+        customIconUrl,
+        customLogoImageUrl,
+        customHeroImageUrl,
+        customOriginalIconPath: removedAssets.icon
+          ? undefined
+          : originalAssetPaths.icon || undefined,
+        customOriginalLogoPath: removedAssets.logo
+          ? undefined
+          : originalAssetPaths.logo || undefined,
+        customOriginalHeroPath: removedAssets.hero
+          ? undefined
+          : originalAssetPaths.hero || undefined,
+      });
+    },
+    [prepareNonCustomGameAssets, game.title, removedAssets, originalAssetPaths]
+  );
 
   useEffect(() => {
     if (!pendingUpdateMessage || isUpdating) return;
@@ -538,6 +547,7 @@ export function GameAssetsSettings({
     t,
     updateCustomGame,
     updateNonCustomGame,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   ]);
 
   const getPreviewUrl = (assetType: AssetType): string | undefined => {

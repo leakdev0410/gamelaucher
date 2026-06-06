@@ -1,6 +1,6 @@
-import { registerEvent } from "../register-event";
+﻿import { registerEvent } from "../register-event";
 import { gamesSublevel, levelKeys } from "@main/level";
-import { HydraApi } from "@main/services";
+import { ApiClient } from "@main/services";
 import type { GameShop } from "@types";
 
 const addGameToFavorites = async (
@@ -14,7 +14,9 @@ const addGameToFavorites = async (
   if (!game) return;
 
   if (shop !== "custom") {
-    HydraApi.put(`/profile/games/${shop}/${objectId}/favorite`).catch(() => {});
+    ApiClient.put(`/profile/games/${shop}/${objectId}/favorite`).catch(
+      () => {}
+    );
   }
 
   try {

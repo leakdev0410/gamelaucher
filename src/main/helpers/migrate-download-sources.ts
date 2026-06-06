@@ -1,5 +1,5 @@
-import { downloadSourcesSublevel } from "@main/level";
-import { HydraApi } from "@main/services/hydra-api";
+﻿import { downloadSourcesSublevel } from "@main/level";
+import { ApiClient } from "@main/services/api-client";
 import { DownloadSource } from "@types";
 
 export const migrateDownloadSources = async () => {
@@ -7,7 +7,7 @@ export const migrateDownloadSources = async () => {
 
   for await (const [key, value] of downloadSources) {
     if (!value.isRemote) {
-      const downloadSource = await HydraApi.post<DownloadSource>(
+      const downloadSource = await ApiClient.post<DownloadSource>(
         "/download-sources",
         {
           url: value.url,

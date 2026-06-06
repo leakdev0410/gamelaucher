@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { AuthPage } from "@shared";
+
 import {
   PlayIcon,
   DownloadIcon,
@@ -242,11 +242,6 @@ export function GameContextMenu({
             icon: <PlusIcon size={16} />,
             separator: collections.length > 0,
             onClick: () => {
-              if (!userDetails) {
-                window.electron.openAuthWindow(AuthPage.SignIn);
-                return;
-              }
-
               setShowCreateCollectionModal(true);
             },
             disabled: isDeleting || Boolean(pendingCollectionId),

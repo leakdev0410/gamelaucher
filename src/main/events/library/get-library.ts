@@ -1,5 +1,5 @@
 import path from "node:path";
-import fs from "node:fs";
+import { fileExists } from "@main/helpers";
 
 import type { LibraryGame } from "@types";
 import { registerEvent } from "../register-event";
@@ -49,7 +49,8 @@ const getLibrary = async (): Promise<LibraryGame[]> => {
                 download.folderName
               );
 
-              if (!fs.existsSync(installerPath)) {
+              const installerExists = await fileExists(installerPath);
+              if (!installerExists) {
                 installerSizeInBytes = null;
                 gamesSublevel.put(key, { ...game, installerSizeInBytes: null });
               }
@@ -60,7 +61,8 @@ const getLibrary = async (): Promise<LibraryGame[]> => {
             if (installedSizeInBytes && game.executablePath) {
               const executableDir = path.dirname(game.executablePath);
 
-              if (!fs.existsSync(executableDir)) {
+              const executableDirExists = await fileExists(executableDir);
+              if (!executableDirExists) {
                 installedSizeInBytes = null;
                 gamesSublevel.put(key, {
                   ...game,

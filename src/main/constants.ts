@@ -1,10 +1,21 @@
 import { app } from "electron";
 import path from "node:path";
 import { SystemPath } from "./services/system-path";
+import { appConfig } from "@shared";
 
-export const defaultDownloadsPath = SystemPath.getPath("downloads");
+// Base directory that travels with the app. For a portable build the app runs
+// from a temp extraction dir, so we use PORTABLE_EXECUTABLE_DIR (set by
+// electron-builder) to reach the real .exe location; for an installed build we
+// use the install dir, and in dev the project root.
+export const executableBaseDir =
+  process.env.PORTABLE_EXECUTABLE_DIR ??
+  (app.isPackaged ? path.dirname(app.getPath("exe")) : process.cwd());
 
-export const isStaging = import.meta.env.MAIN_VITE_API_URL.includes("staging");
+// Default download location: a "game" folder next to the executable. The HTTP
+// downloader creates it (mkdir recursive) on first use.
+export const defaultDownloadsPath = path.join(executableBaseDir, "game");
+
+export const isStaging = appConfig.apiUrl.includes("staging");
 
 export const windowsStartMenuPath = path.join(
   SystemPath.getPath("appData"),
@@ -16,9 +27,12 @@ export const windowsStartMenuPath = path.join(
 
 export const publicProfilePath = "C:/Users/Public";
 
+// Settings + library database stored next to the executable (portable) at
+// <exe>/save/dp instead of the system userData folder.
 export const levelDatabasePath = path.join(
-  SystemPath.getPath("userData"),
-  `hydra-db${isStaging ? "-staging" : ""}`
+  executableBaseDir,
+  "save",
+  `dp${isStaging ? "-staging" : ""}`
 );
 
 export const commonRedistPath = path.join(
@@ -37,6 +51,9 @@ export const achievementSoundPath = app.isPackaged
 
 export const backupsPath = path.join(SystemPath.getPath("userData"), "Backups");
 
+// Local save game folder next to the executable so saves travel with the app.
+export const savesPath = path.join(executableBaseDir, "save");
+
 export const appVersion = app.getVersion() + (isStaging ? "-staging" : "");
 
 export const ASSETS_PATH = path.join(SystemPath.getPath("userData"), "Assets");
@@ -53,14 +70,3 @@ export const INTERVALS = {
 };
 
 export const DEFAULT_ACHIEVEMENT_SOUND_VOLUME = 0.15;
-
-export const DECKY_PLUGINS_LOCATION = path.join(
-  SystemPath.getPath("home"),
-  "homebrew",
-  "plugins"
-);
-
-export const HYDRA_DECKY_PLUGIN_LOCATION = path.join(
-  DECKY_PLUGINS_LOCATION,
-  "Hydra"
-);

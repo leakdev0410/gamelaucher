@@ -58,7 +58,7 @@ export function useGameActions(game: LibraryGame) {
       if (location.pathname === path) {
         try {
           window.dispatchEvent(
-            new CustomEvent("hydra:openRepacks", {
+            new CustomEvent("gl:openRepacks", {
               detail: { objectId: game.objectId },
             })
           );
@@ -70,7 +70,7 @@ export function useGameActions(game: LibraryGame) {
 
         try {
           window.dispatchEvent(
-            new CustomEvent("hydra:openRepacks", {
+            new CustomEvent("gl:openRepacks", {
               detail: { objectId: game.objectId },
             })
           );
@@ -115,7 +115,7 @@ export function useGameActions(game: LibraryGame) {
       updateLibrary();
       try {
         window.dispatchEvent(
-          new CustomEvent("hydra:game-favorite-toggled", {
+          new CustomEvent("gl:game-favorite-toggled", {
             detail: { shop: game.shop, objectId: game.objectId },
           })
         );
@@ -197,7 +197,7 @@ export function useGameActions(game: LibraryGame) {
 
     try {
       window.dispatchEvent(
-        new CustomEvent("hydra:openRepacks", {
+        new CustomEvent("gl:openRepacks", {
           detail: { objectId: game.objectId },
         })
       );
@@ -216,7 +216,7 @@ export function useGameActions(game: LibraryGame) {
 
     try {
       window.dispatchEvent(
-        new CustomEvent("hydra:openGameOptions", {
+        new CustomEvent("gl:openGameOptions", {
           detail: { objectId: game.objectId },
         })
       );
@@ -245,7 +245,7 @@ export function useGameActions(game: LibraryGame) {
       showSuccessToast(t("game_removed_from_library"));
       try {
         window.dispatchEvent(
-          new CustomEvent("hydra:game-removed-from-library", {
+          new CustomEvent("gl:game-removed-from-library", {
             detail: { shop: game.shop, objectId: game.objectId },
           })
         );
@@ -265,7 +265,7 @@ export function useGameActions(game: LibraryGame) {
       showSuccessToast(t("files_removed_success"));
       try {
         window.dispatchEvent(
-          new CustomEvent("hydra:game-files-removed", {
+          new CustomEvent("gl:game-files-removed", {
             detail: { shop: game.shop, objectId: game.objectId },
           })
         );
