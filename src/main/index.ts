@@ -1,4 +1,4 @@
-import { app, BrowserWindow, net, protocol } from "electron";
+import { app, BrowserWindow, dialog, net, protocol } from "electron";
 import i18n from "i18next";
 import path from "node:path";
 import url from "node:url";
@@ -18,7 +18,13 @@ import { launchGame } from "./helpers";
 import { loadState } from "./main";
 
 const gotTheLock = app.requestSingleInstanceLock();
-if (!gotTheLock) app.quit();
+if (!gotTheLock) {
+  dialog.showErrorBox(
+    "Game Launcher is already running",
+    "Ứng dụng đang được mở. Vui lòng kiểm tra khay hệ thống (system tray) hoặc các cửa sổ đang mở."
+  );
+  app.quit();
+}
 
 if (process.platform !== "linux") {
   app.commandLine.appendSwitch("--no-sandbox");

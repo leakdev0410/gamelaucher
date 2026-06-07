@@ -155,20 +155,28 @@ export const loadState = async () => {
 
   // For torrents use Python RPC; HTTP downloads use JS downloader.
   const isTorrent = downloadToResume?.downloader === Downloader.Torrent;
-  if (downloadToResume && !isTorrent) {
-    // Start Python RPC for seeding only, then resume HTTP download with JS
-    await DownloadManager.startRPC(undefined, downloadsToSeed);
-    await DownloadManager.startDownload(downloadToResume).catch((err) => {
-      // If resume fails, just log it - user can manually retry
-      logger.error("Failed to auto-resume download:", err);
-    });
-  } else {
-    // Use Python RPC for everything (torrent or fallback)
-    await DownloadManager.startRPC(
-      downloadToResume ?? undefined,
-      downloadsToSeed
-    );
-  }
+
+  // Start the heavier Python RPC asynchronously so it doesn't block window creation
+  const startDownloads = async () => {
+    if (downloadToResume && !isTorrent) {
+      // Start Python RPC for seeding only, then resume HTTP download with JS
+      await DownloadManager.startRPC(undefined, downloadsToSeed);
+      await DownloadManager.startDownload(downloadToResume).catch((err) => {
+        // If resume fails, just log it - user can manually retry
+        logger.error("Failed to auto-resume download:", err);
+      });
+    } else {
+      // Use Python RPC for everything (torrent or fallback)
+      await DownloadManager.startRPC(
+        downloadToResume ?? undefined,
+        downloadsToSeed
+      );
+    }
+  };
+
+  startDownloads().catch((err) => {
+    logger.error("Failed to start downloads/RPC on startup:", err);
+  });
 
   WindowManager.sendDownloadsUpdated();
 
