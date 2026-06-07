@@ -34,7 +34,13 @@ Vui lòng tham khảo các trang Tài liệu của chúng tôi: [docs.hydralaunc
 - Node.js + Yarn
 - Go toolchain (dành cho torrent RPC — `yarn dev` chạy nó thông qua `go run`, `yarn build:go-rpc` dùng để biên dịch)
 
-Các tập lệnh đóng gói (`yarn build:win`, `yarn build:mac`, `yarn build:linux`, `yarn build:unpack`) hiện đã tự động chạy `yarn build:go-rpc`.
+Để biên dịch toàn bộ ứng dụng cho Windows, bạn có thể chạy lệnh:
+
+```bash
+yarn build:win
+```
+
+Các tập lệnh đóng gói khác (`yarn build:mac`, `yarn build:linux`, `yarn build:unpack`) cũng đã tự động chạy `yarn build:go-rpc`.
 
 ## Người đóng góp
 
