@@ -2,46 +2,46 @@
 
 [<img src="https://raw.githubusercontent.com/hydralauncher/hydra/refs/heads/main/resources/icon.png" width="144"/>](https://help.hydralauncher.gg)
 
-  <h1 align="center">Hydra Launcher</h1>
+  <h1 align="center">GameLauncher</h1>
 
   <p align="center">
-    <strong>Hydra Launcher is an open-source gaming platform created to be the single tool that you need in order to manage your gaming library. Hydra is written in Node.js (Electron, React, Typescript), Go, and Rust.</strong>
+    <strong>GameLauncher là một nền tảng chơi game mã nguồn mở được tạo ra để trở thành công cụ duy nhất bạn cần để quản lý thư viện trò chơi của mình. GameLauncher được viết bằng Node.js (Electron, React, Typescript), Go và Rust.</strong>
   </p>
 
 [![build](https://img.shields.io/github/actions/workflow/status/hydralauncher/hydra/build.yml)](https://github.com/hydralauncher/hydra/actions)
 [![release](https://img.shields.io/github/package-json/v/hydralauncher/hydra)](https://github.com/hydralauncher/hydra/releases)
 [![chocolatey](https://img.shields.io/chocolatey/v/hydralauncher.svg)](https://community.chocolatey.org/packages/hydralauncher)
 
-![Hydra Launcher Home Page](./docs/screenshot.png)
+![Trang chủ GameLauncher](./docs/screenshot.png)
 
 </div>
 
-## Features
+## Tính năng
 
-- Add games that you own to your library
-- Have a nice profile that shows what you are playing to your friends
-- Save your game progress in the cloud with Hydra Cloud
-- Unlock achievements
-- Navigate through a rich catalogue with a powerful suggestion algorithm
-- Discover new games that you haven't played before
+- Thêm các trò chơi bạn sở hữu vào thư viện của mình
+- Có một hồ sơ cá nhân đẹp mắt để hiển thị những gì bạn đang chơi cho bạn bè
+- Lưu tiến trình trò chơi của bạn bằng lưu trữ cục bộ (local save)
+- Mở khóa các thành tựu (achievements)
+- Điều hướng qua một danh mục phong phú với thuật toán gợi ý mạnh mẽ
+- Khám phá những trò chơi mới mà bạn chưa từng chơi trước đây
 
-## Build from source and contributing
+## Biên dịch từ mã nguồn và đóng góp
 
-Please, refer to our Documentation pages: [docs.hydralauncher.gg](https://docs.hydralauncher.gg/getting-started)
+Vui lòng tham khảo các trang Tài liệu của chúng tôi: [docs.hydralauncher.gg](https://docs.hydralauncher.gg/getting-started)
 
-### Local development requirements
+### Yêu cầu phát triển cục bộ
 
 - Node.js + Yarn
-- Go toolchain (for the torrent RPC — `yarn dev` runs it via `go run`, `yarn build:go-rpc` compiles it)
+- Go toolchain (dành cho torrent RPC — `yarn dev` chạy nó thông qua `go run`, `yarn build:go-rpc` dùng để biên dịch)
 
-Packaging scripts (`yarn build:win`, `yarn build:mac`, `yarn build:linux`, `yarn build:unpack`) now run `yarn build:go-rpc` automatically.
+Các tập lệnh đóng gói (`yarn build:win`, `yarn build:mac`, `yarn build:linux`, `yarn build:unpack`) hiện đã tự động chạy `yarn build:go-rpc`.
 
-## Contributors
+## Người đóng góp
 
 <a href="https://github.com/hydralauncher/hydra/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=hydralauncher/hydra" />
 </a>
 
-## License
+## Giấy phép
 
-Hydra is licensed under the [MIT License](LICENSE).
+GameLauncher được cấp phép theo [Giấy phép MIT](LICENSE).
