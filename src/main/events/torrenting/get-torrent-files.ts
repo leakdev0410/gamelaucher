@@ -1,5 +1,5 @@
 import { registerEvent } from "../register-event";
-import { PythonRPC } from "@main/services/python-rpc";
+import { GoRPC } from "@main/services/go-rpc";
 import type { TorrentFilesResponse } from "@types";
 import { DownloadError } from "@shared";
 
@@ -43,7 +43,7 @@ const getTorrentFiles = async (
   }
 
   try {
-    const response = await PythonRPC.rpc.call<TorrentFilesResponse>(
+    const response = await GoRPC.rpc.call<TorrentFilesResponse>(
       "torrent_files",
       {
         magnet,
