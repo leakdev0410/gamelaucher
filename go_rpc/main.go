@@ -1,13 +1,15 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"sync"
 )
+
+// keep existing structs: RpcRequest, RpcResponse, RpcError, ReadyEvent
 
 type RpcRequest struct {
 	Id          *int                   `json:"id"`
@@ -32,9 +34,7 @@ type ReadyEvent struct {
 	ProtocolVersion int    `json:"protocolVersion"`
 }
 
-var (
-	stdoutMutex sync.Mutex
-)
+var stdoutMutex sync.Mutex
 
 func writeResponse(resp interface{}) {
 	data, err := json.Marshal(resp)
@@ -57,58 +57,67 @@ func buildErrorResponse(id *int, code, message string) RpcResponse {
 	}
 }
 
+func handleRpcRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req RpcRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		json.NewEncoder(w).Encode(buildErrorResponse(nil, "invalid_json", "Invalid JSON"))
+		return
+	}
+
+	if req.Id == nil {
+		json.NewEncoder(w).Encode(buildErrorResponse(nil, "invalid_request", "Missing request id"))
+		return
+	}
+
+	result, err := dispatchMethod(req.Method, req.Params)
+	if err != nil {
+		json.NewEncoder(w).Encode(buildErrorResponse(req.Id, "internal_error", err.Error()))
+		return
+	}
+
+	json.NewEncoder(w).Encode(RpcResponse{
+		Id:     req.Id,
+		Result: result,
+	})
+}
+
+func handleExit(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	go func() {
+		os.Exit(0)
+	}()
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	// In Electron, they pass: [script, torrent_port, rpc_password, initial_download, initial_seeding]
-	if len(os.Args) < 5 {
-		// Just a fallback
-	} else {
+	if len(os.Args) >= 5 {
 		torrentPort := os.Args[1]
-		_ = torrentPort // Use this to init torrent client
+		_ = torrentPort
 	}
 
 	InitTorrentClient()
+
+	http.HandleFunc("/rpc", handleRpcRequest)
+	http.HandleFunc("/exit", handleExit)
+
+	go func() {
+		if err := http.ListenAndServe("127.0.0.1:5882", nil); err != nil {
+			log.Fatalf("Server failed: %v", err)
+		}
+	}()
 
 	writeResponse(ReadyEvent{
 		Event:           "ready",
 		ProtocolVersion: 1,
 	})
 
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line == "" {
-			continue
-		}
-
-		var req RpcRequest
-		if err := json.Unmarshal([]byte(line), &req); err != nil {
-			writeResponse(buildErrorResponse(nil, "invalid_json", "Invalid JSON"))
-			continue
-		}
-
-		go handleRequest(req)
-	}
-}
-
-func handleRequest(req RpcRequest) {
-	if req.Id == nil {
-		writeResponse(buildErrorResponse(nil, "invalid_request", "Missing request id"))
-		return
-	}
-
-	result, err := dispatchMethod(req.Method, req.Params)
-	if err != nil {
-		// Basic error mapping
-		writeResponse(buildErrorResponse(req.Id, "internal_error", err.Error()))
-		return
-	}
-
-	writeResponse(RpcResponse{
-		Id:     req.Id,
-		Result: result,
-	})
+	select {}
 }
 
 func dispatchMethod(method string, params map[string]interface{}) (interface{}, error) {
