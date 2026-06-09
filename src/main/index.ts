@@ -11,7 +11,7 @@ import {
   PowerSaveBlockerManager,
 } from "@main/services";
 import resources from "@locales";
-import { PythonRPC } from "./services/python-rpc";
+import { GoRPC } from "./services/go-rpc";
 import { db, gamesSublevel, levelKeys } from "./level";
 import { GameShop, UserPreferences } from "@types";
 import { launchGame } from "./helpers";
@@ -259,8 +259,8 @@ app.on("before-quit", async (e) => {
   if (!canAppBeClosed) {
     e.preventDefault();
     PowerSaveBlockerManager.reset();
-    /* Disconnects Python RPC */
-    PythonRPC.kill();
+    /* Disconnects Go RPC */
+    GoRPC.kill();
     await clearGamesPlaytime();
     canAppBeClosed = true;
     app.quit();

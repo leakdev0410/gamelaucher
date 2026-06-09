@@ -10,7 +10,7 @@ import {
   VikingFileApi,
   RootzApi,
 } from "../hosters";
-import { PythonRPC } from "../python-rpc";
+import { GoRPC } from "../go-rpc";
 import {
   LibtorrentPayload,
   LibtorrentStatus,
@@ -217,7 +217,7 @@ export class DownloadManager {
     this.maxDownloadSpeedBytesPerSecond = normalizedLimit;
     this.jsDownloader?.setMaxDownloadSpeedBytesPerSecond(normalizedLimit);
 
-    await PythonRPC.rpc
+    await GoRPC.rpc
       .call("action", {
         action: "set_download_limit",
         max_download_speed_bytes_per_second: normalizedLimit,
@@ -234,7 +234,7 @@ export class DownloadManager {
     download?: Download,
     downloadsToSeed?: Download[]
   ) {
-    await PythonRPC.spawn();
+    await GoRPC.spawn();
 
     if (downloadsToSeed?.length) {
       for (const seedDownload of downloadsToSeed) {
@@ -389,7 +389,7 @@ export class DownloadManager {
     let response: { data: LibtorrentPayload | null };
 
     try {
-      response = await PythonRPC.rpc.call<LibtorrentPayload | null>("status");
+      response = await GoRPC.rpc.call<LibtorrentPayload | null>("status");
     } catch (error) {
       logger.error("[DownloadManager] RPC status poll failed", error);
       return null;
@@ -702,7 +702,7 @@ export class DownloadManager {
     let seedStatus: LibtorrentPayload[] = [];
 
     try {
-      seedStatus = await PythonRPC.rpc
+      seedStatus = await GoRPC.rpc
         .call<LibtorrentPayload[] | []>("seed_status")
         .then((res) => res.data);
     } catch (error) {
@@ -754,7 +754,7 @@ export class DownloadManager {
       logger.log("[DownloadManager] Pausing JS download");
       this.jsDownloader.pauseDownload();
     } else if (downloadKey) {
-      await PythonRPC.rpc
+      await GoRPC.rpc
         .call("action", {
           action: "pause",
           game_id: downloadKey,
@@ -783,7 +783,7 @@ export class DownloadManager {
         this.usingJsDownloader = false;
         this.allDebridBatch = null;
       } else {
-        await PythonRPC.rpc
+        await GoRPC.rpc
           .call("action", { action: "cancel", game_id: downloadKey })
           .catch((err) => logger.error("Failed to cancel game download", err));
       }
@@ -795,14 +795,14 @@ export class DownloadManager {
       this.usingJsDownloader = false;
       this.allDebridBatch = null;
     } else if (downloadKey) {
-      await PythonRPC.rpc
+      await GoRPC.rpc
         .call("action", { action: "cancel", game_id: downloadKey })
         .catch((err) => logger.error("Failed to cancel game download", err));
     }
   }
 
   static async resumeSeeding(download: Download) {
-    await PythonRPC.rpc.call("action", {
+    await GoRPC.rpc.call("action", {
       action: "resume_seeding",
       game_id: levelKeys.game(download.shop, download.objectId),
       url: download.uri,
@@ -811,7 +811,7 @@ export class DownloadManager {
   }
 
   static async pauseSeeding(downloadKey: string) {
-    await PythonRPC.rpc.call("action", {
+    await GoRPC.rpc.call("action", {
       action: "pause_seeding",
       game_id: downloadKey,
     });
@@ -850,6 +850,8 @@ export class DownloadManager {
         return this.getVikingFileDownloadOptions(download, resumingFilename);
       case Downloader.Rootz:
         return this.getRootzDownloadOptions(download, resumingFilename);
+      case Downloader.Http:
+        return this.getHttpDownloadOptions(download, resumingFilename);
       default:
         return null;
     }
@@ -1173,6 +1175,28 @@ export class DownloadManager {
     );
   }
 
+  private static async getHttpDownloadOptions(
+    download: Download,
+    resumingFilename?: string
+  ) {
+    const parsedUrl = new URL(download.uri);
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+      throw new Error("Invalid HTTP download URL");
+    }
+
+    const filename = this.resolveFilename(
+      resumingFilename,
+      download.uri,
+      download.uri
+    );
+
+    return this.buildDownloadOptions(
+      download.uri,
+      download.downloadPath,
+      filename
+    );
+  }
+
   private static async getDownloadPayload(download: Download) {
     // Only Torrent downloader reaches this path — all other downloaders use the JS HTTP downloader.
     if (download.downloader !== Downloader.Torrent) return undefined;
@@ -1304,7 +1328,7 @@ export class DownloadManager {
       }
 
       try {
-        await PythonRPC.rpc.call("action", payload, {
+        await GoRPC.rpc.call("action", payload, {
           timeout: isSelectiveTorrentStart ? 60_000 : 10_000,
         });
 
@@ -1312,7 +1336,7 @@ export class DownloadManager {
           this.downloadingGameId !== downloadId;
 
         if (downloadWasCancelledOrReplaced) {
-          await PythonRPC.rpc
+          await GoRPC.rpc
             .call("action", { action: "cancel", game_id: downloadId })
             .catch((error) => {
               logger.error(
