@@ -1,4 +1,4 @@
-﻿import { registerEvent } from "../register-event";
+import { registerEvent } from "../register-event";
 import { findAchievementFiles } from "@main/services/achievements/find-achivement-files";
 import fs from "fs";
 import { achievementsLogger, ApiClient, WindowManager } from "@main/services";
@@ -30,22 +30,20 @@ const resetGameAchievements = async (
       }
     }
 
-    await gameAchievementsSublevel
+    const gameAchievementsData = await gameAchievementsSublevel
       .get(levelKey)
-      .then(async (gameAchievements) => {
-        if (gameAchievements) {
-          await gameAchievementsSublevel.put(levelKey, {
-            ...gameAchievements,
-            unlockedAchievements: [],
-          });
-        }
-      });
+      .catch(() => null);
 
-    await ApiClient.delete(`/profile/games/achievements/${game.remoteId}`).then(
-      () =>
-        achievementsLogger.log(
-          `Deleted achievements from ${game.remoteId} - ${game.objectId} - ${game.title}`
-        )
+    if (gameAchievementsData) {
+      await gameAchievementsSublevel.put(levelKey, {
+        ...gameAchievementsData,
+        unlockedAchievements: [],
+      });
+    }
+
+    await ApiClient.delete(`/profile/games/achievements/${game.remoteId}`);
+    achievementsLogger.log(
+      `Deleted achievements from ${game.remoteId} - ${game.objectId} - ${game.title}`
     );
 
     const gameAchievements = await getUnlockedAchievements(

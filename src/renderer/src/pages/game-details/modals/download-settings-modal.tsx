@@ -29,6 +29,7 @@ import {
   Downloader,
   formatBytes,
   getDownloadersForUri,
+  isDirectHttpDownloadUri,
 } from "@shared";
 import type { GameRepack, TorrentFile, TorrentFilesResponse } from "@types";
 import { motion } from "framer-motion";
@@ -260,6 +261,7 @@ export function DownloadSettingsModal({
   );
   const [selectedDownloader, setSelectedDownloader] =
     useState<Downloader | null>(null);
+  const [manualHttpUrl, setManualHttpUrl] = useState("");
   const [hasWritePermission, setHasWritePermission] = useState<boolean | null>(
     null
   );
@@ -290,15 +292,38 @@ export function DownloadSettingsModal({
 
   const { isFeatureEnabled, Feature } = useFeature();
 
+  const normalizedManualHttpUrl = manualHttpUrl.trim();
+  const isManualHttpUrlValid = useMemo(
+    () => isDirectHttpDownloadUri(normalizedManualHttpUrl),
+    [normalizedManualHttpUrl]
+  );
+
   const selectedUri = useMemo(() => {
     if (!repack || selectedDownloader === null) return null;
+
+    if (selectedDownloader === Downloader.Http) {
+      if (normalizedManualHttpUrl) {
+        return isManualHttpUrlValid ? normalizedManualHttpUrl : null;
+      }
+
+      return (
+        repack.uris.find((uri) =>
+          getDownloadersForUri(uri).includes(selectedDownloader)
+        ) ?? null
+      );
+    }
 
     return (
       repack.uris.find((uri) =>
         getDownloadersForUri(uri).includes(selectedDownloader)
       ) ?? null
     );
-  }, [repack, selectedDownloader]);
+  }, [
+    isManualHttpUrlValid,
+    normalizedManualHttpUrl,
+    repack,
+    selectedDownloader,
+  ]);
 
   const selectedMagnetUri = useMemo(() => {
     if (selectedDownloader !== Downloader.Torrent) return null;
@@ -357,6 +382,18 @@ export function DownloadSettingsModal({
           }
         }
       }
+    }
+
+    if (isManualHttpUrlValid) {
+      downloaderMap.set(Downloader.Http, {
+        hasAvailable: true,
+        hasUnavailable: false,
+      });
+    } else if (!downloaderMap.has(Downloader.Http)) {
+      downloaderMap.set(Downloader.Http, {
+        hasAvailable: false,
+        hasUnavailable: false,
+      });
     }
 
     const allDownloaders = Object.values(Downloader).filter(
@@ -422,6 +459,7 @@ export function DownloadSettingsModal({
       })
       .sort((a, b) => getDownloaderPriority(a) - getDownloaderPriority(b));
   }, [
+    isManualHttpUrlValid,
     repack,
     userPreferences?.realDebridApiToken,
     userPreferences?.premiumizeApiToken,
@@ -469,8 +507,29 @@ export function DownloadSettingsModal({
       .filter((option) => option.isAvailable)
       .map((option) => option.downloader);
 
-    setSelectedDownloader(getDefaultDownloader(availableDownloaders));
-  }, [getDefaultDownloader, userPreferences?.downloadsPath, downloadOptions]);
+    setSelectedDownloader((currentDownloader) => {
+      if (
+        currentDownloader === Downloader.Http &&
+        normalizedManualHttpUrl.length > 0
+      ) {
+        return currentDownloader;
+      }
+
+      if (
+        currentDownloader !== null &&
+        availableDownloaders.includes(currentDownloader)
+      ) {
+        return currentDownloader;
+      }
+
+      return getDefaultDownloader(availableDownloaders);
+    });
+  }, [
+    getDefaultDownloader,
+    normalizedManualHttpUrl.length,
+    userPreferences?.downloadsPath,
+    downloadOptions,
+  ]);
 
   useEffect(() => {
     if (visible) {
@@ -697,6 +756,13 @@ export function DownloadSettingsModal({
   const canOpenTorrentStep =
     visible && selectedDownloader === Downloader.Torrent && !!selectedMagnetUri;
 
+  const httpDownloadOption = downloadOptions.find(
+    (option) => option.downloader === Downloader.Http
+  );
+  const isHttpDownloadButtonReady = normalizedManualHttpUrl
+    ? isManualHttpUrlValid
+    : (httpDownloadOption?.isAvailable ?? false);
+
   const shouldShowTorrentFiles = canOpenTorrentStep && showTorrentStepModal;
 
   const allTorrentFilesSelected =
@@ -803,6 +869,7 @@ export function DownloadSettingsModal({
       startAbortControllerRef.current?.abort();
       startAbortControllerRef.current = null;
       setDownloadStarting(false);
+      setManualHttpUrl("");
       resetTorrentStepState();
     }
   }, [resetTorrentStepState, visible]);
@@ -929,17 +996,22 @@ export function DownloadSettingsModal({
     selectedFileIndices?: number[],
     totalSelectedSize?: number
   ) => {
-    if (repack) {
+    if (repack && selectedUri) {
       const requestId = ++activeStartRequestIdRef.current;
       startAbortControllerRef.current?.abort();
       const abortController = new AbortController();
       startAbortControllerRef.current = abortController;
+      const selectedRepack: GameRepack = {
+        ...repack,
+        uris: [selectedUri],
+        unavailableUris: [],
+      };
 
       setDownloadStarting(true);
 
       try {
         const response = await startDownload(
-          repack,
+          selectedRepack,
           selectedDownloader!,
           selectedPath,
           automaticExtractionEnabled,
@@ -1196,147 +1268,173 @@ export function DownloadSettingsModal({
         <div className="download-settings-modal__downloads-path-field">
           <span>{t("downloader")}</span>
 
+          <button
+            type="button"
+            className={`download-settings-modal__http-download-button ${
+              selectedDownloader === Downloader.Http
+                ? "download-settings-modal__http-download-button--selected"
+                : ""
+            }`}
+            onClick={() => setSelectedDownloader(Downloader.Http)}
+            disabled={downloadStarting}
+          >
+            <span className="download-settings-modal__http-download-button-content">
+              <DownloadIcon size={16} />
+              <span>{t("http_download_button")}</span>
+            </span>
+            <span
+              className={`download-settings-modal__availability-indicator ${
+                isHttpDownloadButtonReady
+                  ? "download-settings-modal__availability-indicator--available"
+                  : "download-settings-modal__availability-indicator--not-present"
+              }`}
+            />
+          </button>
+
           <div className="download-settings-modal__downloaders-list-wrapper">
             <div className="download-settings-modal__downloaders-list">
-              {downloadOptions.map((option, index) => {
-                const isSelected = selectedDownloader === option.downloader;
-                const tooltipId = `availability-indicator-${option.downloader}`;
-                const isLastItem = index === downloadOptions.length - 1;
+              {downloadOptions
+                .filter((option) => option.downloader !== Downloader.Http)
+                .map((option, index, filteredOptions) => {
+                  const isSelected = selectedDownloader === option.downloader;
+                  const tooltipId = `availability-indicator-${option.downloader}`;
+                  const isLastItem = index === filteredOptions.length - 1;
 
-                const Indicator = option.isAvailable ? motion.span : "span";
+                  const Indicator = option.isAvailable ? motion.span : "span";
 
-                const isDisabled =
-                  !option.canHandle ||
-                  (!option.isAvailable && !option.isAvailableButNotConfigured);
+                  const isDisabled =
+                    !option.canHandle ||
+                    (!option.isAvailable &&
+                      !option.isAvailableButNotConfigured);
 
-                const getAvailabilityIndicator = () => {
-                  if (option.isAvailable) {
-                    return (
-                      <Indicator
-                        className={`download-settings-modal__availability-indicator download-settings-modal__availability-indicator--available download-settings-modal__availability-indicator--pulsating`}
-                        animate={{
-                          scale: [1, 1.1, 1],
-                          opacity: [1, 0.7, 1],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                        data-tooltip-id={tooltipId}
-                        data-tooltip-content={t("downloader_online")}
-                      />
-                    );
-                  }
+                  const getAvailabilityIndicator = () => {
+                    if (option.isAvailable) {
+                      return (
+                        <Indicator
+                          className={`download-settings-modal__availability-indicator download-settings-modal__availability-indicator--available download-settings-modal__availability-indicator--pulsating`}
+                          animate={{
+                            scale: [1, 1.1, 1],
+                            opacity: [1, 0.7, 1],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }}
+                          data-tooltip-id={tooltipId}
+                          data-tooltip-content={t("downloader_online")}
+                        />
+                      );
+                    }
 
-                  if (option.isAvailableButNotConfigured) {
+                    if (option.isAvailableButNotConfigured) {
+                      return (
+                        <span
+                          className={`download-settings-modal__availability-indicator download-settings-modal__availability-indicator--warning`}
+                          data-tooltip-id={tooltipId}
+                          data-tooltip-content={t("downloader_not_configured")}
+                        />
+                      );
+                    }
+
+                    if (option.canHandle) {
+                      return (
+                        <span
+                          className={`download-settings-modal__availability-indicator download-settings-modal__availability-indicator--unavailable`}
+                          data-tooltip-id={tooltipId}
+                          data-tooltip-content={t("downloader_offline")}
+                        />
+                      );
+                    }
+
                     return (
                       <span
-                        className={`download-settings-modal__availability-indicator download-settings-modal__availability-indicator--warning`}
+                        className={`download-settings-modal__availability-indicator download-settings-modal__availability-indicator--not-present`}
                         data-tooltip-id={tooltipId}
-                        data-tooltip-content={t("downloader_not_configured")}
+                        data-tooltip-content={t("downloader_not_available")}
                       />
                     );
-                  }
+                  };
 
-                  if (option.canHandle) {
-                    return (
-                      <span
-                        className={`download-settings-modal__availability-indicator download-settings-modal__availability-indicator--unavailable`}
-                        data-tooltip-id={tooltipId}
-                        data-tooltip-content={t("downloader_offline")}
-                      />
-                    );
-                  }
+                  const getRightContent = () => {
+                    if (isSelected) {
+                      return (
+                        <motion.div
+                          className="download-settings-modal__check-icon-wrapper"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 20,
+                          }}
+                        >
+                          <CheckCircleFillIcon
+                            size={16}
+                            className="download-settings-modal__check-icon"
+                          />
+                        </motion.div>
+                      );
+                    }
+
+                    if (
+                      option.downloader === Downloader.RealDebrid &&
+                      option.canHandle
+                    ) {
+                      return (
+                        <div className="download-settings-modal__recommendation-badge">
+                          <Badge>{t("recommended")}</Badge>
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  };
 
                   return (
-                    <span
-                      className={`download-settings-modal__availability-indicator download-settings-modal__availability-indicator--not-present`}
-                      data-tooltip-id={tooltipId}
-                      data-tooltip-content={t("downloader_not_available")}
-                    />
-                  );
-                };
-
-                const getRightContent = () => {
-                  if (isSelected) {
-                    return (
-                      <motion.div
-                        className="download-settings-modal__check-icon-wrapper"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 20,
+                    <div
+                      key={option.downloader}
+                      className="download-settings-modal__downloader-item-wrapper"
+                    >
+                      <button
+                        type="button"
+                        className={`download-settings-modal__downloader-item ${
+                          isSelected
+                            ? "download-settings-modal__downloader-item--selected"
+                            : ""
+                        } ${
+                          isLastItem
+                            ? "download-settings-modal__downloader-item--last"
+                            : ""
+                        }`}
+                        disabled={isDisabled}
+                        onClick={() => {
+                          if (
+                            [
+                              Downloader.RealDebrid,
+                              Downloader.Premiumize,
+                              Downloader.AllDebrid,
+                            ].includes(option.downloader) &&
+                            option.isAvailableButNotConfigured
+                          ) {
+                            setShowRealDebridModal(true);
+                          } else {
+                            setSelectedDownloader(option.downloader);
+                          }
                         }}
                       >
-                        <CheckCircleFillIcon
-                          size={16}
-                          className="download-settings-modal__check-icon"
-                        />
-                      </motion.div>
-                    );
-                  }
-
-                  if (
-                    option.downloader === Downloader.RealDebrid &&
-                    option.canHandle
-                  ) {
-                    return (
-                      <div className="download-settings-modal__recommendation-badge">
-                        <Badge>{t("recommended")}</Badge>
-                      </div>
-                    );
-                  }
-
-                  return null;
-                };
-
-                return (
-                  <div
-                    key={option.downloader}
-                    className="download-settings-modal__downloader-item-wrapper"
-                  >
-                    <button
-                      type="button"
-                      className={`download-settings-modal__downloader-item ${
-                        isSelected
-                          ? "download-settings-modal__downloader-item--selected"
-                          : ""
-                      } ${
-                        isLastItem
-                          ? "download-settings-modal__downloader-item--last"
-                          : ""
-                      }`}
-                      disabled={isDisabled}
-                      onClick={() => {
-                        if (
-                          [
-                            Downloader.RealDebrid,
-                            Downloader.Premiumize,
-                            Downloader.AllDebrid,
-                          ].includes(option.downloader) &&
-                          option.isAvailableButNotConfigured
-                        ) {
-                          setShowRealDebridModal(true);
-                        } else {
-                          setSelectedDownloader(option.downloader);
-                        }
-                      }}
-                    >
-                      <span className="download-settings-modal__downloader-name">
-                        {DOWNLOADER_NAME[option.downloader]}
-                      </span>
-                      <div className="download-settings-modal__availability-indicator-wrapper">
-                        {getAvailabilityIndicator()}
-                      </div>
-                      <Tooltip id={tooltipId} />
-                      {getRightContent()}
-                    </button>
-                  </div>
-                );
-              })}
+                        <span className="download-settings-modal__downloader-name">
+                          {DOWNLOADER_NAME[option.downloader]}
+                        </span>
+                        <div className="download-settings-modal__availability-indicator-wrapper">
+                          {getAvailabilityIndicator()}
+                        </div>
+                        <Tooltip id={tooltipId} />
+                        {getRightContent()}
+                      </button>
+                    </div>
+                  );
+                })}
             </div>
           </div>
 
@@ -1353,6 +1451,24 @@ export function DownloadSettingsModal({
               </span>
             </button>
           )}
+        </div>
+
+        <div className="download-settings-modal__downloads-path-field">
+          <TextField
+            value={manualHttpUrl}
+            label={t("http_download_url")}
+            placeholder={t("http_download_url_placeholder")}
+            onChange={(event) => setManualHttpUrl(event.target.value)}
+            disabled={downloadStarting}
+            error={
+              selectedDownloader === Downloader.Http &&
+              normalizedManualHttpUrl &&
+              !isManualHttpUrlValid
+                ? t("http_download_url_invalid")
+                : undefined
+            }
+            hint={t("http_download_url_hint")}
+          />
         </div>
 
         <div className="download-settings-modal__downloads-path-field">
@@ -1413,6 +1529,7 @@ export function DownloadSettingsModal({
           disabled={
             downloadStarting ||
             selectedDownloader === null ||
+            selectedUri === null ||
             !hasWritePermission ||
             downloadOptions.some(
               (option) =>

@@ -220,12 +220,14 @@ export class DownloadOrchestrator {
   static async bootstrapDownloadsOnStartup() {
     const downloads = await this.getAllDownloads();
     let interruptedDownloadId: string | null = null;
+    const pendingExtractions: Download[] = [];
 
     for (const download of downloads) {
       const nextDownload: Download = { ...download };
       let shouldPersist = false;
 
       if (nextDownload.extracting) {
+        pendingExtractions.push({ ...nextDownload });
         nextDownload.extracting = false;
         shouldPersist = true;
       }
@@ -260,6 +262,18 @@ export class DownloadOrchestrator {
 
     const normalizedDownloads = await this.getAllDownloads();
     await syncDownloadLayoutState(normalizedDownloads);
+
+    if (pendingExtractions.length > 0) {
+      const { gamesSublevel } = await import("@main/level");
+      for (const pendingDownload of pendingExtractions) {
+        const game = await gamesSublevel
+          .get(levelKeys.game(pendingDownload.shop, pendingDownload.objectId))
+          .catch(() => null);
+        if (game) {
+          void DownloadManager.handleExtraction(pendingDownload, game);
+        }
+      }
+    }
 
     if (interruptedDownloadId) {
       return (

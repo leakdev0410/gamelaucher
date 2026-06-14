@@ -3,12 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import axios from "axios";
 import { app, dialog } from "electron";
-import { logger } from "./logger"; 
-
-export const goRpcLogger = {
-  log: (...args: any[]) => logger.info("[GoRPC]", ...args),
-  error: (...args: any[]) => logger.error("[GoRPC]", ...args),
-};
+import { goRpcLogger } from "./logger";
 
 interface GamePayload {
   action: string;
@@ -35,9 +30,13 @@ export class GoRpcError extends Error {
 export class GoRPC {
   public static readonly BITTORRENT_PORT = "5881";
   private static readonly API_URL = "http://127.0.0.1:5882/rpc";
-  
+
   public static readonly rpc = {
-    call: async <T>(method: string, params?: unknown, config?: { timeout?: number }) => {
+    call: async <T>(
+      method: string,
+      params?: unknown,
+      config?: { timeout?: number }
+    ) => {
       const data = await GoRPC.request<T>(method, params, config);
       return { data };
     },
@@ -48,9 +47,13 @@ export class GoRPC {
   private static readyPromise: Promise<void> | null = null;
   private static nextRequestId = 1;
 
-  private static async request<T>(method: string, params?: unknown, config?: { timeout?: number }): Promise<T> {
+  private static async request<T>(
+    method: string,
+    params?: unknown,
+    config?: { timeout?: number }
+  ): Promise<T> {
     await this.ensureReady();
-    
+
     const payload = {
       id: this.nextRequestId++,
       method,
@@ -64,7 +67,10 @@ export class GoRPC {
       });
 
       if (response.data.error) {
-        throw new GoRpcError(response.data.error.code, response.data.error.message);
+        throw new GoRpcError(
+          response.data.error.code,
+          response.data.error.message
+        );
       }
       return response.data.result;
     } catch (error) {
@@ -77,16 +83,23 @@ export class GoRPC {
     if (!this.readyPromise) throw new Error("Go RPC process is not running");
     await Promise.race([
       this.readyPromise,
-      new Promise<void>((_, reject) => setTimeout(() => reject(new Error("Go RPC startup timeout")), timeoutMs)),
+      new Promise<void>((_, reject) =>
+        setTimeout(() => reject(new Error("Go RPC startup timeout")), timeoutMs)
+      ),
     ]);
   }
 
-  public static async spawn(initialDownload?: GamePayload, initialSeeding?: GamePayload[]) {
+  public static async spawn(
+    initialDownload?: GamePayload,
+    initialSeeding?: GamePayload[]
+  ) {
     if (this.process) return;
 
     this.rpcPassword = Math.random().toString(36).slice(2);
     let readyResolver: () => void;
-    this.readyPromise = new Promise((resolve) => { readyResolver = resolve; });
+    this.readyPromise = new Promise((resolve) => {
+      readyResolver = resolve;
+    });
 
     const commonArgs = [
       this.BITTORRENT_PORT,
@@ -95,8 +108,12 @@ export class GoRPC {
       initialSeeding ? JSON.stringify(initialSeeding) : "",
     ];
 
-    const binaryPath = app.isPackaged 
-      ? path.join(process.resourcesPath, "gamelaucher-go-rpc", binaryNameByPlatform[process.platform]!)
+    const binaryPath = app.isPackaged
+      ? path.join(
+          process.resourcesPath,
+          "gamelaucher-go-rpc",
+          binaryNameByPlatform[process.platform]!
+        )
       : path.join(__dirname, "..", "..", "go_rpc", "main.go");
 
     if (app.isPackaged) {

@@ -1,4 +1,4 @@
-﻿import type { GameShop, GameStats } from "@types";
+import type { GameShop, GameStats } from "@types";
 import { registerEvent } from "../register-event";
 import { ApiClient } from "@main/services";
 import { gamesStatsCacheSublevel, levelKeys } from "@main/level";
@@ -25,16 +25,20 @@ const getGameStats = async (
     return cachedStats;
   }
 
-  return ApiClient.get<GameStats>(`/games/${shop}/${objectId}/stats`, null, {
-    needsAuth: false,
-  }).then(async (data) => {
-    await gamesStatsCacheSublevel.put(levelKeys.game(shop, objectId), {
-      ...data,
-      updatedAt: Date.now(),
-    });
+  const data = await ApiClient.get<GameStats>(
+    `/games/${shop}/${objectId}/stats`,
+    null,
+    {
+      needsAuth: false,
+    }
+  );
 
-    return data;
+  await gamesStatsCacheSublevel.put(levelKeys.game(shop, objectId), {
+    ...data,
+    updatedAt: Date.now(),
   });
+
+  return data;
 };
 
 registerEvent("getGameStats", getGameStats);

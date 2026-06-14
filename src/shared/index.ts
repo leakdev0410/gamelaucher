@@ -85,6 +85,15 @@ export const formatBytesToMbps = (bytesPerSecond: number): string => {
 
 const realDebridHosts = ["https://1fichier.com", "https://mediafire.com"];
 
+export const isDirectHttpDownloadUri = (uri: string) => {
+  try {
+    const parsedUrl = new URL(uri);
+    return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
 export const getDownloadersForUri = (uri: string) => {
   if (uri.startsWith("https://gofile.io")) return [Downloader.Gofile];
 
@@ -124,6 +133,8 @@ export const getDownloadersForUri = (uri: string) => {
       Downloader.AllDebrid,
     ];
   }
+
+  if (isDirectHttpDownloadUri(uri)) return [Downloader.Http];
 
   return [];
 };

@@ -14,6 +14,7 @@ export enum Downloader {
   Rootz = 11,
   Premiumize = 12,
   AllDebrid = 13,
+  Http = 14,
 }
 
 export enum DownloadSourceStatus {
