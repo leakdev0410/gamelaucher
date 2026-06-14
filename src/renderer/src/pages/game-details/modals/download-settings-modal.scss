@@ -53,6 +53,46 @@
     background-color: globals.$dark-background-color;
   }
 
+  &__http-download-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid globals.$border-color;
+    background-color: globals.$background-color;
+    color: globals.$body-color;
+    padding: 0 calc(globals.$spacing-unit * 2);
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    &:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    &--selected {
+      border-color: #2b2a27;
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  &__http-download-button-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
   &__downloaders-list {
     display: flex;
     flex-direction: column;

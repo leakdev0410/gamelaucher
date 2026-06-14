@@ -11,85 +11,83 @@ import {
 } from "@main/level";
 
 const getLibrary = async (): Promise<LibraryGame[]> => {
-  return gamesSublevel
-    .iterator()
-    .all()
-    .then((results) => {
-      return Promise.all(
-        results
-          .filter(([_key, game]) => game.isDeleted === false)
-          .map(async ([key, game]) => {
-            const download = await downloadsSublevel.get(key);
-            const gameAssets = await gamesShopAssetsSublevel.get(key);
-            const achievements = await gameAchievementsSublevel
-              .get(key)
-              .catch(() => null);
+  const results = await gamesSublevel.iterator().all();
+  return Promise.all(
+    results
+      .filter(([_key, game]) => game.isDeleted === false)
+      .map(async ([key, game]) => {
+        const download = await downloadsSublevel.get(key);
+        const gameAssets = await gamesShopAssetsSublevel.get(key);
+        const achievements = await gameAchievementsSublevel
+          .get(key)
+          .catch(() => null);
 
-            const validAchievementNames = new Set(
-              achievements?.achievements?.map((a) =>
-                (a.name ?? "").toUpperCase()
-              ) || []
-            );
+        const validAchievementNames = new Set(
+          achievements?.achievements?.map((a) =>
+            (a.name ?? "").toUpperCase()
+          ) || []
+        );
 
-            const unlockedAchievementCount =
-              achievements?.unlockedAchievements?.filter(
-                (unlocked) =>
-                  validAchievementNames.has(
-                    (unlocked.name ?? "").toUpperCase()
-                  ) && unlocked.unlockTime > 0
-              ).length ??
-              game.unlockedAchievementCount ??
-              0;
+        const unlockedAchievementCount =
+          achievements?.unlockedAchievements?.filter(
+            (unlocked) =>
+              validAchievementNames.has((unlocked.name ?? "").toUpperCase()) &&
+              unlocked.unlockTime > 0
+          ).length ??
+          game.unlockedAchievementCount ??
+          0;
 
-            // Verify installer still exists, clear if deleted externally
-            let installerSizeInBytes = game.installerSizeInBytes;
-            if (installerSizeInBytes && download?.folderName) {
-              const installerPath = path.join(
-                download.downloadPath,
-                download.folderName
-              );
+        // Verify installer still exists, clear if deleted externally
+        let installerSizeInBytes = game.installerSizeInBytes;
+        if (installerSizeInBytes && download?.folderName) {
+          const installerPath = path.join(
+            download.downloadPath,
+            download.folderName
+          );
 
-              const installerExists = await fileExists(installerPath);
-              if (!installerExists) {
-                installerSizeInBytes = null;
-                gamesSublevel.put(key, { ...game, installerSizeInBytes: null });
-              }
-            }
+          const installerExists = await fileExists(installerPath);
+          if (!installerExists) {
+            installerSizeInBytes = null;
+            await gamesSublevel.put(key, {
+              ...game,
+              installerSizeInBytes: null,
+            });
+          }
+        }
 
-            // Verify installed folder still exists, clear if deleted externally
-            let installedSizeInBytes = game.installedSizeInBytes;
-            if (installedSizeInBytes && game.executablePath) {
-              const executableDir = path.dirname(game.executablePath);
+        // Verify installed folder still exists, clear if deleted externally
+        let installedSizeInBytes = game.installedSizeInBytes;
+        if (installedSizeInBytes && game.executablePath) {
+          const executableDir = path.dirname(game.executablePath);
 
-              const executableDirExists = await fileExists(executableDir);
-              if (!executableDirExists) {
-                installedSizeInBytes = null;
-                gamesSublevel.put(key, {
-                  ...game,
-                  installerSizeInBytes,
-                  installedSizeInBytes: null,
-                });
-              }
-            }
-
-            return {
-              id: key,
+          const executableDirExists = await fileExists(executableDir);
+          if (!executableDirExists) {
+            installedSizeInBytes = null;
+            await gamesSublevel.put(key, {
               ...game,
               installerSizeInBytes,
-              installedSizeInBytes,
-              download: download ?? null,
-              unlockedAchievementCount,
-              achievementCount: game.achievementCount ?? 0,
-              // Spread gameAssets last to ensure all image URLs are properly set
-              ...gameAssets,
-              // Preserve custom image URLs from game if they exist
-              customIconUrl: game.customIconUrl,
-              customLogoImageUrl: game.customLogoImageUrl,
-              customHeroImageUrl: game.customHeroImageUrl,
-            };
-          })
-      );
-    });
+              installedSizeInBytes: null,
+            });
+          }
+        }
+
+        return {
+          id: key,
+          ...game,
+          installerSizeInBytes,
+          installedSizeInBytes,
+          download: download ?? null,
+          unlockedAchievementCount,
+          achievementCount: game.achievementCount ?? 0,
+          // Spread gameAssets last to ensure all image URLs are properly set
+          ...gameAssets,
+          // Preserve custom image URLs from game if they exist
+          customIconUrl: game.customIconUrl,
+          customLogoImageUrl: game.customLogoImageUrl,
+          customHeroImageUrl: game.customHeroImageUrl,
+        };
+      })
+  );
 };
 
 registerEvent("getLibrary", getLibrary);

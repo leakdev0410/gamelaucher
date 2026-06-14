@@ -519,7 +519,6 @@ export class DownloadManager {
       userPreferences?.seedAfterDownloadComplete
     );
 
-    // Calculate installer size in background
     if (download.folderName) {
       const installerPath = path.join(
         download.downloadPath,
@@ -538,11 +537,11 @@ export class DownloadManager {
     }
 
     if (download.automaticallyExtract) {
-      const shouldPauseSeedingForExtraction =
+      const isSeedingTorrent =
         shouldSeed && download.downloader === Downloader.Torrent;
 
-      if (shouldPauseSeedingForExtraction) {
-        await this.cancelDownload(gameId);
+      if (isSeedingTorrent) {
+        await this.pauseDownload(gameId);
 
         void this.handleExtraction(download, game).finally(() => {
           this.resumeSeeding(download).catch((error) => {
@@ -553,11 +552,15 @@ export class DownloadManager {
           });
         });
       } else {
-        void this.handleExtraction(download, game);
+        await this.handleExtraction(download, game);
+        await this.cancelDownload(gameId);
       }
     } else {
       const gameFilesManager = new GameFilesManager(game.shop, game.objectId);
       gameFilesManager.searchAndBindExecutable();
+      if (!shouldSeed) {
+        await this.cancelDownload(gameId);
+      }
     }
 
     await this.processNextQueuedDownload();
@@ -590,23 +593,22 @@ export class DownloadManager {
       WindowManager.sendDownloadsUpdated();
 
       return true;
-    } else {
-      await downloadsSublevel.put(gameId, {
-        ...download,
-        status: "complete",
-        shouldSeed: false,
-        queued: false,
-        pinnedToHero: false,
-        extracting: shouldExtract,
-      });
-      WindowManager.sendDownloadsUpdated();
-      await this.cancelDownload(gameId);
-
-      return false;
     }
+
+    await downloadsSublevel.put(gameId, {
+      ...download,
+      status: "complete",
+      shouldSeed: false,
+      queued: false,
+      pinnedToHero: false,
+      extracting: shouldExtract,
+    });
+    WindowManager.sendDownloadsUpdated();
+
+    return false;
   }
 
-  private static async handleExtraction(download: Download, game: Game) {
+  public static async handleExtraction(download: Download, game: Game) {
     const gameFilesManager = new GameFilesManager(game.shop, game.objectId);
     const extractionPath = download.folderName
       ? path.join(download.downloadPath, download.folderName)
