@@ -1,18 +1,10 @@
 <div align="center">
 
-[<img src="https://raw.githubusercontent.com/hydralauncher/hydra/refs/heads/main/resources/icon.png" width="144"/>](https://help.hydralauncher.gg)
-
-  <h1 align="center">GameLauncher</h1>
+  <h1 align="center">game laucher</h1>
 
   <p align="center">
-    <strong>GameLauncher là một nền tảng chơi game mã nguồn mở được tạo ra để trở thành công cụ duy nhất bạn cần để quản lý thư viện trò chơi của mình. GameLauncher được viết bằng Node.js (Electron, React, Typescript), Go và Rust.</strong>
+    <strong>game laucher là một nền tảng chơi game mã nguồn mở được tạo ra để trở thành công cụ duy nhất bạn cần để quản lý thư viện trò chơi của mình. game laucher được viết bằng Node.js (Electron, React, Typescript), Go và Rust.</strong>
   </p>
-
-[![build](https://img.shields.io/github/actions/workflow/status/hydralauncher/hydra/build.yml)](https://github.com/hydralauncher/hydra/actions)
-[![release](https://img.shields.io/github/package-json/v/hydralauncher/hydra)](https://github.com/hydralauncher/hydra/releases)
-[![chocolatey](https://img.shields.io/chocolatey/v/hydralauncher.svg)](https://community.chocolatey.org/packages/hydralauncher)
-
-![Trang chủ GameLauncher](./docs/screenshot.png)
 
 </div>
 
@@ -25,16 +17,47 @@
 - Điều hướng qua một danh mục phong phú với thuật toán gợi ý mạnh mẽ
 - Khám phá những trò chơi mới mà bạn chưa từng chơi trước đây
 
-## Biên dịch từ mã nguồn và đóng góp
+## Build từ Source Code
 
-Vui lòng tham khảo các trang Tài liệu của chúng tôi: [docs.hydralauncher.gg](https://docs.hydralauncher.gg/getting-started)
+### Yêu cầu hệ thống
 
-### Yêu cầu phát triển cục bộ
+- Node.js
+- Yarn
+- Go toolchain
 
-- Node.js + Yarn
-- Go toolchain (dành cho torrent RPC — `yarn dev` chạy nó thông qua `go run`, `yarn build:go-rpc` dùng để biên dịch)
+### Các lệnh cài đặt và Build
 
-Các tập lệnh đóng gói (`yarn build:win`, `yarn build:mac`, `yarn build:linux`, `yarn build:unpack`) hiện đã tự động chạy `yarn build:go-rpc`.
+Cài đặt các gói phụ thuộc (Dependencies):
+```bash
+yarn install
+```
+
+Khởi chạy môi trường phát triển (Dev mode):
+```bash
+yarn dev
+```
+
+Build cho Windows:
+```bash
+yarn build:win
+```
+
+Build cho macOS:
+```bash
+yarn build:mac
+```
+
+Build cho Linux:
+```bash
+yarn build:linux
+```
+
+Build không đóng gói (Unpack mode):
+```bash
+yarn build:unpack
+```
+
+*Lưu ý: Các lệnh build tự động biên dịch phần Go RPC (`yarn build:go-rpc`) và web resources thông qua `electron-builder`.*
 
 ## Người đóng góp
 
@@ -44,4 +67,4 @@ Các tập lệnh đóng gói (`yarn build:win`, `yarn build:mac`, `yarn build:l
 
 ## Giấy phép
 
-GameLauncher được cấp phép theo [Giấy phép MIT](LICENSE).
+game laucher được cấp phép theo [Giấy phép MIT](LICENSE).
