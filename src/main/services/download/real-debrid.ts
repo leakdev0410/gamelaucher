@@ -12,6 +12,9 @@ export class RealDebridClient {
   private static instance: AxiosInstance;
   private static readonly baseURL = "https://api.real-debrid.com/rest/1.0";
 
+  private static readonly TORRENT_POLL_INTERVAL_MS = 5000;
+  private static readonly TORRENT_MAX_ATTEMPTS = 120; // 10 minutes
+
   static authorize(apiToken: string) {
     this.instance = axios.create({
       baseURL: this.baseURL,
@@ -86,6 +89,37 @@ export class RealDebridClient {
     return torrent.id;
   }
 
+  private static async waitForTorrentDownload(
+    torrentId: string
+  ): Promise<RealDebridTorrentInfo> {
+    for (let attempt = 1; attempt <= this.TORRENT_MAX_ATTEMPTS; attempt++) {
+      const torrentInfo = await this.getTorrentInfo(torrentId);
+
+      if (torrentInfo.status === "downloaded") {
+        return torrentInfo;
+      }
+
+      if (
+        torrentInfo.status === "error" ||
+        torrentInfo.status === "virus" ||
+        torrentInfo.status === "dead" ||
+        torrentInfo.status === "magnet_error"
+      ) {
+        throw new Error(
+          `[RealDebrid] Torrent ${torrentId} failed: ${torrentInfo.status}`
+        );
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.TORRENT_POLL_INTERVAL_MS)
+      );
+    }
+
+    throw new Error(
+      `[RealDebrid] Torrent ${torrentId} timed out after ${this.TORRENT_MAX_ATTEMPTS} attempts`
+    );
+  }
+
   public static async getDownloadUrl(uri: string) {
     let realDebridTorrentId: string | null = null;
 
@@ -102,16 +136,13 @@ export class RealDebridClient {
         torrentInfo = await this.getTorrentInfo(realDebridTorrentId);
       }
 
-      const { links, status } = torrentInfo;
-
-      if (status === "downloaded") {
-        const [link] = links;
-
-        const { download } = await this.unrestrictLink(link);
-        return decodeURIComponent(download);
+      if (torrentInfo.status !== "downloaded") {
+        torrentInfo = await this.waitForTorrentDownload(realDebridTorrentId);
       }
 
-      return null;
+      const [link] = torrentInfo.links;
+      const { download } = await this.unrestrictLink(link);
+      return decodeURIComponent(download);
     }
 
     const { download } = await this.unrestrictLink(uri);

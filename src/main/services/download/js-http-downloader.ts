@@ -545,7 +545,6 @@ export class JsHttpDownloader {
     } else {
       logger.error("[JsHttpDownloader] Download error:", err);
       this.status = "error";
-      throw err;
     }
   }
 
