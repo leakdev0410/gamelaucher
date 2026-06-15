@@ -43,6 +43,7 @@ interface AllDebridBatchEntry {
 
 interface AllDebridBatchState {
   downloadId: string;
+  gameId: string;
   savePath: string;
   entries: AllDebridBatchEntry[];
   currentIndex: number;
@@ -480,7 +481,7 @@ export class DownloadManager {
     const isComplete =
       !status.isCheckingFiles &&
       !status.isDownloadingMetadata &&
-      (progress === 1 || download.status === "complete");
+      (progress >= 0.999 || download.status === "complete");
     if (isComplete) {
       await this.handleDownloadCompletion(download, game, gameId);
     }
@@ -947,6 +948,7 @@ export class DownloadManager {
   }
 
   private static cleanupBatch() {
+    const batch = this.allDebridBatch;
     this.usingJsDownloader = false;
     this.jsDownloader?.cancelDownload();
     this.jsDownloader = null;
@@ -954,6 +956,32 @@ export class DownloadManager {
     this.downloadingGameId = null;
     this.isPreparingDownload = false;
     WindowManager.mainWindow?.setProgressBar(-1);
+    WindowManager.sendToAppWindows("on-download-progress", null);
+
+    if (batch?.gameId) {
+      const gameId = batch.gameId;
+      downloadsSublevel
+        .get(gameId)
+        .then((download) => {
+          if (!download || download.status === "complete") return;
+          return downloadsSublevel.put(gameId, {
+            ...download,
+            status: "error",
+            queued: false,
+            pinnedToHero: false,
+          });
+        })
+        .then(() => {
+          WindowManager.sendDownloadsUpdated();
+          void this.processNextQueuedDownload();
+        })
+        .catch((err) => {
+          logger.error(
+            "[DownloadManager] Failed to persist batch error status",
+            err
+          );
+        });
+    }
   }
 
   private static async getGofileDownloadOptions(
@@ -1254,6 +1282,7 @@ export class DownloadManager {
 
           this.allDebridBatch = {
             downloadId,
+            gameId: downloadId,
             savePath: download.downloadPath,
             entries: entries.map((entry) => ({
               ...entry,
@@ -1274,7 +1303,33 @@ export class DownloadManager {
             this.maxDownloadSpeedBytesPerSecond
           );
           this.isPreparingDownload = false;
-          void this.runAllDebridBatch();
+          void this.runAllDebridBatch().catch(async (err) => {
+            logger.error("[DownloadManager] AllDebrid batch error:", err);
+            this.usingJsDownloader = false;
+            this.jsDownloader = null;
+            this.allDebridBatch = null;
+            this.isPreparingDownload = false;
+            this.downloadingGameId = null;
+            WindowManager.sendToAppWindows("on-download-progress", null);
+            WindowManager.mainWindow?.setProgressBar(-1);
+
+            try {
+              await downloadsSublevel.put(downloadId, {
+                ...download,
+                status: "error",
+                queued: false,
+                pinnedToHero: false,
+              });
+              WindowManager.sendDownloadsUpdated();
+            } catch (dbErr) {
+              logger.error(
+                "[DownloadManager] Failed to persist error status",
+                dbErr
+              );
+            }
+
+            void this.processNextQueuedDownload();
+          });
         } else {
           this.allDebridBatch = null;
           const options = await this.getJsDownloadOptions(download);
@@ -1293,11 +1348,32 @@ export class DownloadManager {
           this.isPreparingDownload = false;
 
           this.logResolvedUrl(options.url);
-          this.jsDownloader.startDownload(options).catch((err) => {
+          this.jsDownloader.startDownload(options).catch(async (err) => {
             logger.error("[DownloadManager] JS download error:", err);
             this.usingJsDownloader = false;
             this.jsDownloader = null;
             this.allDebridBatch = null;
+            this.isPreparingDownload = false;
+            this.downloadingGameId = null;
+            WindowManager.sendToAppWindows("on-download-progress", null);
+            WindowManager.mainWindow?.setProgressBar(-1);
+
+            try {
+              await downloadsSublevel.put(downloadId, {
+                ...download,
+                status: "error",
+                queued: false,
+                pinnedToHero: false,
+              });
+              WindowManager.sendDownloadsUpdated();
+            } catch (dbErr) {
+              logger.error(
+                "[DownloadManager] Failed to persist error status",
+                dbErr
+              );
+            }
+
+            void this.processNextQueuedDownload();
           });
         }
       } catch (err) {

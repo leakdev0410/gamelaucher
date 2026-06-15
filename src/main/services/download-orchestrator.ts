@@ -359,7 +359,31 @@ export class DownloadOrchestrator {
       });
     }
 
-    await this.activateDownload(download);
+    try {
+      await this.activateDownload(download);
+    } catch (err) {
+      logger.error(
+        "[DownloadOrchestrator] Failed to activate download, restoring previous",
+        err
+      );
+
+      if (currentActiveDownload) {
+        await this.activateDownload(currentActiveDownload).catch(
+          (restoreErr) => {
+            logger.error(
+              "[DownloadOrchestrator] Failed to restore previous download",
+              restoreErr
+            );
+            void this.startNextQueuedDownload();
+          }
+        );
+      } else {
+        void this.startNextQueuedDownload();
+      }
+
+      throw err;
+    }
+
     const nextDownloads = await this.getAllDownloads();
     await removeDownloadFromLayoutState(download, nextDownloads);
     WindowManager.sendDownloadsUpdated();
@@ -453,7 +477,31 @@ export class DownloadOrchestrator {
         });
       }
 
-      await this.activateDownload(download);
+      try {
+        await this.activateDownload(download);
+      } catch (err) {
+        logger.error(
+          "[DownloadOrchestrator] Failed to activate download in move placement",
+          err
+        );
+
+        if (currentActiveDownload) {
+          await this.activateDownload(currentActiveDownload).catch(
+            (restoreErr) => {
+              logger.error(
+                "[DownloadOrchestrator] Failed to restore previous download",
+                restoreErr
+              );
+              void this.startNextQueuedDownload();
+            }
+          );
+        } else {
+          void this.startNextQueuedDownload();
+        }
+
+        throw err;
+      }
+
       const nextDownloads = await this.getAllDownloads();
       await setDownloadLayoutQueues(nextDownloads, queueIds, pausedIds);
       WindowManager.sendDownloadsUpdated();
