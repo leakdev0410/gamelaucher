@@ -50,13 +50,16 @@ export default function Downloads() {
   const [seedingStatus, setSeedingStatus] = useState<SeedingStatus[]>([]);
 
   useEffect(() => {
-    window.electron.onSeedingStatus((value) => setSeedingStatus(value));
+    const unsubscribeSeedingStatus = window.electron.onSeedingStatus((value) =>
+      setSeedingStatus(value)
+    );
 
     const unsubscribeExtraction = window.electron.onExtractionComplete(() => {
       updateLibrary();
     });
 
     return () => {
+      unsubscribeSeedingStatus();
       unsubscribeExtraction();
     };
   }, [updateLibrary]);

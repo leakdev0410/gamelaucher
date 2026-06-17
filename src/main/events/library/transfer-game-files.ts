@@ -7,6 +7,7 @@ import { gamesSublevel, downloadsSublevel, levelKeys } from "@main/level";
 import { findGameRootFromExe } from "../helpers/find-game-root";
 import { getDirectorySize } from "../helpers/get-directory-size";
 import { WindowManager } from "@main/services/window-manager";
+import { logger } from "@main/services/logger";
 import type { GameShop, LibraryGame } from "@types";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -74,10 +75,9 @@ class SteamCopyEngine {
     this.reportProgress();
   }
 
-  async moveGame(src: string, dest: string): Promise<void> {
+  async copyGame(src: string, dest: string): Promise<void> {
     await fs.mkdir(dest, { recursive: true });
     await this.copyDirectory(src, dest);
-    await fs.rm(src, { recursive: true, force: true }).catch(() => {});
   }
 
   private async copyDirectory(srcDir: string, destDir: string): Promise<void> {
@@ -306,6 +306,11 @@ registerEvent(
   "transferGameFiles",
   async (_event, shop: GameShop, objectId: string, destParent: string) => {
     const id = `${shop}:${objectId}`;
+
+    if (activeTransfers.has(id)) {
+      return { ok: false, error: "Transfer already in progress" };
+    }
+
     activeTransfers.set(id, {
       cancelled: false,
       currentStreams: new Set(),
@@ -368,7 +373,7 @@ registerEvent(
     const engine = new SteamCopyEngine(id, shop, objectId, gameSize);
 
     try {
-      await engine.moveGame(gameRoot, targetRoot);
+      await engine.copyGame(gameRoot, targetRoot);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       await cleanupOnError(id, targetRoot);
@@ -380,6 +385,12 @@ registerEvent(
 
       send("on-game-transfer-error", shop, objectId, msg);
       return { ok: false, error: msg };
+    }
+
+    if (activeTransfers.get(id)?.cancelled) {
+      await cleanupOnError(id, targetRoot);
+      send("on-game-transfer-cancelled", shop, objectId);
+      return { ok: false, error: "Transfer cancelled" };
     }
 
     const relExe = path.relative(gameRoot, game.executablePath);
@@ -395,7 +406,7 @@ registerEvent(
         targetRoot
       );
     } catch {
-      activeTransfers.delete(id);
+      await cleanupOnError(id, targetRoot);
       send(
         "on-game-transfer-error",
         shop,
@@ -404,6 +415,13 @@ registerEvent(
       );
       return { ok: false, error: "Failed to update database" };
     }
+
+    await fs.rm(gameRoot, { recursive: true, force: true }).catch((error) => {
+      logger.warn("Failed to remove old game folder after transfer", {
+        gameRoot,
+        error,
+      });
+    });
 
     activeTransfers.delete(id);
     send("on-game-transfer-complete", shop, objectId, newExePath);

@@ -41,10 +41,16 @@ const resetGameAchievements = async (
       });
     }
 
-    await ApiClient.delete(`/profile/games/achievements/${game.remoteId}`);
-    achievementsLogger.log(
-      `Deleted achievements from ${game.remoteId} - ${game.objectId} - ${game.title}`
-    );
+    if (game.remoteId) {
+      await ApiClient.delete(`/profile/games/achievements/${game.remoteId}`);
+      achievementsLogger.log(
+        `Deleted achievements from ${game.remoteId} - ${game.objectId} - ${game.title}`
+      );
+    } else {
+      achievementsLogger.log(
+        `Deleted local achievements for ${game.objectId} - ${game.title}`
+      );
+    }
 
     const gameAchievements = await getUnlockedAchievements(
       game.objectId,

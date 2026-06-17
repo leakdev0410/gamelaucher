@@ -692,7 +692,37 @@ export class DownloadManager {
     );
 
     if (nextItemOnQueue) {
-      this.resumeDownload(nextItemOnQueue);
+      try {
+        await this.resumeDownload(nextItemOnQueue);
+      } catch (error) {
+        const downloadId = levelKeys.game(
+          nextItemOnQueue.shop,
+          nextItemOnQueue.objectId
+        );
+
+        logger.error(
+          "[DownloadManager] Failed to resume next queued download",
+          error
+        );
+
+        await downloadsSublevel.put(downloadId, {
+          ...nextItemOnQueue,
+          status: "error",
+          queued: false,
+          pinnedToHero: false,
+          extracting: false,
+        });
+
+        this.downloadingGameId = null;
+        this.usingJsDownloader = false;
+        this.jsDownloader = null;
+        this.allDebridBatch = null;
+        this.isPreparingDownload = false;
+        WindowManager.mainWindow?.setProgressBar(-1);
+        WindowManager.sendDownloadsUpdated();
+
+        await this.processNextQueuedDownload();
+      }
     } else {
       this.downloadingGameId = null;
       this.usingJsDownloader = false;

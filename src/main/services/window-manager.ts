@@ -681,15 +681,25 @@ export class WindowManager {
         });
 
       const recentlyPlayedGames: Array<MenuItemConstructorOptions | MenuItem> =
-        games.map(({ title, executablePath }) => ({
-          label: title.length > 18 ? `${title.slice(0, 18)}…` : title,
-          type: "normal",
-          click: async () => {
-            if (!executablePath) return;
+        games.map(
+          ({ title, shop, objectId, executablePath, launchOptions }) => ({
+            label: title.length > 18 ? `${title.slice(0, 18)}…` : title,
+            type: "normal",
+            click: async () => {
+              if (!executablePath) return;
 
-            shell.openPath(executablePath);
-          },
-        }));
+              const { launchGame } = await import("@main/helpers/launch-game");
+              await launchGame({
+                shop,
+                objectId,
+                executablePath,
+                launchOptions,
+              }).catch((error) => {
+                logger.error("Failed to launch game from tray", error);
+              });
+            },
+          })
+        );
 
       const contextMenu = Menu.buildFromTemplate([
         {

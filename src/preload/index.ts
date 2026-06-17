@@ -168,8 +168,8 @@ contextBridge.exposeInMainWorld("electron", {
   /* Download sources */
   addDownloadSource: (url: string) =>
     ipcRenderer.invoke("addDownloadSource", url),
-  removeDownloadSource: (url: string, removeAll?: boolean) =>
-    ipcRenderer.invoke("removeDownloadSource", url, removeAll),
+  removeDownloadSource: (removeAll = false, downloadSourceId?: string) =>
+    ipcRenderer.invoke("removeDownloadSource", removeAll, downloadSourceId),
   getDownloadSources: () => ipcRenderer.invoke("getDownloadSources"),
   syncDownloadSources: () => ipcRenderer.invoke("syncDownloadSources"),
   getDownloadSourcesCheckBaseline: () =>
@@ -483,9 +483,10 @@ contextBridge.exposeInMainWorld("electron", {
   onBackupDownloadComplete: (
     objectId: string,
     shop: GameShop,
-    cb: () => void
+    cb: (success: boolean) => void
   ) => {
-    const listener = (_event: Electron.IpcRendererEvent) => cb();
+    const listener = (_event: Electron.IpcRendererEvent, success: boolean) =>
+      cb(success);
     ipcRenderer.on(`on-backup-download-complete-${objectId}-${shop}`, listener);
     return () =>
       ipcRenderer.removeListener(
@@ -803,11 +804,6 @@ contextBridge.exposeInMainWorld("electron", {
       ipcRenderer.invoke("leveldbIterator", sublevelName),
   },
 
-  //UPDATEDD
-  pauseGameTransfer: (shop: GameShop, objectId: string) =>
-    ipcRenderer.invoke("pauseGameTransfer", shop, objectId),
-  resumeGameTransfer: (shop: GameShop, objectId: string) =>
-    ipcRenderer.invoke("resumeGameTransfer", shop, objectId),
   cancelGameTransfer: (shop: GameShop, objectId: string) =>
     ipcRenderer.invoke("cancelGameTransfer", shop, objectId),
 
