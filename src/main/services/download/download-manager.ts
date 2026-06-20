@@ -1,4 +1,4 @@
-import { Downloader, DownloadError, FILE_EXTENSIONS_TO_EXTRACT } from "@shared";
+import { Downloader, DownloadError, isArchiveFile } from "@shared";
 import { WindowManager } from "../window-manager";
 import { publishDownloadCompleteNotification } from "../notifications";
 import type { Download, DownloadProgress, Game, UserPreferences } from "@types";
@@ -611,11 +611,23 @@ export class DownloadManager {
 
   public static async handleExtraction(download: Download, game: Game) {
     const gameFilesManager = new GameFilesManager(game.shop, game.objectId);
-    const extractionPath = download.folderName
-      ? path.join(download.downloadPath, download.folderName)
-      : null;
+    const targetFolderName = download.folderName;
 
-    if (!extractionPath || !fs.existsSync(extractionPath)) {
+    if (!targetFolderName) {
+      await gameFilesManager
+        .failExtraction(new Error("No downloaded archive was found to extract"))
+        .catch((error) => {
+          logger.error(
+            "[DownloadManager] Failed to persist extraction failure state",
+            error
+          );
+        });
+      return;
+    }
+
+    const extractionPath = path.join(download.downloadPath, targetFolderName);
+
+    if (!fs.existsSync(extractionPath)) {
       await gameFilesManager
         .failExtraction(new Error("No downloaded archive was found to extract"))
         .catch((error) => {
@@ -629,12 +641,7 @@ export class DownloadManager {
 
     const extractionStats = fs.statSync(extractionPath);
 
-    if (
-      extractionStats.isFile() &&
-      FILE_EXTENSIONS_TO_EXTRACT.some((ext) =>
-        download.folderName?.toLowerCase().endsWith(ext)
-      )
-    ) {
+    if (extractionStats.isFile() && isArchiveFile(targetFolderName)) {
       await gameFilesManager.extractDownloadedFile().catch((error) => {
         logger.error(
           "[DownloadManager] Failed to extract downloaded file",

@@ -100,7 +100,6 @@ export const getThemeSoundPath = (
 };
 
 export * from "./reg-parser";
-export * from "./launch-game";
 export * from "./download-error-handler";
 export * from "./download-game-helper";
 export * from "./seed-download-sources";

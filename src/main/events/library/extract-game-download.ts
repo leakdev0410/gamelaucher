@@ -3,7 +3,7 @@ import { GameShop } from "@types";
 import path from "node:path";
 import { DownloadManager, GameFilesManager, logger } from "@main/services";
 import { downloadsSublevel, gamesSublevel, levelKeys } from "@main/level";
-import { Downloader, FILE_EXTENSIONS_TO_EXTRACT } from "@shared";
+import { Downloader, isArchiveFile } from "@shared";
 
 const extractGameDownload = async (
   _event: Electron.IpcMainInvokeEvent,
@@ -43,11 +43,7 @@ const extractGameDownload = async (
   }
 
   const runExtraction = () => {
-    if (
-      FILE_EXTENSIONS_TO_EXTRACT.some((ext) =>
-        targetFolderName.toLowerCase().endsWith(ext)
-      )
-    ) {
+    if (isArchiveFile(targetFolderName)) {
       return gameFilesManager.extractDownloadedFile().catch((error) => {
         return gameFilesManager.failExtraction(error).catch(() => {
           // Fail state persistence is already logged in GameFilesManager

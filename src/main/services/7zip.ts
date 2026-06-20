@@ -1,12 +1,43 @@
 import { app } from "electron";
 import Seven, { CommandLineSwitches } from "node-7z";
+import fs from "node:fs";
 import path from "node:path";
 import { logger } from "./logger";
 
-export const binaryName = {
+export const binaryName: Partial<Record<NodeJS.Platform, string>> = {
   linux: "7zzs",
   darwin: "7zz",
   win32: "7z.exe",
+};
+
+const resolveBinaryPath = () => {
+  const platformBinaryName = binaryName[process.platform];
+
+  if (!platformBinaryName) {
+    throw new Error(`7zip is not supported on ${process.platform}`);
+  }
+
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, platformBinaryName);
+  }
+
+  const candidates = [
+    path.join(process.cwd(), "binaries", platformBinaryName),
+    path.join(app.getAppPath(), "binaries", platformBinaryName),
+    path.join(__dirname, "..", "..", "binaries", platformBinaryName),
+  ];
+
+  const existingPath = candidates.find((candidate) => fs.existsSync(candidate));
+
+  if (existingPath) {
+    return existingPath;
+  }
+
+  logger.warn(
+    `[SevenZip] Could not find 7zip binary. Tried: ${candidates.join(", ")}`
+  );
+
+  return candidates[0];
 };
 
 export interface ExtractionProgress {
@@ -21,15 +52,7 @@ export interface ExtractionResult {
 }
 
 export class SevenZip {
-  private static readonly binaryPath = app.isPackaged
-    ? path.join(process.resourcesPath, binaryName[process.platform])
-    : path.join(
-        __dirname,
-        "..",
-        "..",
-        "binaries",
-        binaryName[process.platform]
-      );
+  private static readonly binaryPath = resolveBinaryPath();
 
   private static isPasswordRelatedError(error: unknown): boolean {
     const errorMessage =
@@ -60,10 +83,11 @@ export class SevenZip {
     return new Promise((resolve, reject) => {
       let settled = false;
       let activeAttempt = 0;
+      const passwordsToTry = Array.from(new Set(["", ...passwords]));
 
       const tryPassword = (index = 0) => {
         const attemptId = ++activeAttempt;
-        const password = passwords[index] ?? "";
+        const password = passwordsToTry[index] ?? "";
         logger.info(
           `Trying password "${password || "(empty)"}" on ${filePath}`
         );
@@ -127,7 +151,8 @@ export class SevenZip {
           logger.error(`Extraction error for ${filePath}:`, err);
 
           const shouldTryNextPassword =
-            index < passwords.length - 1 && this.isPasswordRelatedError(err);
+            index < passwordsToTry.length - 1 &&
+            this.isPasswordRelatedError(err);
 
           if (shouldTryNextPassword) {
             logger.info(
@@ -136,10 +161,14 @@ export class SevenZip {
             tryPassword(index + 1);
           } else {
             settled = true;
+            const errorMessage =
+              err instanceof Error ? err.message : String(err);
             logger.error(
               `Failed to extract file: ${filePath} after trying all passwords`
             );
-            reject(new Error(`Failed to extract file: ${filePath}`));
+            reject(
+              new Error(`Failed to extract file: ${filePath}: ${errorMessage}`)
+            );
           }
         });
       };

@@ -14,7 +14,6 @@ import resources from "@locales";
 import { GoRPC } from "./services/go-rpc";
 import { db, gamesSublevel, levelKeys } from "./level";
 import { GameShop, UserPreferences } from "@types";
-import { launchGame } from "./helpers";
 import { loadState } from "./main";
 
 const gotTheLock = app.requestSingleInstanceLock();
@@ -183,6 +182,8 @@ const handleRunGame = async (shop: GameShop, objectId: string) => {
   if (!userPreferences?.hideToTrayOnGameStart) {
     WindowManager.createMainWindow();
   }
+
+  const { launchGame } = await import("./helpers/launch-game");
 
   await launchGame({
     shop,

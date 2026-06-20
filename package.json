@@ -9,6 +9,9 @@
     "url": "https://github.com/hydralauncher/hydra.git"
   },
   "type": "module",
+  "resolutions": {
+    "baseline-browser-mapping": "^2.10.38"
+  },
   "engines": {
     "npm": "please-use-yarn",
     "yarn": ">= 1.19.1"
@@ -19,15 +22,15 @@
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
-    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "typecheck": "yarn typecheck:node && yarn typecheck:web",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
-    "build": "npm run typecheck && electron-vite build",
+    "build": "yarn typecheck && electron-vite build",
     "build:go-rpc": "cd go_rpc && go build -o ../gamelaucher-go-rpc/gamelaucher-go-rpc.exe",
-    "build:unpack": "npm run build && npm run build:go-rpc && electron-builder --dir && node scripts/set-win-icon.cjs",
-    "build:win": "npm run build:go-rpc && electron-vite build && electron-builder --win",
-    "build:mac": "npm run build:go-rpc && electron-vite build && electron-builder --mac",
-    "build:linux": "npm run build:go-rpc && electron-vite build && electron-builder --linux",
+    "build:unpack": "yarn build && yarn build:go-rpc && electron-builder --dir && node scripts/set-win-icon.cjs",
+    "build:win": "yarn build:go-rpc && electron-vite build && set \"NODE_NO_WARNINGS=1\" && electron-builder --win",
+    "build:mac": "yarn build:go-rpc && electron-vite build && electron-builder --mac",
+    "build:linux": "yarn build:go-rpc && electron-vite build && electron-builder --linux",
     "prepare": "husky",
     "protoc": "npx protoc --ts_out src/main/generated --proto_path proto proto/*.proto"
   },
@@ -112,6 +115,7 @@
     "@types/winreg": "^1.2.36",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^4.2.1",
+    "baseline-browser-mapping": "^2.10.38",
     "electron": "^39.8.5",
     "electron-builder": "^26.0.12",
     "electron-vite": "^4.0.1",

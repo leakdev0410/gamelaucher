@@ -4,7 +4,9 @@ import { getDirectorySize } from "@main/events/helpers/get-directory-size";
 import { db, downloadsSublevel, gamesSublevel, levelKeys } from "@main/level";
 import {
   Downloader,
-  FILE_EXTENSIONS_TO_EXTRACT,
+  getArchiveExtractionRelativePath,
+  isArchiveFile,
+  isFirstArchiveVolume,
   removeSymbolsFromName,
 } from "@shared";
 import type { GameShop, UserPreferences } from "@types";
@@ -100,6 +102,48 @@ export class GameFilesManager {
     await this.setExtractionFailedState(error, targetPath);
   }
 
+  private async getArchiveFilePaths(directoryPath: string): Promise<string[]> {
+    const entries = await fs.promises.readdir(directoryPath, {
+      withFileTypes: true,
+    });
+
+    const archiveFilePaths = entries
+      .filter((entry) => entry.isFile() && isArchiveFile(entry.name))
+      .map((entry) => path.join(directoryPath, entry.name));
+
+    if (archiveFilePaths.length > 0) {
+      return this.sortArchiveFilePaths(archiveFilePaths);
+    }
+
+    const fileEntries = entries.filter((entry) => entry.isFile());
+    const directoryEntries = entries.filter((entry) => entry.isDirectory());
+
+    if (fileEntries.length === 0 && directoryEntries.length === 1) {
+      const wrapperPath = path.join(directoryPath, directoryEntries[0].name);
+      const wrapperEntries = await fs.promises.readdir(wrapperPath, {
+        withFileTypes: true,
+      });
+      const wrapperArchiveFilePaths = wrapperEntries
+        .filter((entry) => entry.isFile() && isArchiveFile(entry.name))
+        .map((entry) => path.join(wrapperPath, entry.name));
+
+      if (wrapperArchiveFilePaths.length > 0) {
+        return this.sortArchiveFilePaths(wrapperArchiveFilePaths);
+      }
+    }
+
+    return [];
+  }
+
+  private sortArchiveFilePaths(archiveFilePaths: string[]) {
+    return archiveFilePaths.sort((left, right) =>
+      left.localeCompare(right, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      })
+    );
+  }
+
   private readonly handleProgress = (progress: ExtractionProgress) => {
     console.log(`handleProgress: ${progress.percent}% - ${progress.file}`);
     this.updateExtractionProgress(progress.percent / 100);
@@ -124,35 +168,40 @@ export class GameFilesManager {
       return false;
     }
 
-    let files: string[];
+    let archivePaths: string[];
     try {
-      files = await fs.promises.readdir(directoryPath);
+      archivePaths = await this.getArchiveFilePaths(directoryPath);
     } catch (error) {
       await this.setExtractionFailedState(error, directoryPath);
       return false;
     }
 
-    const compressedFiles = files.filter((file) =>
-      FILE_EXTENSIONS_TO_EXTRACT.some((ext) => file.toLowerCase().endsWith(ext))
+    const filesToExtract = archivePaths.filter((archivePath) =>
+      isFirstArchiveVolume(path.basename(archivePath))
     );
 
-    const filesToExtract = compressedFiles.filter(
-      (file) => /part1\.rar$/i.test(file) || !/part\d+\.rar$/i.test(file)
-    );
+    if (archivePaths.length === 0) return true;
 
-    if (filesToExtract.length === 0) return true;
+    if (filesToExtract.length === 0) {
+      await this.setExtractionFailedState(
+        new Error("No first archive volume was found to extract"),
+        directoryPath
+      );
+      return false;
+    }
 
     this.updateExtractionProgress(0, true);
 
     const totalFiles = filesToExtract.length;
     let completedFiles = 0;
 
-    for (const file of filesToExtract) {
+    for (const archivePath of filesToExtract) {
       try {
+        const archiveDirectory = path.dirname(archivePath);
         const result = await SevenZip.extractFile(
           {
-            filePath: path.join(directoryPath, file),
-            cwd: directoryPath,
+            filePath: archivePath,
+            cwd: archiveDirectory,
             passwords: ["online-fix.me", "steamrip.com"],
           },
           (progress) => {
@@ -167,23 +216,22 @@ export class GameFilesManager {
           this.updateExtractionProgress(completedFiles / totalFiles, true);
         } else {
           await this.setExtractionFailedState(
-            new Error(`7zip returned unsuccessful extraction for ${file}`),
-            path.join(directoryPath, file)
+            new Error(
+              `7zip returned unsuccessful extraction for ${archivePath}`
+            ),
+            archivePath
           );
           return false;
         }
       } catch (err) {
-        await this.setExtractionFailedState(
-          err,
-          path.join(directoryPath, file)
-        );
+        await this.setExtractionFailedState(err, archivePath);
         return false;
       }
     }
 
-    const archivePaths = compressedFiles
-      .map((file) => path.join(directoryPath, file))
-      .filter((archivePath) => fs.existsSync(archivePath));
+    archivePaths = archivePaths.filter((archivePath) =>
+      fs.existsSync(archivePath)
+    );
 
     if (archivePaths.length > 0) {
       const [download, userPreferences] = await Promise.all([
@@ -651,9 +699,12 @@ export class GameFilesManager {
 
     const filePath = path.join(download.downloadPath, download.folderName);
 
+    const extractionFolderName = getArchiveExtractionRelativePath(
+      download.folderName
+    );
     const extractionPath = path.join(
       download.downloadPath,
-      path.parse(download.folderName!).name
+      extractionFolderName
     );
 
     this.updateExtractionProgress(0, true);
@@ -698,7 +749,7 @@ export class GameFilesManager {
 
         await downloadsSublevel.put(this.gameKey, {
           ...download,
-          folderName: path.parse(download.folderName!).name,
+          folderName: extractionFolderName,
         });
 
         await this.setExtractionComplete();
