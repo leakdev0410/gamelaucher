@@ -12,18 +12,19 @@
 
 ## File Structure
 
-| File | Changes |
-|------|---------|
-| `src/main/services/download/download-manager.ts` | Fix 1 (stuck queue), Fix 3 (AllDebrid silent fail), Fix 4 (float comparison) |
-| `src/main/services/download/real-debrid.ts` | Fix 2 (polling loop) |
-| `src/main/services/download/js-http-downloader.ts` | Fix 5 (double error call) |
-| `src/main/services/download-orchestrator.ts` | Fix 6 (rollback on activate failure) |
+| File                                               | Changes                                                                      |
+| -------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `src/main/services/download/download-manager.ts`   | Fix 1 (stuck queue), Fix 3 (AllDebrid silent fail), Fix 4 (float comparison) |
+| `src/main/services/download/real-debrid.ts`        | Fix 2 (polling loop)                                                         |
+| `src/main/services/download/js-http-downloader.ts` | Fix 5 (double error call)                                                    |
+| `src/main/services/download-orchestrator.ts`       | Fix 6 (rollback on activate failure)                                         |
 
 ---
 
 ### Task 1: Fix JS download error not resetting `downloadingGameId` (stuck queue)
 
 **Files:**
+
 - Modify: `src/main/services/download/download-manager.ts:1296-1301`
 - Modify: `src/main/services/download/download-manager.ts:1276-1277`
 
@@ -36,44 +37,41 @@ Replace lines 1296-1301 with a `.catch()` that resets all state and triggers fai
 In `src/main/services/download/download-manager.ts`, find the block starting at line 1296:
 
 ```typescript
-          this.jsDownloader.startDownload(options).catch((err) => {
-            logger.error("[DownloadManager] JS download error:", err);
-            this.usingJsDownloader = false;
-            this.jsDownloader = null;
-            this.allDebridBatch = null;
-          });
+this.jsDownloader.startDownload(options).catch((err) => {
+  logger.error("[DownloadManager] JS download error:", err);
+  this.usingJsDownloader = false;
+  this.jsDownloader = null;
+  this.allDebridBatch = null;
+});
 ```
 
 Replace with:
 
 ```typescript
-          this.jsDownloader.startDownload(options).catch(async (err) => {
-            logger.error("[DownloadManager] JS download error:", err);
-            this.usingJsDownloader = false;
-            this.jsDownloader = null;
-            this.allDebridBatch = null;
-            this.isPreparingDownload = false;
-            this.downloadingGameId = null;
-            WindowManager.sendToAppWindows("on-download-progress", null);
-            WindowManager.mainWindow?.setProgressBar(-1);
+this.jsDownloader.startDownload(options).catch(async (err) => {
+  logger.error("[DownloadManager] JS download error:", err);
+  this.usingJsDownloader = false;
+  this.jsDownloader = null;
+  this.allDebridBatch = null;
+  this.isPreparingDownload = false;
+  this.downloadingGameId = null;
+  WindowManager.sendToAppWindows("on-download-progress", null);
+  WindowManager.mainWindow?.setProgressBar(-1);
 
-            try {
-              await downloadsSublevel.put(downloadId, {
-                ...download,
-                status: "error",
-                queued: false,
-                pinnedToHero: false,
-              });
-              WindowManager.sendDownloadsUpdated();
-            } catch (dbErr) {
-              logger.error(
-                "[DownloadManager] Failed to persist error status",
-                dbErr
-              );
-            }
+  try {
+    await downloadsSublevel.put(downloadId, {
+      ...download,
+      status: "error",
+      queued: false,
+      pinnedToHero: false,
+    });
+    WindowManager.sendDownloadsUpdated();
+  } catch (dbErr) {
+    logger.error("[DownloadManager] Failed to persist error status", dbErr);
+  }
 
-            void this.processNextQueuedDownload();
-          });
+  void this.processNextQueuedDownload();
+});
 ```
 
 - [ ] **Step 2: Fix AllDebrid batch `.catch()` missing — same pattern**
@@ -81,44 +79,38 @@ Replace with:
 Replace lines 1276-1277:
 
 ```typescript
-          this.isPreparingDownload = false;
-          void this.runAllDebridBatch();
+this.isPreparingDownload = false;
+void this.runAllDebridBatch();
 ```
 
 Replace with:
 
 ```typescript
-          this.isPreparingDownload = false;
-          void this.runAllDebridBatch().catch(async (err) => {
-            logger.error(
-              "[DownloadManager] AllDebrid batch error:",
-              err
-            );
-            this.usingJsDownloader = false;
-            this.jsDownloader = null;
-            this.allDebridBatch = null;
-            this.isPreparingDownload = false;
-            this.downloadingGameId = null;
-            WindowManager.sendToAppWindows("on-download-progress", null);
-            WindowManager.mainWindow?.setProgressBar(-1);
+this.isPreparingDownload = false;
+void this.runAllDebridBatch().catch(async (err) => {
+  logger.error("[DownloadManager] AllDebrid batch error:", err);
+  this.usingJsDownloader = false;
+  this.jsDownloader = null;
+  this.allDebridBatch = null;
+  this.isPreparingDownload = false;
+  this.downloadingGameId = null;
+  WindowManager.sendToAppWindows("on-download-progress", null);
+  WindowManager.mainWindow?.setProgressBar(-1);
 
-            try {
-              await downloadsSublevel.put(downloadId, {
-                ...download,
-                status: "error",
-                queued: false,
-                pinnedToHero: false,
-              });
-              WindowManager.sendDownloadsUpdated();
-            } catch (dbErr) {
-              logger.error(
-                "[DownloadManager] Failed to persist error status",
-                dbErr
-              );
-            }
+  try {
+    await downloadsSublevel.put(downloadId, {
+      ...download,
+      status: "error",
+      queued: false,
+      pinnedToHero: false,
+    });
+    WindowManager.sendDownloadsUpdated();
+  } catch (dbErr) {
+    logger.error("[DownloadManager] Failed to persist error status", dbErr);
+  }
 
-            void this.processNextQueuedDownload();
-          });
+  void this.processNextQueuedDownload();
+});
 ```
 
 - [ ] **Step 3: Run typecheck**
@@ -141,6 +133,7 @@ git commit -m "fix: reset downloadingGameId on JS download failure, prevent stuc
 ### Task 2: Add polling loop to Real-Debrid magnet downloads
 
 **Files:**
+
 - Modify: `src/main/services/download/real-debrid.ts:89-121`
 
 **Problem:** `getDownloadUrl()` checks magnet status exactly once. If the magnet is still downloading, it returns `null` → `NotCachedOnRealDebrid` error. Premiumize and AllDebrid both poll until ready. Real-Debrid needs the same.
@@ -200,48 +193,50 @@ Add the following method to the `RealDebridClient` class (after the existing met
 Replace lines 96-114 (the block starting with `if (realDebridTorrentId) {` through `return null;`):
 
 Current code:
+
 ```typescript
-    if (realDebridTorrentId) {
-      let torrentInfo = await this.getTorrentInfo(realDebridTorrentId);
+if (realDebridTorrentId) {
+  let torrentInfo = await this.getTorrentInfo(realDebridTorrentId);
 
-      if (torrentInfo.status === "waiting_files_selection") {
-        await this.selectAllFiles(realDebridTorrentId);
+  if (torrentInfo.status === "waiting_files_selection") {
+    await this.selectAllFiles(realDebridTorrentId);
 
-        torrentInfo = await this.getTorrentInfo(realDebridTorrentId);
-      }
+    torrentInfo = await this.getTorrentInfo(realDebridTorrentId);
+  }
 
-      const { links, status } = torrentInfo;
+  const { links, status } = torrentInfo;
 
-      if (status === "downloaded") {
-        const [link] = links;
+  if (status === "downloaded") {
+    const [link] = links;
 
-        const { download } = await this.unrestrictLink(link);
-        return decodeURIComponent(download);
-      }
+    const { download } = await this.unrestrictLink(link);
+    return decodeURIComponent(download);
+  }
 
-      return null;
-    }
+  return null;
+}
 ```
 
 Replace with:
+
 ```typescript
-    if (realDebridTorrentId) {
-      let torrentInfo = await this.getTorrentInfo(realDebridTorrentId);
+if (realDebridTorrentId) {
+  let torrentInfo = await this.getTorrentInfo(realDebridTorrentId);
 
-      if (torrentInfo.status === "waiting_files_selection") {
-        await this.selectAllFiles(realDebridTorrentId);
+  if (torrentInfo.status === "waiting_files_selection") {
+    await this.selectAllFiles(realDebridTorrentId);
 
-        torrentInfo = await this.getTorrentInfo(realDebridTorrentId);
-      }
+    torrentInfo = await this.getTorrentInfo(realDebridTorrentId);
+  }
 
-      if (torrentInfo.status !== "downloaded") {
-        torrentInfo = await this.waitForTorrentDownload(realDebridTorrentId);
-      }
+  if (torrentInfo.status !== "downloaded") {
+    torrentInfo = await this.waitForTorrentDownload(realDebridTorrentId);
+  }
 
-      const [link] = torrentInfo.links;
-      const { download } = await this.unrestrictLink(link);
-      return decodeURIComponent(download);
-    }
+  const [link] = torrentInfo.links;
+  const { download } = await this.unrestrictLink(link);
+  return decodeURIComponent(download);
+}
 ```
 
 - [ ] **Step 4: Run typecheck**
@@ -264,6 +259,7 @@ git commit -m "fix: add polling loop for Real-Debrid magnet downloads"
 ### Task 3: Fix AllDebrid batch silent failure not notifying orchestrator
 
 **Files:**
+
 - Modify: `src/main/services/download/download-manager.ts:887-957`
 
 **Problem:** `runAllDebridBatch()` calls `cleanupBatch()` on error which nulls everything but never sets the download to "error" in LevelDB and never starts the next queued download.
@@ -324,6 +320,7 @@ In `startDownload`, find the AllDebrid batch creation (around line 1255-1270). A
 Replace `cleanupBatch` (lines 949-957):
 
 Current code:
+
 ```typescript
   private static cleanupBatch() {
     this.usingJsDownloader = false;
@@ -337,6 +334,7 @@ Current code:
 ```
 
 Replace with:
+
 ```typescript
   private static cleanupBatch() {
     const batch = this.allDebridBatch;
@@ -396,6 +394,7 @@ git commit -m "fix: AllDebrid batch failure now sets error status and processes 
 ### Task 4: Fix float comparison `progress === 1` for RPC downloads
 
 **Files:**
+
 - Modify: `src/main/services/download/download-manager.ts:483`
 
 **Problem:** `progress === 1` is a strict float comparison. Libtorrent might report `0.999999` instead of exactly `1.0`. The RPC code only sets `status: "active"` (never "complete"), so the fallback `download.status === "complete"` won't help for RPC downloads.
@@ -405,13 +404,13 @@ git commit -m "fix: AllDebrid batch failure now sets error status and processes 
 In `src/main/services/download/download-manager.ts`, line 483, change:
 
 ```typescript
-      (progress === 1 || download.status === "complete");
+progress === 1 || download.status === "complete";
 ```
 
 To:
 
 ```typescript
-      (progress >= 0.999 || download.status === "complete");
+progress >= 0.999 || download.status === "complete";
 ```
 
 - [ ] **Step 2: Run typecheck**
@@ -434,6 +433,7 @@ git commit -m "fix: use >= 0.999 instead of === 1 for download progress completi
 ### Task 5: Remove duplicate `handleDownloadError` call
 
 **Files:**
+
 - Modify: `src/main/services/download/js-http-downloader.ts:538-550`
 - Modify: `src/main/services/download/js-http-downloader.ts:229-234`
 
@@ -444,6 +444,7 @@ git commit -m "fix: use >= 0.999 instead of === 1 for download progress completi
 In `src/main/services/download/js-http-downloader.ts`, replace lines 538-550:
 
 Current code:
+
 ```typescript
   private handleDownloadError(err: Error): void {
     if (
@@ -461,6 +462,7 @@ Current code:
 ```
 
 Replace with:
+
 ```typescript
   private handleDownloadError(err: Error): void {
     if (
@@ -481,27 +483,29 @@ Replace with:
 In `src/main/services/download/js-http-downloader.ts`, lines 229-236. The `else` branch now correctly handles terminal errors since `handleDownloadError` no longer throws. Replace lines 229-236:
 
 Current code:
-```typescript
-    if (isAbortError && !wasStallRetry) {
-      logger.log("[JsHttpDownloader] Download aborted");
-      this.status = "paused";
-    } else {
-      this.handleDownloadError(err);
-    }
 
-    return false;
+```typescript
+if (isAbortError && !wasStallRetry) {
+  logger.log("[JsHttpDownloader] Download aborted");
+  this.status = "paused";
+} else {
+  this.handleDownloadError(err);
+}
+
+return false;
 ```
 
 Replace with:
-```typescript
-    if (isAbortError && !wasStallRetry) {
-      logger.log("[JsHttpDownloader] Download aborted");
-      this.status = "paused";
-    } else {
-      this.handleDownloadError(err);
-    }
 
-    return false;
+```typescript
+if (isAbortError && !wasStallRetry) {
+  logger.log("[JsHttpDownloader] Download aborted");
+  this.status = "paused";
+} else {
+  this.handleDownloadError(err);
+}
+
+return false;
 ```
 
 (No functional change here — `handleDownloadError` just doesn't throw anymore, so `return false` is now reliably reached.)
@@ -526,6 +530,7 @@ git commit -m "fix: remove duplicate error throw in handleDownloadError, simplif
 ### Task 6: Add rollback when `activateDownload` fails after pausing current download
 
 **Files:**
+
 - Modify: `src/main/services/download-orchestrator.ts:355-367`
 - Modify: `src/main/services/download-orchestrator.ts:455-460`
 
@@ -536,61 +541,61 @@ git commit -m "fix: remove duplicate error throw in handleDownloadError, simplif
 In `src/main/services/download-orchestrator.ts`, replace lines 354-367:
 
 Current code:
+
 ```typescript
-    if (currentActiveDownload) {
-      await this.pauseDownload(currentActiveDownload, {
-        reason: "paused",
-        startNextQueued: false,
-      });
-    }
+if (currentActiveDownload) {
+  await this.pauseDownload(currentActiveDownload, {
+    reason: "paused",
+    startNextQueued: false,
+  });
+}
 
-    await this.activateDownload(download);
-    const nextDownloads = await this.getAllDownloads();
-    await removeDownloadFromLayoutState(download, nextDownloads);
-    WindowManager.sendDownloadsUpdated();
+await this.activateDownload(download);
+const nextDownloads = await this.getAllDownloads();
+await removeDownloadFromLayoutState(download, nextDownloads);
+WindowManager.sendDownloadsUpdated();
 
-    return true;
+return true;
 ```
 
 Replace with:
+
 ```typescript
-    if (currentActiveDownload) {
-      await this.pauseDownload(currentActiveDownload, {
-        reason: "paused",
-        startNextQueued: false,
-      });
-    }
+if (currentActiveDownload) {
+  await this.pauseDownload(currentActiveDownload, {
+    reason: "paused",
+    startNextQueued: false,
+  });
+}
 
-    try {
-      await this.activateDownload(download);
-    } catch (err) {
+try {
+  await this.activateDownload(download);
+} catch (err) {
+  logger.error(
+    "[DownloadOrchestrator] Failed to activate download, restoring previous",
+    err
+  );
+
+  if (currentActiveDownload) {
+    await this.activateDownload(currentActiveDownload).catch((restoreErr) => {
       logger.error(
-        "[DownloadOrchestrator] Failed to activate download, restoring previous",
-        err
+        "[DownloadOrchestrator] Failed to restore previous download",
+        restoreErr
       );
+      void this.startNextQueuedDownload();
+    });
+  } else {
+    void this.startNextQueuedDownload();
+  }
 
-      if (currentActiveDownload) {
-        await this.activateDownload(currentActiveDownload).catch(
-          (restoreErr) => {
-            logger.error(
-              "[DownloadOrchestrator] Failed to restore previous download",
-              restoreErr
-            );
-            void this.startNextQueuedDownload();
-          }
-        );
-      } else {
-        void this.startNextQueuedDownload();
-      }
+  throw err;
+}
 
-      throw err;
-    }
+const nextDownloads = await this.getAllDownloads();
+await removeDownloadFromLayoutState(download, nextDownloads);
+WindowManager.sendDownloadsUpdated();
 
-    const nextDownloads = await this.getAllDownloads();
-    await removeDownloadFromLayoutState(download, nextDownloads);
-    WindowManager.sendDownloadsUpdated();
-
-    return true;
+return true;
 ```
 
 - [ ] **Step 2: Fix `moveDownloadPlacement` (hero target) to restore on failure**
@@ -598,45 +603,45 @@ Replace with:
 In `src/main/services/download-orchestrator.ts`, replace lines 454-461:
 
 Current code:
+
 ```typescript
-      await this.activateDownload(download);
-      const nextDownloads = await this.getAllDownloads();
-      await setDownloadLayoutQueues(nextDownloads, queueIds, pausedIds);
-      WindowManager.sendDownloadsUpdated();
-      return true;
+await this.activateDownload(download);
+const nextDownloads = await this.getAllDownloads();
+await setDownloadLayoutQueues(nextDownloads, queueIds, pausedIds);
+WindowManager.sendDownloadsUpdated();
+return true;
 ```
 
 Replace with:
+
 ```typescript
-      try {
-        await this.activateDownload(download);
-      } catch (err) {
-        logger.error(
-          "[DownloadOrchestrator] Failed to activate download in move placement",
-          err
-        );
+try {
+  await this.activateDownload(download);
+} catch (err) {
+  logger.error(
+    "[DownloadOrchestrator] Failed to activate download in move placement",
+    err
+  );
 
-        if (currentActiveDownload) {
-          await this.activateDownload(currentActiveDownload).catch(
-            (restoreErr) => {
-              logger.error(
-                "[DownloadOrchestrator] Failed to restore previous download",
-                restoreErr
-              );
-              void this.startNextQueuedDownload();
-            }
-          );
-        } else {
-          void this.startNextQueuedDownload();
-        }
+  if (currentActiveDownload) {
+    await this.activateDownload(currentActiveDownload).catch((restoreErr) => {
+      logger.error(
+        "[DownloadOrchestrator] Failed to restore previous download",
+        restoreErr
+      );
+      void this.startNextQueuedDownload();
+    });
+  } else {
+    void this.startNextQueuedDownload();
+  }
 
-        throw err;
-      }
+  throw err;
+}
 
-      const nextDownloads = await this.getAllDownloads();
-      await setDownloadLayoutQueues(nextDownloads, queueIds, pausedIds);
-      WindowManager.sendDownloadsUpdated();
-      return true;
+const nextDownloads = await this.getAllDownloads();
+await setDownloadLayoutQueues(nextDownloads, queueIds, pausedIds);
+WindowManager.sendDownloadsUpdated();
+return true;
 ```
 
 - [ ] **Step 3: Run typecheck**

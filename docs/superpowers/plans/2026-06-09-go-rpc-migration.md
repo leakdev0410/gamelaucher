@@ -13,6 +13,7 @@
 ### Task 1: Refactor Go Backend to HTTP Server
 
 **Files:**
+
 - Modify: `go_rpc/main.go:60-128`
 
 - [ ] **Step 1: Replace Stdin loop with HTTP server in `main.go`**
@@ -146,6 +147,7 @@ git commit -m "refactor(go_rpc): switch to HTTP server instead of stdin"
 ### Task 2: Create `go-rpc.ts` Client
 
 **Files:**
+
 - Create: `src/main/services/go-rpc.ts`
 - Modify: `src/main/services/python-rpc.ts` (Delete)
 
@@ -189,9 +191,13 @@ export class GoRpcError extends Error {
 export class GoRPC {
   public static readonly BITTORRENT_PORT = "5881";
   private static readonly API_URL = "http://127.0.0.1:5882/rpc";
-  
+
   public static readonly rpc = {
-    call: async <T>(method: string, params?: unknown, config?: { timeout?: number }) => {
+    call: async <T>(
+      method: string,
+      params?: unknown,
+      config?: { timeout?: number }
+    ) => {
       const data = await GoRPC.request<T>(method, params, config);
       return { data };
     },
@@ -202,9 +208,13 @@ export class GoRPC {
   private static readyPromise: Promise<void> | null = null;
   private static nextRequestId = 1;
 
-  private static async request<T>(method: string, params?: unknown, config?: { timeout?: number }): Promise<T> {
+  private static async request<T>(
+    method: string,
+    params?: unknown,
+    config?: { timeout?: number }
+  ): Promise<T> {
     await this.ensureReady();
-    
+
     const payload = {
       id: this.nextRequestId++,
       method,
@@ -218,7 +228,10 @@ export class GoRPC {
       });
 
       if (response.data.error) {
-        throw new GoRpcError(response.data.error.code, response.data.error.message);
+        throw new GoRpcError(
+          response.data.error.code,
+          response.data.error.message
+        );
       }
       return response.data.result;
     } catch (error) {
@@ -231,16 +244,23 @@ export class GoRPC {
     if (!this.readyPromise) throw new Error("Go RPC process is not running");
     await Promise.race([
       this.readyPromise,
-      new Promise<void>((_, reject) => setTimeout(() => reject(new Error("Go RPC startup timeout")), timeoutMs)),
+      new Promise<void>((_, reject) =>
+        setTimeout(() => reject(new Error("Go RPC startup timeout")), timeoutMs)
+      ),
     ]);
   }
 
-  public static async spawn(initialDownload?: GamePayload, initialSeeding?: GamePayload[]) {
+  public static async spawn(
+    initialDownload?: GamePayload,
+    initialSeeding?: GamePayload[]
+  ) {
     if (this.process) return;
 
     this.rpcPassword = Math.random().toString(36).slice(2);
     let readyResolver: () => void;
-    this.readyPromise = new Promise((resolve) => { readyResolver = resolve; });
+    this.readyPromise = new Promise((resolve) => {
+      readyResolver = resolve;
+    });
 
     const commonArgs = [
       this.BITTORRENT_PORT,
@@ -249,8 +269,12 @@ export class GoRPC {
       initialSeeding ? JSON.stringify(initialSeeding) : "",
     ];
 
-    const binaryPath = app.isPackaged 
-      ? path.join(process.resourcesPath, "gamelaucher-go-rpc", binaryNameByPlatform[process.platform]!)
+    const binaryPath = app.isPackaged
+      ? path.join(
+          process.resourcesPath,
+          "gamelaucher-go-rpc",
+          binaryNameByPlatform[process.platform]!
+        )
       : path.join(__dirname, "..", "..", "go_rpc", "main.go");
 
     if (app.isPackaged) {
@@ -304,16 +328,20 @@ git commit -m "feat: implement go-rpc client using axios"
 ### Task 3: Update Imports and Usages
 
 **Files:**
+
 - Modify: `src/main/services/index.ts`
 - Modify: `src/main/services/download-orchestrator.ts` (and any other files importing PythonRPC)
 
 - [ ] **Step 1: Replace exports in `src/main/services/index.ts`**
 
 Open `src/main/services/index.ts`. Replace:
+
 ```typescript
 export * from "./python-rpc";
 ```
+
 with
+
 ```typescript
 export * from "./go-rpc";
 ```

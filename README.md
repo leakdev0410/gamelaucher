@@ -28,36 +28,42 @@
 ### Các lệnh cài đặt và Build
 
 Cài đặt các gói phụ thuộc (Dependencies):
+
 ```bash
 yarn install
 ```
 
 Khởi chạy môi trường phát triển (Dev mode):
+
 ```bash
 yarn dev
 ```
 
 Build cho Windows:
+
 ```bash
 yarn build:win
 ```
 
 Build cho macOS:
+
 ```bash
 yarn build:mac
 ```
 
 Build cho Linux:
+
 ```bash
 yarn build:linux
 ```
 
 Build không đóng gói (Unpack mode):
+
 ```bash
 yarn build:unpack
 ```
 
-*Lưu ý: Các lệnh build tự động biên dịch phần Go RPC (`yarn build:go-rpc`) và web resources thông qua `electron-builder`.*
+_Lưu ý: Các lệnh build tự động biên dịch phần Go RPC (`yarn build:go-rpc`) và web resources thông qua `electron-builder`._
 
 ## Người đóng góp
 
