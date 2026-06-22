@@ -1,6 +1,7 @@
 appId: com.lequan.gamelaucher
 productName: gamelaucher
 forceCodeSigning: false
+afterPack: scripts/set-win-icon.cjs
 directories:
   buildResources: build
 extraResources:
@@ -21,6 +22,7 @@ asarUnpack:
   - node_modules/sharp/**
   - node_modules/@img/sharp-libvips-*/**
 win:
+  icon: build/icon.ico
   executableName: gamelaucher
   verifyUpdateCodeSignature: false
   signAndEditExecutable: false
@@ -28,9 +30,14 @@ win:
     - from: binaries/7z.exe
     - from: binaries/7z.dll
   target:
+    - nsis
     - portable
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
+  installerIcon: build/icon.ico
+  installerSidebar: build/installerSidebar.bmp
+  uninstallerIcon: build/icon.ico
+  uninstallerSidebar: build/installerSidebar.bmp
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always

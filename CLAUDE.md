@@ -84,7 +84,8 @@ yarn protoc           # regen src/main/generated/* from proto/*.proto (proto/ is
 - `gamelaucher-go-rpc/` — **built Go binary** the app spawns at runtime.
 - `go_defender/` — standalone Windows Defender-exclusion tool (`main.go` + prebuilt `setup.exe`); not wired into build/app.
 - `binaries/`, `ludusavi/` — bundled binaries; `proto/` — protobuf defs (now empty). (The `native/` Rust addon was removed.)
-- `scripts/` — `set-win-icon.cjs`, `upload-build.cjs`, `postinstall.cjs` (NOT wired — see gotchas).
+- `scripts/` — `set-win-icon.cjs` is wired as the electron-builder `afterPack` hook; `upload-build.cjs` and
+  `postinstall.cjs` are manual/not wired (see gotchas).
 - `resources/`, `build/`, `electron-builder.yml` — packaging.
 
 ## Import aliases
