@@ -132,14 +132,10 @@ const listLinuxProcesses = async (): Promise<ProcessPayload[]> => {
 };
 
 const listDarwinProcesses = async (): Promise<ProcessPayload[]> => {
-  const { stdout } = await execFileAsync(
-    "ps",
-    ["-axo", "pid=,comm="],
-    {
-      maxBuffer: 10 * 1024 * 1024,
-      timeout: 5000,
-    }
-  );
+  const { stdout } = await execFileAsync("ps", ["-axo", "pid=,comm="], {
+    maxBuffer: 10 * 1024 * 1024,
+    timeout: 5000,
+  });
 
   const results: ProcessPayload[] = [];
   for (const line of stdout.split("\n")) {

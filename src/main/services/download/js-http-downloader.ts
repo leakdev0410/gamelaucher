@@ -137,8 +137,7 @@ export class JsHttpDownloader {
           // Read status after handler mutates it (may be "error" or "paused").
           const finalStatus = this.status as JsHttpDownloaderStatus["status"];
           if (finalStatus === "error") {
-            terminalError =
-              err instanceof Error ? err : new Error(String(err));
+            terminalError = err instanceof Error ? err : new Error(String(err));
           }
           break;
         }

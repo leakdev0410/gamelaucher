@@ -156,9 +156,7 @@ export class ExtractionCoordinator {
             );
             // Lock errors get a longer pause so Windows / torrent can drop handles.
             await sleep(
-              isLockRelatedError(error)
-                ? Math.max(backoffMs, 4_000)
-                : backoffMs
+              isLockRelatedError(error) ? Math.max(backoffMs, 4_000) : backoffMs
             );
           }
         }
@@ -172,9 +170,7 @@ export class ExtractionCoordinator {
         if (!shouldContinue) {
           await gameFilesManager.failExtraction(
             lastError ??
-              new Error(
-                `Extraction failed after ${totalAttempts} attempt(s)`
-              )
+              new Error(`Extraction failed after ${totalAttempts} attempt(s)`)
           );
           throw (
             lastError ??
@@ -244,10 +240,7 @@ export class ExtractionCoordinator {
     }
   }
 
-  private static async ensureExtractingFlag(
-    download: Download,
-    force = false
-  ) {
+  private static async ensureExtractingFlag(download: Download, force = false) {
     const gameKey = levelKeys.game(download.shop, download.objectId);
     const current = await downloadsSublevel.get(gameKey);
     if (!current) return;
@@ -319,9 +312,7 @@ export class ExtractionCoordinator {
     );
   }
 
-  private static async waitUntilExtractionSourcesUnlocked(
-    download: Download
-  ) {
+  private static async waitUntilExtractionSourcesUnlocked(download: Download) {
     if (!download.folderName) return;
 
     const extractionRoot = path.join(
@@ -433,9 +424,7 @@ export class ExtractionCoordinator {
     const detail = isVi
       ? `Chi tiết: ${formatErrorMessage(lastError)}\n\nGợi ý: tạm dừng seed / tắt antivirus quét folder game nếu file đang bị khóa.`
       : `Details: ${formatErrorMessage(lastError)}\n\nTip: pause seeding or exclude the game folder from antivirus if the archive stays locked.`;
-    const buttons = isVi
-      ? ["Thử tiếp", "Dừng"]
-      : ["Keep trying", "Stop"];
+    const buttons = isVi ? ["Thử tiếp", "Dừng"] : ["Keep trying", "Stop"];
 
     const parent = WindowManager.mainWindow;
 

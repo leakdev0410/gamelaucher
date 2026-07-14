@@ -157,7 +157,10 @@ app.whenReady().then(async () => {
     try {
       await import("./events");
     } catch (eventsError) {
-      logger.error("Failed to register events after startup timeout", eventsError);
+      logger.error(
+        "Failed to register events after startup timeout",
+        eventsError
+      );
     }
   }
 

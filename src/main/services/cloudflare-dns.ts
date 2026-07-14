@@ -66,7 +66,11 @@ function normalizeLookupArgs(
   };
 }
 
-function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  label: string
+): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => {
       reject(new Error(`${label} timed out after ${ms}ms`));
@@ -243,7 +247,9 @@ export function cloudflareLookup(
       originalLookup(hostname, opts as dns.LookupOptions, cb as never);
       return;
     }
-    const err = new Error(`DNS lookup failed for ${hostname}`) as NodeJS.ErrnoException;
+    const err = new Error(
+      `DNS lookup failed for ${hostname}`
+    ) as NodeJS.ErrnoException;
     err.code = "ENOTFOUND";
     cb(err, all ? [] : "", 4);
   };

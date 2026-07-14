@@ -30,18 +30,10 @@
       },
       "notification": {
         "type": "string",
-        "enum": [
-          "default",
-          "email_only",
-          "app_only",
-          "off"
-        ],
+        "enum": ["default", "email_only", "app_only", "off"],
         "description": "Notification method. Defaults to 'default' (email + app)."
       }
     },
-    "required": [
-      "name",
-      "prompt"
-    ]
+    "required": ["name", "prompt"]
   }
 }

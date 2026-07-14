@@ -127,7 +127,10 @@ export class GameFilesManager {
       });
 
       for (const subdirectoryEntry of subdirectoryEntries) {
-        if (subdirectoryEntry.isFile() && isArchiveFile(subdirectoryEntry.name)) {
+        if (
+          subdirectoryEntry.isFile() &&
+          isArchiveFile(subdirectoryEntry.name)
+        ) {
           archiveFilePaths.push(
             path.join(subdirectoryPath, subdirectoryEntry.name)
           );

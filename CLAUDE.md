@@ -219,7 +219,7 @@ were layered — not a single bug.
 - Main archive names: `*.rar.part`, `*.rar`, or `Fix Repair\*_Fix_Repair_*.rar(.part)`.
 - App skipped extraction silently (old) or showed failure dialog (new) while **Terraria extracted OK**.
 - Logs (`%AppData%\gamelaucher\logs\error.txt`): `Archive is locked by another process`, `EBUSY unlink
-  *.rar.part` — torrent client still holding files during/after complete + seed.
+*.rar.part` — torrent client still holding files during/after complete + seed.
 
 ### Architecture (single entry point)
 
@@ -229,26 +229,26 @@ were layered — not a single bug.
 prepare → handleExtraction → restore seeding (if shouldSeed)
 ```
 
-| Caller | File |
-|--------|------|
-| Auto-extract on download complete | `download-manager.ts` → `handleDownloadCompletion` |
-| Manual "Giải nén lại" | `events/library/extract-game-download.ts` → `runByKey` |
-| Startup pending `extracting: true` | `download-orchestrator.ts` → `run` |
+| Caller                             | File                                                   |
+| ---------------------------------- | ------------------------------------------------------ |
+| Auto-extract on download complete  | `download-manager.ts` → `handleDownloadCompletion`     |
+| Manual "Giải nén lại"              | `events/library/extract-game-download.ts` → `runByKey` |
+| Startup pending `extracting: true` | `download-orchestrator.ts` → `run`                     |
 
 **prepare (torrent):** `DownloadManager.releaseTorrentFiles()` → retry up to 8× (1s settle) until archives
 are readable. **restore:** `resumeSeeding()` if `shouldSeed && (status===seeding || progress===1)`.
 
 ### File map
 
-| Area | File | What changed |
-|------|------|----------------|
-| Orchestrator | `extraction-coordinator.ts` | **New** — prepare/retry/release/restore |
-| Torrent lock | `go_rpc/torrent_downloader.go` | `release_files` action + `dropTorrentHandle()`; drops by `game_id`, magnet infohash, and any client torrent whose `info.Name === folder_name` |
-| TS torrent API | `download-manager.ts` | `releaseTorrentFiles()` (not `pause`/`pause_seeding`); `getSeedStatus` null-guard |
-| Archive detect | `shared/archive.ts` | `.rar.part` / `.zip.part` / `.7z.part` + existing split patterns |
-| Find archives | `game-files-manager.ts` | `findArchivePathsInDirectory()` — top-level + immediate subdirs, sort by size (main game first) |
-| 7-Zip wrapper | `7zip.ts` | `REPACK_ARCHIVE_PASSWORDS` default; no empty password; data-integrity errors with extracted files → success; file-lock error message; 30min timeout |
-| Passwords const | `shared/constants.ts` | `REPACK_ARCHIVE_PASSWORDS = ["online-fix.me", "steamrip.com"]` |
+| Area            | File                           | What changed                                                                                                                                        |
+| --------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Orchestrator    | `extraction-coordinator.ts`    | **New** — prepare/retry/release/restore                                                                                                             |
+| Torrent lock    | `go_rpc/torrent_downloader.go` | `release_files` action + `dropTorrentHandle()`; drops by `game_id`, magnet infohash, and any client torrent whose `info.Name === folder_name`       |
+| TS torrent API  | `download-manager.ts`          | `releaseTorrentFiles()` (not `pause`/`pause_seeding`); `getSeedStatus` null-guard                                                                   |
+| Archive detect  | `shared/archive.ts`            | `.rar.part` / `.zip.part` / `.7z.part` + existing split patterns                                                                                    |
+| Find archives   | `game-files-manager.ts`        | `findArchivePathsInDirectory()` — top-level + immediate subdirs, sort by size (main game first)                                                     |
+| 7-Zip wrapper   | `7zip.ts`                      | `REPACK_ARCHIVE_PASSWORDS` default; no empty password; data-integrity errors with extracted files → success; file-lock error message; 30min timeout |
+| Passwords const | `shared/constants.ts`          | `REPACK_ARCHIVE_PASSWORDS = ["online-fix.me", "steamrip.com"]`                                                                                      |
 
 ### Go RPC action `release_files`
 
@@ -266,11 +266,11 @@ Methods list is now: `start`, `pause`, `cancel`, **`release_files`**, `pause_see
 
 ### Verified manual 7-Zip (archives OK when unlocked)
 
-| Game | Archive | Result |
-|------|---------|--------|
+| Game       | Archive                                  | Result                                                 |
+| ---------- | ---------------------------------------- | ------------------------------------------------------ |
 | Schedule I | `Schedule.I.v0.4.0f9-OFME.rar` (~2.4 GB) | Everything is Ok, ~7.7 GB, `Schedule I\Schedule I.exe` |
-| YAPYAP | `YAPYAP.v1.0.3.606-deeb8-OFME.rar.part` | Mostly OK; 2 DLL data errors (may need re-download) |
-| Terraria | via launcher auto-extract | Full success in logs |
+| YAPYAP     | `YAPYAP.v1.0.3.606-deeb8-OFME.rar.part`  | Mostly OK; 2 DLL data errors (may need re-download)    |
+| Terraria   | via launcher auto-extract                | Full success in logs                                   |
 
 ### If extraction still fails tomorrow
 

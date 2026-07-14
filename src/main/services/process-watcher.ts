@@ -107,7 +107,10 @@ void getGameExecutables()
     gameExecutables = data;
   })
   .catch((error) => {
-    logger.error("[process-watcher] Failed to load game-executables.json", error);
+    logger.error(
+      "[process-watcher] Failed to load game-executables.json",
+      error
+    );
   });
 
 const findGamePathByProcess = async (
@@ -326,7 +329,8 @@ function onOpenGame(game: Game) {
           deltaToSync,
         });
 
-        const latest = (await gamesSublevel.get(gameKey).catch(() => null)) ?? game;
+        const latest =
+          (await gamesSublevel.get(gameKey).catch(() => null)) ?? game;
         await gamesSublevel.put(gameKey, {
           ...latest,
           unsyncedDeltaPlayTimeInMilliseconds: 0,
@@ -381,7 +385,10 @@ async function onTickGame(game: Game) {
     lastTick: now,
   });
 
-  if (currentTick % TICKS_TO_UPDATE_API === 0 && updatedGame.shop !== "custom") {
+  if (
+    currentTick % TICKS_TO_UPDATE_API === 0 &&
+    updatedGame.shop !== "custom"
+  ) {
     const deltaToSync =
       now -
       gamePlaytime.lastSyncTick +
@@ -396,11 +403,7 @@ async function onTickGame(game: Game) {
     });
 
     const gamePromise = updatedGame.remoteId
-      ? trackGamePlaytime(
-          updatedGame,
-          deltaToSync,
-          updatedGame.lastTimePlayed!
-        )
+      ? trackGamePlaytime(updatedGame, deltaToSync, updatedGame.lastTimePlayed!)
       : createGame(updatedGame);
 
     gamePromise

@@ -9,8 +9,6 @@
         "description": "The ID of the task to delete"
       }
     },
-    "required": [
-      "task_id"
-    ]
+    "required": ["task_id"]
   }
 }

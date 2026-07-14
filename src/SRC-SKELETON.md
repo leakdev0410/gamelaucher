@@ -47,14 +47,14 @@ flowchart TB
 
 ## Cây thư mục (file count)
 
-| Khu vực | Files | Vai trò |
-|---------|-------|---------|
-| `src/main/` | 258 | Backend Electron: IPC, services, LevelDB |
-| `src/renderer/` | 287 | UI React (trong `renderer/src/`) |
-| `src/preload/` | 1 | IPC bridge `index.ts` (~820 dòng) |
-| `src/shared/` | 9 | Code dùng chung main+renderer |
-| `src/types/` | 9 | TypeScript contracts |
-| `src/locales/` | 34×`translation.json` | i18n (fork thêm `vi`) |
+| Khu vực         | Files                 | Vai trò                                  |
+| --------------- | --------------------- | ---------------------------------------- |
+| `src/main/`     | 258                   | Backend Electron: IPC, services, LevelDB |
+| `src/renderer/` | 287                   | UI React (trong `renderer/src/`)         |
+| `src/preload/`  | 1                     | IPC bridge `index.ts` (~820 dòng)        |
+| `src/shared/`   | 9                     | Code dùng chung main+renderer            |
+| `src/types/`    | 9                     | TypeScript contracts                     |
+| `src/locales/`  | 34×`translation.json` | i18n (fork thêm `vi`)                    |
 
 ```
 src/
@@ -102,37 +102,37 @@ index.ts
 
 ### `loadState()` — phải nhanh, không chờ network
 
-| Bước | File | Việc làm |
-|------|------|----------|
-| 1 | `services/lock.ts` | Acquire LevelDB lock |
-| 2 | `events/index.ts` | Register tất cả IPC handlers |
-| 3 | `services/download/*-debrid.ts`, `torbox.ts` | Authorize debrid tokens từ prefs |
-| 4 | `services/hosters/gofile.ts` | GofileApi.initialize() |
-| 5 | `services/ludusavi.ts` | Copy binary/config → userData |
-| 6 | `services/api-client.ts` | setupApi() — đọc auth từ LevelDB |
-| 7 | `helpers/ensure-downloads-path.ts` | Tạo `<exe>/game` nếu thiếu |
-| 8 | `services/download/download-manager.ts` | Pre-warm GoRPC (void) |
+| Bước | File                                         | Việc làm                         |
+| ---- | -------------------------------------------- | -------------------------------- |
+| 1    | `services/lock.ts`                           | Acquire LevelDB lock             |
+| 2    | `events/index.ts`                            | Register tất cả IPC handlers     |
+| 3    | `services/download/*-debrid.ts`, `torbox.ts` | Authorize debrid tokens từ prefs |
+| 4    | `services/hosters/gofile.ts`                 | GofileApi.initialize()           |
+| 5    | `services/ludusavi.ts`                       | Copy binary/config → userData    |
+| 6    | `services/api-client.ts`                     | setupApi() — đọc auth từ LevelDB |
+| 7    | `helpers/ensure-downloads-path.ts`           | Tạo `<exe>/game` nếu thiếu       |
+| 8    | `services/download/download-manager.ts`      | Pre-warm GoRPC (void)            |
 
 ### `loadStateDeferred()` — sau khi UI hiện
 
-| Bước | Việc làm |
-|------|----------|
+| Bước       | Việc làm                                                                                                                            |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Background | uploadGamesBatch, migrateDownloadSources, syncDownloadSourcesFromApi, seedDownloadSources, DownloadSourcesChecker, WSClient.connect |
-| Downloads | DownloadOrchestrator.bootstrapDownloadsOnStartup → resume/seed |
-| Loop | startMainLoop() — 5 polling loops @ 2s |
-| Misc | CommonRedistManager, SystemPath check |
+| Downloads  | DownloadOrchestrator.bootstrapDownloadsOnStartup → resume/seed                                                                      |
+| Loop       | startMainLoop() — 5 polling loops @ 2s                                                                                              |
+| Misc       | CommonRedistManager, SystemPath check                                                                                               |
 
 ---
 
 ## Portable paths (`main/constants.ts`)
 
-| Key | Path | Ghi chú |
-|-----|------|---------|
-| `executableBaseDir` | `PORTABLE_EXECUTABLE_DIR` / install dir / cwd | Gốc portable |
-| `levelDatabasePath` | `<exe>/save/dp` | LevelDB duy nhất |
-| `savesPath` | `<exe>/save` | Cloud-sync artifacts (local) |
-| `defaultDownloadsPath` | `<exe>/game` | Thư mục tải mặc định |
-| `logsPath`, `ASSETS_PATH`, `THEMES_PATH`, `commonRedistPath` | `userData/...` | Không portable |
+| Key                                                          | Path                                          | Ghi chú                      |
+| ------------------------------------------------------------ | --------------------------------------------- | ---------------------------- |
+| `executableBaseDir`                                          | `PORTABLE_EXECUTABLE_DIR` / install dir / cwd | Gốc portable                 |
+| `levelDatabasePath`                                          | `<exe>/save/dp`                               | LevelDB duy nhất             |
+| `savesPath`                                                  | `<exe>/save`                                  | Cloud-sync artifacts (local) |
+| `defaultDownloadsPath`                                       | `<exe>/game`                                  | Thư mục tải mặc định         |
+| `logsPath`, `ASSETS_PATH`, `THEMES_PATH`, `commonRedistPath` | `userData/...`                                | Không portable               |
 
 ---
 
@@ -142,18 +142,18 @@ index.ts
 
 **Sublevels** (`level/sublevels/`):
 
-| Sublevel | Key pattern | TTL / Notes |
-|----------|-------------|-------------|
-| `games` | `{shop}:{objectId}` | Library games |
-| `downloads` | `{shop}:{objectId}` | Active/completed downloads |
-| `downloadLayoutState` | singleton | `queueOrder[]`, `pausedOrder[]` |
-| `gameShopAssets` | per game | 8h cache |
-| `gameShopCache` | `{shop}:{objectId}:{lang}` | Shop details |
-| `gameStatsAssets` | per game | 30m cache |
-| `gameAchievements` | per game | Local achievement cache |
-| `downloadSources` | per source | Repack mirrors |
-| `themes` | per theme | Custom themes |
-| `localNotifications` | per notification | In-app notifications |
+| Sublevel              | Key pattern                | TTL / Notes                     |
+| --------------------- | -------------------------- | ------------------------------- |
+| `games`               | `{shop}:{objectId}`        | Library games                   |
+| `downloads`           | `{shop}:{objectId}`        | Active/completed downloads      |
+| `downloadLayoutState` | singleton                  | `queueOrder[]`, `pausedOrder[]` |
+| `gameShopAssets`      | per game                   | 8h cache                        |
+| `gameShopCache`       | `{shop}:{objectId}:{lang}` | Shop details                    |
+| `gameStatsAssets`     | per game                   | 30m cache                       |
+| `gameAchievements`    | per game                   | Local achievement cache         |
+| `downloadSources`     | per source                 | Repack mirrors                  |
+| `themes`              | per theme                  | Custom themes                   |
+| `localNotifications`  | per notification           | In-app notifications            |
 
 **Types:** `types/level.types.ts` — `Game`, `Download`, `UserPreferences`, `DownloadLayoutState`, `Auth`, `GameAchievement`.
 
@@ -167,34 +167,34 @@ index.ts
 
 **Preload sections** (`preload/index.ts`):
 
-| Section | Channels (invoke) |
-|---------|-------------------|
-| Torrenting | `startGameDownload`, `addGameToQueue`, `cancelGameDownload`, `pauseGameDownload`, `resumeGameDownload`, `pauseGameSeed`, `resumeGameSeed`, `updateDownloadQueuePosition`, `setDownloadQueuePosition`, `setPausedDownloadPosition`, `moveDownloadPlacement`, `getDownloadLayoutState`, `getTorrentFiles` |
-| Catalogue | `getGameShopDetails`, `getRandomGame`, `getGameStats`, `getGameAssets` |
-| User preferences | `getUserPreferences`, `updateUserPreferences`, `authenticateRealDebrid`, `authenticateAllDebrid`, `authenticatePremiumize`, `authenticateTorbox`, `autoLaunch` |
-| Download sources | `getDownloadSources`, `addDownloadSource`, `removeDownloadSource`, `syncDownloadSources`, `getDownloadSourcesCheckBaseline`, `getDownloadSourcesSinceValue` |
-| Library | `getLibrary`, `openGame`, `closeGame`, `addGameToLibrary`, `removeGameFromLibrary`, `scanInstalledGames`, `extractGameDownload`, `transferGameFiles`, `getAvailableDrives`, `cancelGameTransfer`, … (40+ handlers) |
-| Hardware | `getDiskFreeSpace`, `checkFolderWritePermission` |
-| Cloud save | `getGameArtifacts`, `getGameBackupPreview`, `downloadGameArtifact`, `deleteGameArtifact`, `uploadSaveGame`, `selectGameBackupPath` |
-| Misc | `apiCall`, `openExternal`, `showOpenDialog`, `showItemInFolder`, `installCommonRedist`, `getDefaultDownloadsPath`, `ping`, `getVersion`, … |
-| Profile | `getMe`, `updateProfile`, `processProfileImage` |
-| User | `getAuth`, `getUnlockedAchievements`, `getComparedUnlockedAchievements` |
-| Auth | `openAuthWindow`, `signOut`, `getSessionHash` |
-| Notifications | `getLocalNotifications`, `markLocalNotificationRead`, `publishNewRepacksNotification`, … |
-| Themes | `getAllCustomThemes`, `addCustomTheme`, `toggleCustomTheme`, `openEditorWindow`, … |
-| LevelDB | `leveldbGet`, `leveldbPut`, `leveldbDel`, `leveldbClear`, `leveldbValues`, `leveldbIterator` |
+| Section          | Channels (invoke)                                                                                                                                                                                                                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Torrenting       | `startGameDownload`, `addGameToQueue`, `cancelGameDownload`, `pauseGameDownload`, `resumeGameDownload`, `pauseGameSeed`, `resumeGameSeed`, `updateDownloadQueuePosition`, `setDownloadQueuePosition`, `setPausedDownloadPosition`, `moveDownloadPlacement`, `getDownloadLayoutState`, `getTorrentFiles` |
+| Catalogue        | `getGameShopDetails`, `getRandomGame`, `getGameStats`, `getGameAssets`                                                                                                                                                                                                                                  |
+| User preferences | `getUserPreferences`, `updateUserPreferences`, `authenticateRealDebrid`, `authenticateAllDebrid`, `authenticatePremiumize`, `authenticateTorbox`, `autoLaunch`                                                                                                                                          |
+| Download sources | `getDownloadSources`, `addDownloadSource`, `removeDownloadSource`, `syncDownloadSources`, `getDownloadSourcesCheckBaseline`, `getDownloadSourcesSinceValue`                                                                                                                                             |
+| Library          | `getLibrary`, `openGame`, `closeGame`, `addGameToLibrary`, `removeGameFromLibrary`, `scanInstalledGames`, `extractGameDownload`, `transferGameFiles`, `getAvailableDrives`, `cancelGameTransfer`, … (40+ handlers)                                                                                      |
+| Hardware         | `getDiskFreeSpace`, `checkFolderWritePermission`                                                                                                                                                                                                                                                        |
+| Cloud save       | `getGameArtifacts`, `getGameBackupPreview`, `downloadGameArtifact`, `deleteGameArtifact`, `uploadSaveGame`, `selectGameBackupPath`                                                                                                                                                                      |
+| Misc             | `apiCall`, `openExternal`, `showOpenDialog`, `showItemInFolder`, `installCommonRedist`, `getDefaultDownloadsPath`, `ping`, `getVersion`, …                                                                                                                                                              |
+| Profile          | `getMe`, `updateProfile`, `processProfileImage`                                                                                                                                                                                                                                                         |
+| User             | `getAuth`, `getUnlockedAchievements`, `getComparedUnlockedAchievements`                                                                                                                                                                                                                                 |
+| Auth             | `openAuthWindow`, `signOut`, `getSessionHash`                                                                                                                                                                                                                                                           |
+| Notifications    | `getLocalNotifications`, `markLocalNotificationRead`, `publishNewRepacksNotification`, …                                                                                                                                                                                                                |
+| Themes           | `getAllCustomThemes`, `addCustomTheme`, `toggleCustomTheme`, `openEditorWindow`, …                                                                                                                                                                                                                      |
+| LevelDB          | `leveldbGet`, `leveldbPut`, `leveldbDel`, `leveldbClear`, `leveldbValues`, `leveldbIterator`                                                                                                                                                                                                            |
 
 **Push events** (main → renderer, `ipcRenderer.on`):
 
-| Event | Nguồn | Payload |
-|-------|-------|---------|
-| `on-download-progress` | DownloadManager | `DownloadProgress \| null` |
-| `on-seeding-status` | DownloadManager | `SeedingStatus[]` |
-| `on-downloads-updated` | WindowManager | — |
-| `on-game-running` | process-watcher | `GameRunning` |
-| `on-update-achievements-{shop}-{objectId}` | achievements | `GameAchievement[]` |
-| `on-user-preferences-updated` | user-preferences | `UserPreferences` |
-| `on-hard-delete` | misc | — |
+| Event                                      | Nguồn            | Payload                    |
+| ------------------------------------------ | ---------------- | -------------------------- |
+| `on-download-progress`                     | DownloadManager  | `DownloadProgress \| null` |
+| `on-seeding-status`                        | DownloadManager  | `SeedingStatus[]`          |
+| `on-downloads-updated`                     | WindowManager    | —                          |
+| `on-game-running`                          | process-watcher  | `GameRunning`              |
+| `on-update-achievements-{shop}-{objectId}` | achievements     | `GameAchievement[]`        |
+| `on-user-preferences-updated`              | user-preferences | `UserPreferences`          |
+| `on-hard-delete`                           | misc             | —                          |
 
 **REST proxy:** `window.electron.api.*` → `misc/api-call.ts` → `ApiClient` (Axios + JWT refresh).
 
@@ -216,21 +216,21 @@ flowchart LR
 
 ### Dispatch (`download-manager.ts`)
 
-| `Downloader` enum | Transport | Resolver |
-|-------------------|-----------|----------|
-| `Torrent` (0) | Go RPC JSON stdin/stdout | `go-rpc.ts` |
-| `RealDebrid` (1) | JS HTTP | `real-debrid.ts` |
-| `Gofile` (2) | JS HTTP | `hosters/gofile.ts` |
-| `PixelDrain` (3) | JS HTTP | `hosters/pixeldrain.ts` |
-| `Datanodes` (4) | JS HTTP | `hosters/datanodes.ts` |
-| `Mediafire` (5) | JS HTTP | `hosters/mediafire.ts` |
-| `TorBox` (6) | JS HTTP | `torbox.ts` |
-| `Buzzheavier` (8) | JS HTTP | `hosters/buzzheavier.ts` |
-| `FuckingFast` (9) | JS HTTP | `hosters/fuckingfast.ts` |
-| `VikingFile` (10) | JS HTTP | `hosters/vikingfile.ts` |
-| `Rootz` (11) | JS HTTP | `hosters/rootz.ts` |
-| `Premiumize` (12) | JS HTTP | `premiumize.ts` |
-| `AllDebrid` (13) | JS HTTP (batch path) | `all-debrid.ts` |
+| `Downloader` enum | Transport                | Resolver                 |
+| ----------------- | ------------------------ | ------------------------ |
+| `Torrent` (0)     | Go RPC JSON stdin/stdout | `go-rpc.ts`              |
+| `RealDebrid` (1)  | JS HTTP                  | `real-debrid.ts`         |
+| `Gofile` (2)      | JS HTTP                  | `hosters/gofile.ts`      |
+| `PixelDrain` (3)  | JS HTTP                  | `hosters/pixeldrain.ts`  |
+| `Datanodes` (4)   | JS HTTP                  | `hosters/datanodes.ts`   |
+| `Mediafire` (5)   | JS HTTP                  | `hosters/mediafire.ts`   |
+| `TorBox` (6)      | JS HTTP                  | `torbox.ts`              |
+| `Buzzheavier` (8) | JS HTTP                  | `hosters/buzzheavier.ts` |
+| `FuckingFast` (9) | JS HTTP                  | `hosters/fuckingfast.ts` |
+| `VikingFile` (10) | JS HTTP                  | `hosters/vikingfile.ts`  |
+| `Rootz` (11)      | JS HTTP                  | `hosters/rootz.ts`       |
+| `Premiumize` (12) | JS HTTP                  | `premiumize.ts`          |
+| `AllDebrid` (13)  | JS HTTP (batch path)     | `all-debrid.ts`          |
 
 Gap tại 7 = Nimbus đã xóa. Enum pinned — không đổi số.
 
@@ -254,15 +254,15 @@ flowchart LR
   B --> I[resumeSeeding if shouldSeed]
 ```
 
-| File | Role |
-|------|------|
-| `services/extraction-coordinator.ts` | Single entry: prepare → extract → restore seed |
-| `services/download/download-manager.ts` | `releaseTorrentFiles`, `handleExtraction` |
-| `services/game-files-manager.ts` | `findArchivePathsInDirectory`, extract in-place |
-| `services/7zip.ts` | node-7z wrapper, password + integrity + lock handling |
-| `shared/archive.ts` | `isArchiveFile` / `isFirstArchiveVolume` (incl. `.rar.part`) |
-| `shared/constants.ts` | `REPACK_ARCHIVE_PASSWORDS` |
-| `go_rpc/torrent_downloader.go` | `release_files` action drops torrent handles before extract |
+| File                                    | Role                                                         |
+| --------------------------------------- | ------------------------------------------------------------ |
+| `services/extraction-coordinator.ts`    | Single entry: prepare → extract → restore seed               |
+| `services/download/download-manager.ts` | `releaseTorrentFiles`, `handleExtraction`                    |
+| `services/game-files-manager.ts`        | `findArchivePathsInDirectory`, extract in-place              |
+| `services/7zip.ts`                      | node-7z wrapper, password + integrity + lock handling        |
+| `shared/archive.ts`                     | `isArchiveFile` / `isFirstArchiveVolume` (incl. `.rar.part`) |
+| `shared/constants.ts`                   | `REPACK_ARCHIVE_PASSWORDS`                                   |
+| `go_rpc/torrent_downloader.go`          | `release_files` action drops torrent handles before extract  |
 
 Online-Fix layout: `game\<Name>\` often has main `*.rar(.part)` + `Fix Repair\*.rar(.part)`.
 Torrent seeding **locks** archives — `pause_seeding` is insufficient; must `release_files` first.
@@ -275,11 +275,11 @@ Torrent seeding **locks** archives — `pause_seeding` is insufficient; must `re
 
 ## Go torrent RPC
 
-| File | Vai trò |
-|------|---------|
-| `go_rpc/main.go` | Source |
-| `gamelaucher-go-rpc/gamelaucher-go-rpc.exe` | Binary runtime |
-| `services/go-rpc.ts` | `GoRPC` class — spawn, JSON-RPC lines, port 5881 |
+| File                                        | Vai trò                                          |
+| ------------------------------------------- | ------------------------------------------------ |
+| `go_rpc/main.go`                            | Source                                           |
+| `gamelaucher-go-rpc/gamelaucher-go-rpc.exe` | Binary runtime                                   |
+| `services/go-rpc.ts`                        | `GoRPC` class — spawn, JSON-RPC lines, port 5881 |
 
 Methods: `status`, `seed_status`, `torrent_files`, `action` (start/pause/cancel/**release_files**/pause_seeding/resume_seeding).
 
@@ -312,33 +312,33 @@ flowchart TD
 
 ## Main services catalog
 
-| Service | File | Trách nhiệm |
-|---------|------|-------------|
-| ApiClient | `api-client.ts` | JWT REST, refresh, `apiCall` IPC |
-| DownloadManager | `download/download-manager.ts` | Download dispatch, watch, seed |
-| DownloadOrchestrator | `download-orchestrator.ts` | Queue/layout facade |
-| GoRPC | `go-rpc.ts` | Torrent subprocess |
-| JsHttpDownloader | `download/js-http-downloader.ts` | HTTP fetch + resume + throttle |
-| GameFilesManager | `game-files-manager.ts` | Extract, exe detect, shortcuts |
-| WindowManager | `window-manager.ts` | Windows, CORS/UA headers, push events |
-| CloudSync | `cloud-sync.ts` | Ludusavi → tar → `savesPath` (local only) |
-| WSClient | `ws/ws-client.ts` | WebSocket protobuf Envelope |
-| LibrarySync | `library-sync/*` | Sync games/playtime với API |
-| AchievementWatcher | `achievements/*` | Scan cracker files → notify |
-| CloudflareDns | `cloudflare-dns.ts` | DoH 1.1.1.1 + Node dns override |
-| Lock | `lock.ts` | Single-writer LevelDB lock |
-| Ludusavi | `ludusavi.ts` | Save backup tool wrapper |
-| CommonRedistManager | `common-redist-manager.ts` | VC++ redist installer |
-| ProcessWatcher | `process-watcher.ts` | Playtime + running game detection |
-| ProcessList | `process-list.ts` | OS process enumeration |
-| NativeAddon | `native-addon.ts` | Facade → process-list |
-| MainLoop | `main-loop.ts` | 5 infinite polling loops |
-| PowerSaveBlocker | `power-save-blocker.ts` | Prevent sleep during download/game |
-| Wine / UMU | `wine.ts`, `umu.ts` | Linux compatibility launch |
-| Steam / Steam250 | `steam.ts`, `steam-250.ts` | Steam integration helpers |
-| DownloadSourcesChecker | `download-sources-checker.ts` | Poll repack source updates |
-| Hosters | `hosters/*.ts` | URL resolvers per file host |
-| Debrid | `download/{real-debrid,all-debrid,premiumize,torbox}.ts` | Debrid link unrestrict |
+| Service                | File                                                     | Trách nhiệm                               |
+| ---------------------- | -------------------------------------------------------- | ----------------------------------------- |
+| ApiClient              | `api-client.ts`                                          | JWT REST, refresh, `apiCall` IPC          |
+| DownloadManager        | `download/download-manager.ts`                           | Download dispatch, watch, seed            |
+| DownloadOrchestrator   | `download-orchestrator.ts`                               | Queue/layout facade                       |
+| GoRPC                  | `go-rpc.ts`                                              | Torrent subprocess                        |
+| JsHttpDownloader       | `download/js-http-downloader.ts`                         | HTTP fetch + resume + throttle            |
+| GameFilesManager       | `game-files-manager.ts`                                  | Extract, exe detect, shortcuts            |
+| WindowManager          | `window-manager.ts`                                      | Windows, CORS/UA headers, push events     |
+| CloudSync              | `cloud-sync.ts`                                          | Ludusavi → tar → `savesPath` (local only) |
+| WSClient               | `ws/ws-client.ts`                                        | WebSocket protobuf Envelope               |
+| LibrarySync            | `library-sync/*`                                         | Sync games/playtime với API               |
+| AchievementWatcher     | `achievements/*`                                         | Scan cracker files → notify               |
+| CloudflareDns          | `cloudflare-dns.ts`                                      | DoH 1.1.1.1 + Node dns override           |
+| Lock                   | `lock.ts`                                                | Single-writer LevelDB lock                |
+| Ludusavi               | `ludusavi.ts`                                            | Save backup tool wrapper                  |
+| CommonRedistManager    | `common-redist-manager.ts`                               | VC++ redist installer                     |
+| ProcessWatcher         | `process-watcher.ts`                                     | Playtime + running game detection         |
+| ProcessList            | `process-list.ts`                                        | OS process enumeration                    |
+| NativeAddon            | `native-addon.ts`                                        | Facade → process-list                     |
+| MainLoop               | `main-loop.ts`                                           | 5 infinite polling loops                  |
+| PowerSaveBlocker       | `power-save-blocker.ts`                                  | Prevent sleep during download/game        |
+| Wine / UMU             | `wine.ts`, `umu.ts`                                      | Linux compatibility launch                |
+| Steam / Steam250       | `steam.ts`, `steam-250.ts`                               | Steam integration helpers                 |
+| DownloadSourcesChecker | `download-sources-checker.ts`                            | Poll repack source updates                |
+| Hosters                | `hosters/*.ts`                                           | URL resolvers per file host               |
+| Debrid                 | `download/{real-debrid,all-debrid,premiumize,torbox}.ts` | Debrid link unrestrict                    |
 
 ---
 
@@ -346,19 +346,19 @@ flowchart TD
 
 ### Routes (`renderer/src/main.tsx`)
 
-| Path | Page | Context |
-|------|------|---------|
-| `/` | Home | — |
-| `/catalogue` | Catalogue | — |
-| `/library` | Library | — |
-| `/downloads` | Downloads | — |
-| `/game/:shop/:objectId` | GameDetails | `GameDetailsContext` |
-| `/settings` | Settings | `SettingsContext` |
-| `/achievements` | Achievements | — |
-| `/notifications` | Notifications | — |
-| `/theme-editor` | ThemeEditor | standalone window |
-| `/achievement-notification` | AchievementNotification | overlay window |
-| `/game-launcher` | GameLauncher | mini launcher window |
+| Path                        | Page                    | Context              |
+| --------------------------- | ----------------------- | -------------------- |
+| `/`                         | Home                    | —                    |
+| `/catalogue`                | Catalogue               | —                    |
+| `/library`                  | Library                 | —                    |
+| `/downloads`                | Downloads               | —                    |
+| `/game/:shop/:objectId`     | GameDetails             | `GameDetailsContext` |
+| `/settings`                 | Settings                | `SettingsContext`    |
+| `/achievements`             | Achievements            | —                    |
+| `/notifications`            | Notifications           | —                    |
+| `/theme-editor`             | ThemeEditor             | standalone window    |
+| `/achievement-notification` | AchievementNotification | overlay window       |
+| `/game-launcher`            | GameLauncher            | mini launcher window |
 
 Shell: `App` = Sidebar + Header + `<Outlet>` + BottomPanel.
 
@@ -368,16 +368,16 @@ Shell: `App` = Sidebar + Header + `<Outlet>` + BottomPanel.
 
 ### Hooks → IPC mapping
 
-| Hook | IPC chính |
-|------|-----------|
-| `useDownload` | torrenting + `onDownloadProgress` |
-| `useDownloadLayout` | `getDownloadLayoutState`, queue move |
-| `useLibrary` | `getLibrary`, library mutations |
-| `useCatalogue` | `api` + catalogue IPC |
-| `useUserDetails` | `getMe`, `getAuth` |
-| `useGameCollections` | leveldb collections |
-| `useFeature` | subscription gates |
-| `useDownloadOptionsListener` | repack notifications |
+| Hook                         | IPC chính                            |
+| ---------------------------- | ------------------------------------ |
+| `useDownload`                | torrenting + `onDownloadProgress`    |
+| `useDownloadLayout`          | `getDownloadLayoutState`, queue move |
+| `useLibrary`                 | `getLibrary`, library mutations      |
+| `useCatalogue`               | `api` + catalogue IPC                |
+| `useUserDetails`             | `getMe`, `getAuth`                   |
+| `useGameCollections`         | leveldb collections                  |
+| `useFeature`                 | subscription gates                   |
+| `useDownloadOptionsListener` | repack notifications                 |
 
 ### Intra-renderer bus
 
@@ -397,53 +397,53 @@ Shell: `App` = Sidebar + Header + `<Outlet>` + BottomPanel.
 
 ### `shared/`
 
-| File | Export chính |
-|------|-------------|
-| `constants.ts` | `Downloader`, `Cracker`, `DownloadError`, `AuthPage` |
-| `config.ts` | `appConfig` URLs (api, auth, ws, nimbus) |
-| `index.ts` | `getDownloadersForUri()`, `formatBytes`, `parseBytes` |
-| `download-directories.ts` | Multi-dir resolve, max 5 paths |
-| `archive.ts` | `isArchiveFile()` |
-| `html-sanitizer.ts` | DOMPurify wrapper |
-| `use-hls-video.ts` | HLS hook (renderer) |
+| File                      | Export chính                                          |
+| ------------------------- | ----------------------------------------------------- |
+| `constants.ts`            | `Downloader`, `Cracker`, `DownloadError`, `AuthPage`  |
+| `config.ts`               | `appConfig` URLs (api, auth, ws, nimbus)              |
+| `index.ts`                | `getDownloadersForUri()`, `formatBytes`, `parseBytes` |
+| `download-directories.ts` | Multi-dir resolve, max 5 paths                        |
+| `archive.ts`              | `isArchiveFile()`                                     |
+| `html-sanitizer.ts`       | DOMPurify wrapper                                     |
+| `use-hls-video.ts`        | HLS hook (renderer)                                   |
 
 ### `types/`
 
-| File | Chứa |
-|------|------|
-| `level.types.ts` | LevelDB entities |
-| `game.types.ts` | `GameShop`, Steam types |
-| `download.types.ts` | `DownloadStatus`, progress DTOs |
-| `download-contract.ts` | Placement/bucket helpers |
-| `index.ts` | API DTOs (catalogue, profile, notifications) |
-| `theme.types.ts`, `steam.types.ts`, `ludusavi.types.ts`, `how-long-to-beat.types.ts` | Domain-specific |
+| File                                                                                 | Chứa                                         |
+| ------------------------------------------------------------------------------------ | -------------------------------------------- |
+| `level.types.ts`                                                                     | LevelDB entities                             |
+| `game.types.ts`                                                                      | `GameShop`, Steam types                      |
+| `download.types.ts`                                                                  | `DownloadStatus`, progress DTOs              |
+| `download-contract.ts`                                                               | Placement/bucket helpers                     |
+| `index.ts`                                                                           | API DTOs (catalogue, profile, notifications) |
+| `theme.types.ts`, `steam.types.ts`, `ludusavi.types.ts`, `how-long-to-beat.types.ts` | Domain-specific                              |
 
 ---
 
 ## Main helpers (`main/helpers/`)
 
-| File | Dùng khi |
-|------|----------|
-| `launch-game.ts` | `openGame` — spawn exe/wine/proton |
-| `resolve-launch-command.ts` | Build launch argv |
-| `download-game-helper.ts` | Start download từ game details |
-| `download-error-handler.ts` | Map errors → `DownloadError` enum |
-| `ensure-downloads-path.ts` | mkdir `<exe>/game` |
-| `migrate-download-sources.ts` | One-time LevelDB migration |
-| `seed-download-sources.ts` | Seed default repack sources |
-| `is-gamemode-available.ts` etc. | Linux tool detection |
+| File                            | Dùng khi                           |
+| ------------------------------- | ---------------------------------- |
+| `launch-game.ts`                | `openGame` — spawn exe/wine/proton |
+| `resolve-launch-command.ts`     | Build launch argv                  |
+| `download-game-helper.ts`       | Start download từ game details     |
+| `download-error-handler.ts`     | Map errors → `DownloadError` enum  |
+| `ensure-downloads-path.ts`      | mkdir `<exe>/game`                 |
+| `migrate-download-sources.ts`   | One-time LevelDB migration         |
+| `seed-download-sources.ts`      | Seed default repack sources        |
+| `is-gamemode-available.ts` etc. | Linux tool detection               |
 
 ---
 
 ## Events helpers (`main/events/helpers/`)
 
-| File | Dùng bởi |
-|------|----------|
-| `get-downloads-path.ts` | Resolve download path cho game |
-| `get-directory-size.ts` | Folder size (transfer, seed check) |
-| `find-game-root.ts` | Locate game install root |
-| `parse-executable-path.ts` | Normalize exe path |
-| `parse-launch-options.ts` | Parse launch args |
+| File                       | Dùng bởi                           |
+| -------------------------- | ---------------------------------- |
+| `get-downloads-path.ts`    | Resolve download path cho game     |
+| `get-directory-size.ts`    | Folder size (transfer, seed check) |
+| `find-game-root.ts`        | Locate game install root           |
+| `parse-executable-path.ts` | Normalize exe path                 |
+| `parse-launch-options.ts`  | Parse launch args                  |
 
 ---
 
@@ -465,20 +465,20 @@ Shell: `App` = Sidebar + Header + `<Outlet>` + BottomPanel.
 
 ## Khi sửa feature X → đọc file nào
 
-| Feature | Entry points |
-|---------|-------------|
+| Feature             | Entry points                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
 | Thêm downloader mới | `shared/constants.ts` enum → `download-manager.ts` dispatch → resolver file → `getDownloadersForUri()` |
-| Download UI | `pages/downloads/` → `useDownload` → `preload` torrenting section |
-| Game launch | `events/library/open-game.ts` → `helpers/launch-game.ts` |
-| Playtime | `process-watcher.ts` → `library-sync/update-game-playtime.ts` |
-| Library scan | `events/library/scan-installed-games.ts` → `game-executables.ts` |
-| Save backup | `events/cloud-save/*` → `cloud-sync.ts` → `ludusavi.ts` |
-| Repacks | `events/download-sources/*` → `download-sources-checker.ts` |
-| Themes | `events/themes/*` → `level/sublevels/themes.ts` |
-| Settings path | `pages/settings/` → `SettingsContext` → `updateUserPreferences` |
-| API call mới | Renderer `window.electron.api` → `api-client.ts` |
-| LevelDB key mới | `types/level.types.ts` → `level/sublevels/keys.ts` → sublevel file |
-| Thêm IPC | `events/{group}/handler.ts` + `registerEvent` → `preload/index.ts` → hook (nếu cần) |
+| Download UI         | `pages/downloads/` → `useDownload` → `preload` torrenting section                                      |
+| Game launch         | `events/library/open-game.ts` → `helpers/launch-game.ts`                                               |
+| Playtime            | `process-watcher.ts` → `library-sync/update-game-playtime.ts`                                          |
+| Library scan        | `events/library/scan-installed-games.ts` → `game-executables.ts`                                       |
+| Save backup         | `events/cloud-save/*` → `cloud-sync.ts` → `ludusavi.ts`                                                |
+| Repacks             | `events/download-sources/*` → `download-sources-checker.ts`                                            |
+| Themes              | `events/themes/*` → `level/sublevels/themes.ts`                                                        |
+| Settings path       | `pages/settings/` → `SettingsContext` → `updateUserPreferences`                                        |
+| API call mới        | Renderer `window.electron.api` → `api-client.ts`                                                       |
+| LevelDB key mới     | `types/level.types.ts` → `level/sublevels/keys.ts` → sublevel file                                     |
+| Thêm IPC            | `events/{group}/handler.ts` + `registerEvent` → `preload/index.ts` → hook (nếu cần)                    |
 
 ---
 

@@ -1450,14 +1450,12 @@ export class DownloadManager {
 
       try {
         // Multi-file batch path (AllDebrid magnets, RealDebrid multi-link torrents)
-        let batchEntries:
-          | Array<{
-              url: string;
-              filename: string;
-              size?: number;
-              isLocked?: boolean;
-            }>
-          | null = null;
+        let batchEntries: Array<{
+          url: string;
+          filename: string;
+          size?: number;
+          isLocked?: boolean;
+        }> | null = null;
 
         if (download.downloader === Downloader.AllDebrid) {
           const entries = await AllDebridClient.getDownloadEntries(
@@ -1499,9 +1497,7 @@ export class DownloadManager {
           if (entries.length > 1) {
             batchEntries = entries.map((entry) => ({
               url: entry.url,
-              filename: this.sanitizeRelativePath(
-                entry.filename || "download"
-              ),
+              filename: this.sanitizeRelativePath(entry.filename || "download"),
               isLocked: false,
             }));
           }

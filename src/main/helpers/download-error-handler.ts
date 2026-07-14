@@ -143,7 +143,8 @@ export const handleDownloadError = (
   downloader: Downloader
 ): DownloadErrorResult => {
   if (err instanceof GoRpcError && downloader === Downloader.Torrent) {
-    const mapped = mapTorrentErrorCode(err.code) ?? mapTorrentErrorCode(err.message);
+    const mapped =
+      mapTorrentErrorCode(err.code) ?? mapTorrentErrorCode(err.message);
     if (mapped) return mapped;
     return { ok: false, error: DownloadError.TorrentFilesUnavailable };
   }

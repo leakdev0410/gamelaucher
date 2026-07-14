@@ -13,8 +13,6 @@
         "description": "Maximum number of results to return. Defaults to 5."
       }
     },
-    "required": [
-      "task_id"
-    ]
+    "required": ["task_id"]
   }
 }

@@ -102,7 +102,10 @@ export class TorBoxClient {
   ) {
     if (!info) return false;
     if (info.cached) return true;
-    if (info.download_state === "completed" || info.download_state === "cached") {
+    if (
+      info.download_state === "completed" ||
+      info.download_state === "cached"
+    ) {
       return true;
     }
     // progress is 0..1 when finished
