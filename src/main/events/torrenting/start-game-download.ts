@@ -13,6 +13,7 @@ import {
   isKnownDownloadError,
   prepareGameEntry,
 } from "@main/helpers";
+import { ensureDownloadsPathExists } from "@main/helpers/ensure-downloads-path";
 
 const startGameDownload = async (
   _event: Electron.IpcMainInvokeEvent,
@@ -36,6 +37,14 @@ const startGameDownload = async (
   logger.log(
     `[Downloads] Start requested for ${gameKey} (downloader=${downloader})`
   );
+
+  // Create download folder if missing (portable `game/` on first install).
+  if (!ensureDownloadsPathExists(downloadPath)) {
+    return {
+      ok: false as const,
+      error: "download_path_not_writable",
+    };
+  }
 
   await prepareGameEntry({ gameKey, title, objectId, shop });
   await DownloadManager.cancelDownload(gameKey);

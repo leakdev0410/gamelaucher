@@ -87,3 +87,6 @@ export enum DownloadError {
 }
 
 export const FILE_EXTENSIONS_TO_EXTRACT = [".rar", ".zip", ".7z"];
+
+/** Common passwords for Online-Fix / SteamRip repack archives. */
+export const REPACK_ARCHIVE_PASSWORDS = ["online-fix.me", "steamrip.com"] as const;

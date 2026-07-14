@@ -1,0 +1,37 @@
+---
+pid: 13940
+cwd: "C:\lequan\code\gamelaucher"
+command: "node \"C:\\lequan\\code\\gamelaucher\\test-magnet-long.cjs\" 2>&1 | Select-Object -First 30"
+started_at: 2026-07-13T04:38:14.782Z
+running_for_ms: 6354988  
+---
+START {"id":1}
+T+5s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+10s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+15s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+20s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+25s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+30s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+35s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+40s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+45s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+50s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+55s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+60s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+65s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+70s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+75s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+80s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+85s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+90s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+95s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+100s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+105s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+110s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+115s peers=0 seeds=0 status=2 fileSize=0 speed=0
+T+120s peers=0 seeds=0 status=2 fileSize=0 speed=0
+--- STDERR (last 30 lines) ---
+2026/07/13 11:38:15 torrent_downloader.go:173: Torrent client ready (requested port 5881, ipv6Disabled=false)
+2026/07/13 11:38:18 torrent_downloader.go:668: [torrent] HTTP metainfo cache miss for ce1f8bb32b3a92c13d2b4681439dd7101ce98366, falling back to DHT/peers
+2026/07/13 11:38:18 torrent_downloader.go:268: [torrent] enhanced magnet with 49 trackers
+[2026-07-13 11:38:19 +0700 WRN websocketTrackers github.com/anacrolix/torrent/webtorrent tracker-client.go:384]

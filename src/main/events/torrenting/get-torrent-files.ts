@@ -1,14 +1,31 @@
 import { registerEvent } from "../register-event";
-import { GoRPC } from "@main/services/go-rpc";
+import { GoRPC, GoRpcError } from "@main/services/go-rpc";
 import type { TorrentFilesResponse } from "@types";
 import { DownloadError } from "@shared";
 
 const mapTorrentFilesError = (error: unknown) => {
-  const rpcError =
-    typeof error === "object" && error !== null && "response" in error
-      ? ((error as { response?: { data?: { error?: string } } }).response?.data
-          ?.error ?? undefined)
-      : undefined;
+  const codeFromGoRpc =
+    error instanceof GoRpcError
+      ? error.code
+      : typeof error === "object" &&
+          error !== null &&
+          "code" in error &&
+          typeof (error as { code: unknown }).code === "string"
+        ? (error as { code: string }).code
+        : undefined;
+
+  const nestedRpcError = (() => {
+    if (typeof error !== "object" || error === null || !("response" in error)) {
+      return undefined;
+    }
+    const data = (
+      error as { response?: { data?: { error?: string | { code?: string } } } }
+    ).response?.data?.error;
+    if (!data) return undefined;
+    return typeof data === "string" ? data : data.code;
+  })();
+
+  const rpcError = codeFromGoRpc ?? nestedRpcError;
 
   if (rpcError) {
     switch (rpcError) {
@@ -27,10 +44,6 @@ const mapTorrentFilesError = (error: unknown) => {
     }
   }
 
-  if (error instanceof Error) {
-    return DownloadError.TorrentFilesUnavailable;
-  }
-
   return DownloadError.TorrentFilesUnavailable;
 };
 
@@ -43,14 +56,15 @@ const getTorrentFiles = async (
   }
 
   try {
+    // Align with Hydra get-torrent-files defaults (30s, clamp 5–120s server-side).
     const response = await GoRPC.rpc.call<TorrentFilesResponse>(
       "torrent_files",
       {
         magnet,
-        timeout_ms: 45_000,
+        timeout_ms: 30_000,
       },
       {
-        timeout: 45000,
+        timeout: 35_000,
       }
     );
 

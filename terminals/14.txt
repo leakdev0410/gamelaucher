@@ -1,0 +1,13 @@
+---
+pid: 12932
+cwd: "C:\lequan\code\gamelaucher"
+command: "cd C:\\lequan\\code\\gamelaucher; node scripts/test-extract-folder.mjs \"C:\\lequan\\app\\gamelaucher\\game\\YAPYAP\""
+started_at: 2026-07-13T05:27:56.832Z
+running_for_ms: 3370001  
+---
+Directory: C:\lequan\app\gamelaucher\game\YAPYAP
+Archives found: 2
+  - YAPYAP.v1.0.3.606-deeb8-OFME.rar.part (1207 MiB) | archive=true firstVolume=true
+  - YAPYAP_Fix_Repair_Steam_Generic.rar (11 MiB) | archive=true firstVolume=true
+
+Extracting: C:\lequan\app\gamelaucher\game\YAPYAP\YAPYAP.v1.0.3.606-deeb8-OFME.rar.part

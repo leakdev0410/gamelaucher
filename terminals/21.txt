@@ -1,0 +1,10 @@
+---
+pid: 10796
+cwd: "C:\lequan\code\gamelaucher"
+command: "cd C:\\lequan\\code\\gamelaucher; yarn typecheck:node; cd go_rpc; go build -o ../gamelaucher-go-rpc/gamelaucher-go-rpc.exe"
+started_at: 2026-07-13T06:14:42.013Z
+running_for_ms: 564995   
+---
+yarn run v1.22.22
+$ tsc --noEmit -p tsconfig.node.json --composite false
+Done in 7.35s.

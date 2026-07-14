@@ -108,23 +108,40 @@ export class GoRPC {
       initialSeeding ? JSON.stringify(initialSeeding) : "",
     ];
 
-    const binaryPath = app.isPackaged
-      ? path.join(
-          process.resourcesPath,
-          "gamelaucher-go-rpc",
-          binaryNameByPlatform[process.platform]!
-        )
-      : path.join(__dirname, "..", "..", "go_rpc", "main.go");
+    const binaryName = binaryNameByPlatform[process.platform]!;
+    const packagedBinaryPath = path.join(
+      process.resourcesPath,
+      "gamelaucher-go-rpc",
+      binaryName
+    );
+    const devBinaryCandidates = [
+      path.join(process.cwd(), "gamelaucher-go-rpc", binaryName),
+      path.join(__dirname, "..", "..", "gamelaucher-go-rpc", binaryName),
+    ];
+    const devBinaryPath = devBinaryCandidates.find((candidate) =>
+      fs.existsSync(candidate)
+    );
+    const goSourcePath = path.join(__dirname, "..", "..", "go_rpc", "main.go");
 
-    if (app.isPackaged) {
-      if (!fs.existsSync(binaryPath)) {
+    const resolvedBinaryPath = app.isPackaged
+      ? packagedBinaryPath
+      : (devBinaryPath ?? null);
+
+    if (resolvedBinaryPath) {
+      if (!fs.existsSync(resolvedBinaryPath)) {
         dialog.showErrorBox("Fatal", "Game Launcher RPC binary not found.");
         app.quit();
         throw new Error("RPC binary not found");
       }
-      this.process = cp.spawn(binaryPath, commonArgs, { windowsHide: true });
+      this.process = cp.spawn(resolvedBinaryPath, commonArgs, {
+        windowsHide: true,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
     } else {
-      this.process = cp.spawn("go", ["run", binaryPath, ...commonArgs]);
+      this.process = cp.spawn("go", ["run", goSourcePath, ...commonArgs], {
+        windowsHide: true,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
     }
 
     this.process.stdout?.on("data", (data) => {

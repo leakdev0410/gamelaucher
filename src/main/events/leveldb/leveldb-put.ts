@@ -1,6 +1,6 @@
 import { registerEvent } from "../register-event";
 import { db } from "@main/level";
-import { getSublevelByName } from "./helpers";
+import { assertRootKeyWritable, getSublevelByName } from "./helpers";
 import { logger } from "@main/services";
 
 const leveldbPut = async (
@@ -16,6 +16,7 @@ const leveldbPut = async (
       const sublevel = getSublevelByName(sublevelName);
       await sublevel.put(key, value);
     } else {
+      assertRootKeyWritable(key);
       await db.put<string, unknown>(key, value, { valueEncoding });
     }
   } catch (error) {

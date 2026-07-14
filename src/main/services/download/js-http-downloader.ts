@@ -97,6 +97,8 @@ export class JsHttpDownloader {
   private async startDownloadWithRetry(): Promise<void> {
     if (!this.currentOptions) return;
 
+    let terminalError: Error | null = null;
+
     while (!this.isPaused) {
       if (!this.currentOptions) return;
 
@@ -125,12 +127,19 @@ export class JsHttpDownloader {
           savePath,
           usedFallback
         );
+        terminalError = null;
         break;
       } catch (err) {
         const shouldRetry = await this.handleDownloadErrorWithRetry(
           err as Error
         );
         if (!shouldRetry) {
+          // Read status after handler mutates it (may be "error" or "paused").
+          const finalStatus = this.status as JsHttpDownloaderStatus["status"];
+          if (finalStatus === "error") {
+            terminalError =
+              err instanceof Error ? err : new Error(String(err));
+          }
           break;
         }
       } finally {
@@ -140,6 +149,12 @@ export class JsHttpDownloader {
     }
 
     this.isDownloading = false;
+
+    // Surface terminal failures so DownloadManager .catch paths run.
+    const endStatus = this.status as JsHttpDownloaderStatus["status"];
+    if (terminalError && !this.isPaused && endStatus === "error") {
+      throw terminalError;
+    }
   }
 
   private startStallDetection(): void {
@@ -376,10 +391,12 @@ export class JsHttpDownloader {
       `[JsHttpDownloader] Response status=${response.status} content-type=${contentType} content-length=${contentLength}`
     );
 
-    if (response.status === 416 && startByte > 0) {
+    let effectiveStartByte = startByte;
+
+    if (response.status === 416 && effectiveStartByte > 0) {
       const remoteTotalSize = this.parseTotalSizeFrom416(response);
 
-      if (remoteTotalSize !== null && startByte === remoteTotalSize) {
+      if (remoteTotalSize !== null && effectiveStartByte === remoteTotalSize) {
         this.fileSize = remoteTotalSize;
         this.bytesDownloaded = remoteTotalSize;
         this.status = "complete";
@@ -393,7 +410,7 @@ export class JsHttpDownloader {
       }
 
       throw new Error(
-        `[JsHttpDownloader] Range not satisfiable for resumed download (local=${startByte}, remote=${remoteTotalSize ?? "unknown"}). Keeping local file and aborting to avoid restart from zero.`
+        `[JsHttpDownloader] Range not satisfiable for resumed download (local=${effectiveStartByte}, remote=${remoteTotalSize ?? "unknown"}). Keeping local file and aborting to avoid restart from zero.`
       );
     }
 
@@ -411,10 +428,31 @@ export class JsHttpDownloader {
       );
     }
 
-    this.parseFileSize(response, startByte);
+    // Server ignored Range and returned the full body — rewrite from zero
+    // instead of appending (which would corrupt the partial file).
+    if (effectiveStartByte > 0 && response.status === 200) {
+      logger.warn(
+        `[JsHttpDownloader] Server ignored Range (HTTP 200). Restarting download from byte 0 for ${filePath}`
+      );
+      try {
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (err) {
+        logger.error(
+          "[JsHttpDownloader] Failed to remove partial file before full restart:",
+          err
+        );
+      }
+      effectiveStartByte = 0;
+      this.bytesDownloaded = 0;
+      this.resetSpeedTracking();
+    }
+
+    this.parseFileSize(response, effectiveStartByte);
 
     let actualFilePath = filePath;
-    if (startByte === 0) {
+    if (effectiveStartByte === 0) {
       const urlDerivedFilename = path.basename(filePath);
       const headerFilename = this.parseContentDisposition(response);
       if (headerFilename) {
@@ -443,11 +481,18 @@ export class JsHttpDownloader {
       throw new Error("Response body is null");
     }
 
-    const flags = startByte > 0 ? "a" : "w";
+    // Only append on true partial content responses.
+    const flags = effectiveStartByte > 0 && response.status === 206 ? "a" : "w";
     this.writeStream = fs.createWriteStream(actualFilePath, { flags });
 
     const readableStream = this.createReadableStream(response.body.getReader());
     await pipeline(readableStream, this.writeStream);
+
+    if (this.fileSize > 0 && this.bytesDownloaded < this.fileSize) {
+      throw new Error(
+        `[JsHttpDownloader] Incomplete download: got ${this.bytesDownloaded}/${this.fileSize} bytes`
+      );
+    }
 
     this.status = "complete";
     this.retryCount = 0;
@@ -605,10 +650,22 @@ export class JsHttpDownloader {
     }
 
     let progress = 0;
-    if (this.status === "complete") {
+    if (this.fileSize > 0) {
+      progress = Math.min(this.bytesDownloaded / this.fileSize, 1);
+    } else if (this.status === "complete") {
       progress = 1;
-    } else if (this.fileSize > 0) {
-      progress = this.bytesDownloaded / this.fileSize;
+    }
+
+    // Do not report 100% complete when size is known but bytes are short.
+    const status =
+      this.status === "complete" &&
+      this.fileSize > 0 &&
+      this.bytesDownloaded < this.fileSize
+        ? "error"
+        : this.status;
+
+    if (status === "complete") {
+      progress = 1;
     }
 
     return {
@@ -618,7 +675,7 @@ export class JsHttpDownloader {
       downloadSpeed: this.downloadSpeed,
       numPeers: 0,
       numSeeds: 0,
-      status: this.status,
+      status,
       bytesDownloaded: this.bytesDownloaded,
     };
   }

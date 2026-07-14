@@ -135,9 +135,35 @@ export const getDownloadersForUri = (uri: string) => {
     ];
   }
 
+  // HTTP(S) link to a .torrent file — client downloads the metainfo then seeds
+  // peers (libtorrent "url" behaviour). Prefer Torrent over generic HTTP so we
+  // don't save the .torrent blob as a finished "game" file.
+  if (isTorrentFileUri(uri)) {
+    return [
+      Downloader.Torrent,
+      Downloader.TorBox,
+      Downloader.RealDebrid,
+      Downloader.Premiumize,
+      Downloader.AllDebrid,
+    ];
+  }
+
   if (isDirectHttpDownloadUri(uri)) return [Downloader.Http];
 
   return [];
+};
+
+/** True for http(s) URLs that point at a .torrent metainfo file. */
+export const isTorrentFileUri = (uri: string) => {
+  try {
+    const parsed = new URL(uri);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return false;
+    }
+    return parsed.pathname.toLowerCase().endsWith(".torrent");
+  } catch {
+    return false;
+  }
 };
 
 export const getDownloadersForUris = (uris: string[]) => {

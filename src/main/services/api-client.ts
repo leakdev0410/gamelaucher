@@ -129,6 +129,7 @@ export class ApiClient {
   }
 
   static async setupApi() {
+    // http(s)Agent defaults (Cloudflare DNS lookup) are set in cloudflare-dns.ts
     this.instance = axios.create({
       baseURL: appConfig.apiUrl,
       headers: { "User-Agent": `Game Launcher v${appVersion}` },
@@ -224,13 +225,18 @@ export class ApiClient {
         : null,
     };
 
-    const updatedUserData = await getUserData();
-
-    this.userAuth.subscription = updatedUserData?.subscription
-      ? {
-          expiresAt: updatedUserData.subscription.expiresAt,
-        }
-      : null;
+    // Never await network during setupApi — splash/main window must open offline.
+    void getUserData()
+      .then((updatedUserData) => {
+        this.userAuth.subscription = updatedUserData?.subscription
+          ? {
+              expiresAt: updatedUserData.subscription.expiresAt,
+            }
+          : null;
+      })
+      .catch((error) => {
+        logger.error("setupApi: getUserData failed (continuing)", error);
+      });
   }
 
   private static sendSignOutEvent() {

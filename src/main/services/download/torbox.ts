@@ -94,8 +94,44 @@ export class TorBoxClient {
     return { id: torrent.torrent_id, name: torrent.name };
   }
 
+  private static readonly READY_POLL_INTERVAL_MS = 3000;
+  private static readonly READY_MAX_ATTEMPTS = 60; // ~3 minutes
+
+  private static isTorrentReady(
+    info: Awaited<ReturnType<typeof TorBoxClient.getTorrentInfo>>
+  ) {
+    if (!info) return false;
+    if (info.cached) return true;
+    if (info.download_state === "completed" || info.download_state === "cached") {
+      return true;
+    }
+    // progress is 0..1 when finished
+    if (typeof info.progress === "number" && info.progress >= 1) {
+      return true;
+    }
+    return false;
+  }
+
+  private static async waitUntilReady(id: number) {
+    for (let attempt = 0; attempt < this.READY_MAX_ATTEMPTS; attempt++) {
+      const info = await this.getTorrentInfo(id);
+      if (this.isTorrentReady(info)) {
+        return info;
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.READY_POLL_INTERVAL_MS)
+      );
+    }
+
+    throw new Error(
+      `TorBox torrent ${id} was not ready after ${this.READY_MAX_ATTEMPTS} attempts`
+    );
+  }
+
   static async getDownloadInfo(uri: string) {
     const torrentData = await this.getTorrentIdAndName(uri);
+    await this.waitUntilReady(torrentData.id);
     const url = await this.requestLink(torrentData.id);
 
     const name = torrentData.name ? `${torrentData.name}.zip` : undefined;

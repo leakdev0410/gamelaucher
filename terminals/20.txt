@@ -1,0 +1,19 @@
+---
+pid: 11056
+cwd: "C:\lequan\code\gamelaucher"
+command: "Stop-Process -Name gamelaucher-go-rpc -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Set-Location \"C:\\lequan\\app\\gamelaucher\\game\\Schedule I\"; & \"C:\\lequan\\code\\gamelaucher\\binaries\\7z.exe\" x \"-ponline-fix.me\" -y \"Schedule.I.v0.4.0f9-OFME.rar\" 2>&1 | Select-Object -Last 12"
+started_at: 2026-07-13T06:13:30.377Z
+running_for_ms: 640001   
+---
+Solid = -
+Blocks = 255
+Method = v6:32M:m1
+Multivolume = -
+Volumes = 1
+
+Everything is Ok
+
+Folders: 96
+Files: 159
+Size:       7707804975
+Compressed: 2493554034

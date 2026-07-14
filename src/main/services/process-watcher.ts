@@ -11,6 +11,7 @@ import { INTERVALS } from "@main/constants";
 import { appConfig } from "@shared";
 import { Wine } from "./wine";
 import { NativeAddon } from "./native-addon";
+import { CloudSync } from "./cloud-sync";
 
 export const gamesPlaytime = new Map<
   string,
@@ -61,9 +62,12 @@ const logPlaytimeTrace = (
 };
 
 const getGameExecutables = async () => {
+  // Hard timeout: must not block main-process import / splash forever.
   const gameExecutables = (
     await axios
-      .get(appConfig.externalResourcesUrl + "/game-executables.json")
+      .get(appConfig.externalResourcesUrl + "/game-executables.json", {
+        timeout: 8_000,
+      })
       .catch(() => {
         return { data: {} };
       })
@@ -95,7 +99,16 @@ const getGameExecutables = async () => {
   return gameExecutables;
 };
 
-export const gameExecutables = await getGameExecutables();
+/** Populated asynchronously — never block main-process import on network. */
+export let gameExecutables: GameExecutables = {};
+
+void getGameExecutables()
+  .then((data) => {
+    gameExecutables = data;
+  })
+  .catch((error) => {
+    logger.error("[process-watcher] Failed to load game-executables.json", error);
+  });
 
 const findGamePathByProcess = async (
   processMap: Map<string, Set<string>>,
@@ -238,12 +251,12 @@ export const watchProcesses = async () => {
 
     if (hasProcess) {
       if (gamesPlaytime.has(gameKey)) {
-        onTickGame(game);
+        await onTickGame(game);
       } else {
         onOpenGame(game);
       }
     } else if (gamesPlaytime.has(gameKey)) {
-      onCloseGame(game);
+      await onCloseGame(game);
     }
   }
 
@@ -308,13 +321,14 @@ function onOpenGame(game: Game) {
     });
 
     trackGamePlaytime(game, deltaToSync, syncTimestamp)
-      .then(() => {
+      .then(async () => {
         logPlaytimeTrace("open-sync-track-success", game, {
           deltaToSync,
         });
 
-        gamesSublevel.put(gameKey, {
-          ...game,
+        const latest = (await gamesSublevel.get(gameKey).catch(() => null)) ?? game;
+        await gamesSublevel.put(gameKey, {
+          ...latest,
           unsyncedDeltaPlayTimeInMilliseconds: 0,
         });
       })
@@ -346,71 +360,79 @@ function onOpenGame(game: Game) {
   }
 }
 
-function onTickGame(game: Game) {
+async function onTickGame(game: Game) {
   const now = performance.now();
-  const gamePlaytime = gamesPlaytime.get(
-    levelKeys.game(game.shop, game.objectId)
-  )!;
+  const gameKey = levelKeys.game(game.shop, game.objectId);
+  const gamePlaytime = gamesPlaytime.get(gameKey)!;
 
   const delta = now - gamePlaytime.lastTick;
+  const latest = (await gamesSublevel.get(gameKey).catch(() => null)) ?? game;
 
   const updatedGame: Game = {
-    ...game,
-    playTimeInMilliseconds: (game.playTimeInMilliseconds ?? 0) + delta,
+    ...latest,
+    playTimeInMilliseconds: (latest.playTimeInMilliseconds ?? 0) + delta,
     lastTimePlayed: new Date(),
   };
 
-  gamesSublevel.put(levelKeys.game(game.shop, game.objectId), updatedGame);
+  await gamesSublevel.put(gameKey, updatedGame);
 
-  gamesPlaytime.set(levelKeys.game(game.shop, game.objectId), {
+  gamesPlaytime.set(gameKey, {
     ...gamePlaytime,
     lastTick: now,
   });
 
-  if (currentTick % TICKS_TO_UPDATE_API === 0 && game.shop !== "custom") {
+  if (currentTick % TICKS_TO_UPDATE_API === 0 && updatedGame.shop !== "custom") {
     const deltaToSync =
       now -
       gamePlaytime.lastSyncTick +
-      (game.unsyncedDeltaPlayTimeInMilliseconds ?? 0);
+      (latest.unsyncedDeltaPlayTimeInMilliseconds ?? 0);
 
-    logPlaytimeTrace("periodic-sync-request", game, {
-      method: game.remoteId ? "track" : "create",
+    logPlaytimeTrace("periodic-sync-request", updatedGame, {
+      method: updatedGame.remoteId ? "track" : "create",
       deltaToSync,
       performanceNow: now,
       lastSyncTick: gamePlaytime.lastSyncTick,
       lastTick: gamePlaytime.lastTick,
     });
 
-    const gamePromise = game.remoteId
-      ? trackGamePlaytime(game, deltaToSync, game.lastTimePlayed!)
-      : createGame(game);
+    const gamePromise = updatedGame.remoteId
+      ? trackGamePlaytime(
+          updatedGame,
+          deltaToSync,
+          updatedGame.lastTimePlayed!
+        )
+      : createGame(updatedGame);
 
     gamePromise
-      .then(() => {
-        logPlaytimeTrace("periodic-sync-success", game, {
-          method: game.remoteId ? "track" : "create",
+      .then(async () => {
+        logPlaytimeTrace("periodic-sync-success", updatedGame, {
+          method: updatedGame.remoteId ? "track" : "create",
           deltaToSync,
         });
 
-        gamesSublevel.put(levelKeys.game(game.shop, game.objectId), {
-          ...updatedGame,
+        const freshest =
+          (await gamesSublevel.get(gameKey).catch(() => null)) ?? updatedGame;
+        await gamesSublevel.put(gameKey, {
+          ...freshest,
           unsyncedDeltaPlayTimeInMilliseconds: 0,
         });
       })
-      .catch((error) => {
-        logPlaytimeTrace("periodic-sync-failed", game, {
-          method: game.remoteId ? "track" : "create",
+      .catch(async (error) => {
+        logPlaytimeTrace("periodic-sync-failed", updatedGame, {
+          method: updatedGame.remoteId ? "track" : "create",
           deltaToSync,
           error: error instanceof Error ? error.message : String(error),
         });
 
-        gamesSublevel.put(levelKeys.game(game.shop, game.objectId), {
-          ...updatedGame,
+        const freshest =
+          (await gamesSublevel.get(gameKey).catch(() => null)) ?? updatedGame;
+        await gamesSublevel.put(gameKey, {
+          ...freshest,
           unsyncedDeltaPlayTimeInMilliseconds: deltaToSync,
         });
       })
       .finally(() => {
-        gamesPlaytime.set(levelKeys.game(game.shop, game.objectId), {
+        gamesPlaytime.set(gameKey, {
           ...gamePlaytime,
           lastTick: now,
           lastSyncTick: now,
@@ -419,7 +441,7 @@ function onTickGame(game: Game) {
   }
 }
 
-const onCloseGame = (game: Game) => {
+const onCloseGame = async (game: Game) => {
   const gameKey = levelKeys.game(game.shop, game.objectId);
   const now = performance.now();
   const gamePlaytime = gamesPlaytime.get(gameKey)!;
@@ -436,66 +458,89 @@ const onCloseGame = (game: Game) => {
     lastSyncTick: gamePlaytime.lastSyncTick,
   });
 
+  const latest = (await gamesSublevel.get(gameKey).catch(() => null)) ?? game;
+
   const updatedGame: Game = {
-    ...game,
-    playTimeInMilliseconds: (game.playTimeInMilliseconds ?? 0) + delta,
+    ...latest,
+    playTimeInMilliseconds: (latest.playTimeInMilliseconds ?? 0) + delta,
     lastTimePlayed: new Date(),
   };
 
-  gamesSublevel.put(gameKey, updatedGame);
+  await gamesSublevel.put(gameKey, updatedGame);
 
-  if (game.shop === "custom") return;
+  if (updatedGame.automaticCloudSync) {
+    void CloudSync.uploadSaveGame(
+      updatedGame.objectId,
+      updatedGame.shop,
+      null
+    ).catch((error) => {
+      logger.error(
+        `[process-watcher] automaticCloudSync failed for ${gameKey}`,
+        error
+      );
+    });
+  }
 
-  if (game.remoteId) {
+  if (updatedGame.shop === "custom") return;
+
+  if (updatedGame.remoteId) {
     const deltaToSync =
       now -
       gamePlaytime.lastSyncTick +
-      (game.unsyncedDeltaPlayTimeInMilliseconds ?? 0);
+      (latest.unsyncedDeltaPlayTimeInMilliseconds ?? 0);
 
-    logPlaytimeTrace("close-sync-track-request", game, {
+    logPlaytimeTrace("close-sync-track-request", updatedGame, {
       deltaToSync,
       syncTimestamp:
-        game.lastTimePlayed instanceof Date
-          ? game.lastTimePlayed.toISOString()
-          : game.lastTimePlayed,
+        updatedGame.lastTimePlayed instanceof Date
+          ? updatedGame.lastTimePlayed.toISOString()
+          : updatedGame.lastTimePlayed,
     });
 
-    return trackGamePlaytime(game, deltaToSync, game.lastTimePlayed!)
-      .then(() => {
-        logPlaytimeTrace("close-sync-track-success", game, {
+    return trackGamePlaytime(
+      updatedGame,
+      deltaToSync,
+      updatedGame.lastTimePlayed!
+    )
+      .then(async () => {
+        logPlaytimeTrace("close-sync-track-success", updatedGame, {
           deltaToSync,
         });
 
+        const freshest =
+          (await gamesSublevel.get(gameKey).catch(() => null)) ?? updatedGame;
         return gamesSublevel.put(gameKey, {
-          ...updatedGame,
+          ...freshest,
           unsyncedDeltaPlayTimeInMilliseconds: 0,
         });
       })
-      .catch((error) => {
-        logPlaytimeTrace("close-sync-track-failed", game, {
+      .catch(async (error) => {
+        logPlaytimeTrace("close-sync-track-failed", updatedGame, {
           deltaToSync,
           error: error instanceof Error ? error.message : String(error),
         });
 
+        const freshest =
+          (await gamesSublevel.get(gameKey).catch(() => null)) ?? updatedGame;
         return gamesSublevel.put(gameKey, {
-          ...updatedGame,
+          ...freshest,
           unsyncedDeltaPlayTimeInMilliseconds: deltaToSync,
         });
       });
   } else {
-    logPlaytimeTrace("close-sync-create-request", game, {
+    logPlaytimeTrace("close-sync-create-request", updatedGame, {
       syncTimestamp:
-        game.lastTimePlayed instanceof Date
-          ? game.lastTimePlayed.toISOString()
-          : game.lastTimePlayed,
+        updatedGame.lastTimePlayed instanceof Date
+          ? updatedGame.lastTimePlayed.toISOString()
+          : updatedGame.lastTimePlayed,
     });
 
-    return createGame(game)
+    return createGame(updatedGame)
       .then(() => {
-        logPlaytimeTrace("close-sync-create-success", game);
+        logPlaytimeTrace("close-sync-create-success", updatedGame);
       })
       .catch((error) => {
-        logPlaytimeTrace("close-sync-create-failed", game, {
+        logPlaytimeTrace("close-sync-create-failed", updatedGame, {
           error: error instanceof Error ? error.message : String(error),
         });
       });

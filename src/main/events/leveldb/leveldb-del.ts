@@ -1,6 +1,6 @@
 import { registerEvent } from "../register-event";
 import { db } from "@main/level";
-import { getSublevelByName } from "./helpers";
+import { assertRootKeyWritable, getSublevelByName } from "./helpers";
 import { logger } from "@main/services";
 
 const leveldbDel = async (
@@ -13,6 +13,7 @@ const leveldbDel = async (
       const sublevel = getSublevelByName(sublevelName);
       await sublevel.del(key);
     } else {
+      assertRootKeyWritable(key);
       await db.del(key);
     }
   } catch (error) {

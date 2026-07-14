@@ -1,6 +1,7 @@
 # CLAUDE.md
 
 Architecture map for this repo so a fresh session has context without re-scanning all of `src/`.
+**Detailed skeleton (file trees, IPC index, flow diagrams, feature→file map): `src/SRC-SKELETON.md`.**
 Conventions live in `.cursorrules` (read it too) — key ones summarized at the bottom.
 
 ## What this is
@@ -13,9 +14,8 @@ This checkout is a **personal fork** (`package.json` name `gamelaucher`, version
 upstream remote still `hydralauncher/hydra`). Key fork traits to keep in mind:
 
 - **Torrent RPC migrated Python → Go.** Upstream `python_rpc/` is deleted. The Go RPC source lives in
-  `go_rpc/` and is built into `gamelaucher-go-rpc/gamelaucher-go-rpc.exe`. **But the code that spawns it
-  is still named `PythonRPC` / `python-rpc.ts`** (only the binary path changed). Error strings still say
-  "Hydra Python Instance". Treat "PythonRPC" as "the Go torrent RPC".
+  `go_rpc/` and is built into `gamelaucher-go-rpc/gamelaucher-go-rpc.exe`. Spawned by `services/go-rpc.ts`
+  (`GoRPC` class). Legacy error strings may still say "Hydra Python Instance".
 - **Big Picture mode removed.** Upstream's `src/big-picture/` gamepad/TV app is **entirely deleted** — no
   files, no `/big-picture/*` routes, no `big-picture` IPC events, no `dev:big-picture` script. The renderer
   is Redux-only now; ignore any lingering upstream references to Zustand or spatial-focus navigation.
@@ -27,8 +27,10 @@ upstream remote still `hydralauncher/hydra`). Key fork traits to keep in mind:
 - **Rebranded to "Game Launcher"** (window title in renderer is hardcoded).
 - **Fork-added features**: a pure-Node HTTP downloader (`js-http-downloader.ts`), multi download-directory
   support (`shared/download-directories.ts`), cross-drive game transfer (`transferGameFiles`), a Vietnamese
-  locale (`src/locales/vi`). Hand-added preload APIs are below the `//UPDATEDD` comment (line ~850) in
-  `src/preload/index.ts`.
+  locale (`src/locales/vi`), Cloudflare DNS override (`services/cloudflare-dns.ts` — loaded first in
+  `index.ts`), portable default-folder creation (`helpers/ensure-downloads-path.ts`), splash window +
+  split startup (`loadState` fast path vs `loadStateDeferred` network path). Fork preload APIs at bottom of
+  `src/preload/index.ts`: `getAvailableDrives`, `transferGameFiles`, `cancelGameTransfer`, generic `on`/`off`.
 - **`go_defender/` is a standalone tool, not part of the app.** A one-shot Windows utility (Go; prebuilt
   `setup.exe`) that adds a folder to the Windows Defender exclusion list — self-elevates via UAC and calls
   `Add-MpPreference`. It has **no** yarn build script and is **not** spawned by the app; run it manually.
@@ -45,9 +47,10 @@ upstream remote still `hydralauncher/hydra`). Key fork traits to keep in mind:
   `UpdateManager` service, the `events/autoupdater/*` handlers, and the `hydralauncher/hydra` GitHub update
   feed) — the fork no longer self-updates from upstream. The **Rust native addon is removed** too (the
   `native/` crate, `build:native` / `scripts/build-native-addon.cjs`, and the `hydra-native` packaging entry);
-  `services/native-addon.ts` is now a pure-TS no-op stub, so playtime / running-game detection
-  (`process-watcher`), in-app game-close, and native profile-image processing are **disabled** (images pass
-  through unprocessed). The non-native `game-executables.json` lookup used for library scanning still works.
+  `services/native-addon.ts` is now a pure-TS stub delegating to `services/process-list.ts` (PowerShell CIM on
+  Windows, `/proc` on Linux) — playtime / running-game detection (`process-watcher`) and in-app game-close
+  work again. Profile-image processing remains a pass-through (no native convert). The non-native
+  `game-executables.json` lookup used for library scanning still works.
 - **Irreducible Hydra coupling that REMAINS (the backend was deliberately kept).** Server contracts, not
   branding — can't be removed without replacing or cutting the backend: the `appConfig` server URLs in
   `src/shared/config.ts` (`*.hydralauncher.gg`, `losbroxas.org`); the `hydralauncher://` protocol (auth
@@ -98,9 +101,9 @@ yarn protoc           # regen src/main/generated/* from proto/*.proto (proto/ is
 
 | Area        | Role                                                                        |
 | ----------- | --------------------------------------------------------------------------- |
-| `main/`     | Electron main process (backend). ~271 files.                                |
-| `renderer/` | Main React UI. ~293 files.                                                  |
-| `preload/`  | `window.electron` IPC bridge (single file `index.ts`, ~868 lines).          |
+| `main/`     | Electron main process (backend). ~258 files.                                |
+| `renderer/` | Main React UI. ~287 files.                                                  |
+| `preload/`  | `window.electron` IPC bridge (single file `index.ts`, ~820 lines).          |
 | `shared/`   | Code shared by main+renderer: enums, helpers, download-directories, config. |
 | `types/`    | TypeScript type definitions (`@types`).                                     |
 | `locales/`  | 34 languages × `translation.json` (i18n; fork added `vi`).                  |
@@ -129,15 +132,16 @@ yarn protoc           # regen src/main/generated/* from proto/*.proto (proto/ is
 
 ## Main process (`src/main`)
 
-**Bootstrap**: `index.ts` (single-instance lock, `hydralauncher://` deep links, `local:`/`gradient:`
-protocols) → `main.ts:loadState()` (LevelDB lock, authorize debrid clients, `ApiClient.setupApi()`,
-library sync, WS connect, `DownloadOrchestrator.bootstrapDownloadsOnStartup()`, start Go RPC,
-`startMainLoop()` — a 2s polling loop in `services/main-loop.ts`).
+**Bootstrap**: `index.ts` (Cloudflare DNS first, single-instance lock, `hydralauncher://` deep links,
+`local:`/`gradient:` protocols, splash window) → `main.ts:loadState()` (LevelDB lock, register IPC,
+authorize debrid, Ludusavi copy, `ApiClient.setupApi()`, ensure `<exe>/game`, pre-warm Go RPC) → show main
+window → `loadStateDeferred()` (library sync, WS, download bootstrap/resume, `startMainLoop()` — five 2s
+polling loops in `services/main-loop.ts`).
 
 **Download system (the core; two transports):**
 
 - Dispatch in `services/download/download-manager.ts`, keyed on `download.downloader`.
-  - `Downloader.Torrent` → **Go RPC** (`services/python-rpc.ts` spawns `gamelaucher-go-rpc`; JSON over
+  - `Downloader.Torrent` → **Go RPC** (`services/go-rpc.ts` spawns `gamelaucher-go-rpc`; JSON over
     stdin/stdout, NOT gRPC; BitTorrent port 5881; random rpcPassword). Methods: `status`, `seed_status`,
     `torrent_files`, `action`.
   - everything else → **`services/download/js-http-downloader.ts`** (pure Node fetch + Range resume +
@@ -147,8 +151,8 @@ library sync, WS connect, `DownloadOrchestrator.bootstrapDownloadsOnStartup()`, 
 - URL resolvers per provider: `services/download/{real-debrid,all-debrid,premiumize,torbox}.ts`
   and `services/hosters/{gofile,pixeldrain,datanodes,buzzheavier,fuckingfast,mediafire,vikingfile,rootz}.ts`.
   AllDebrid has a special multi-file batch path (`runAllDebridBatch`).
-- Post-download: `services/game-files-manager.ts` (7-Zip extract w/ passwords `online-fix.me`,
-  `steamrip.com`; auto-detect exe; create shortcut).
+- Post-download: **`ExtractionCoordinator`** → `game-files-manager.ts` (7-Zip via `7zip.ts`;
+  passwords `REPACK_ARCHIVE_PASSWORDS`; auto-detect exe; create shortcut). See **Extraction fix** section.
 - Note: `getDownloadPayload()` for HTTP downloaders is **dead code** from the all-RPC era.
 
 **Persistence — LevelDB** (`src/main/level`, `classic-level` at **`<exe>/save/dp`** — portable, next to the
@@ -165,9 +169,9 @@ through JSON). Grouped by folder: `auth`, `catalogue`, `cloud-save`, `download-s
 
 **Other services** (`src/main/services`): `window-manager` (windows; patches CORS/User-Agent headers;
 loads the **local bundled renderer** — the remote-renderer-by-version path is disabled now that
-`appConfig.launcherSubdomain` is `""`), `process-watcher` (game playtime / running-game detection —
-now **disabled**: its native process-listing addon was removed, so `services/native-addon.ts` is a no-op
-stub), `achievements/*` (scan cracker files → parse → merge with
+`appConfig.launcherSubdomain` is `""`), `process-watcher` (game playtime / running-game detection via
+`process-list.ts` → `native-addon.ts` stub), `cloudflare-dns` (DoH 1.1.1.1 for Node + Chromium),
+`achievements/*` (scan cracker files → parse → merge with
 remote → notify), `cloud-sync` (Ludusavi → tar to `savesPath` = `<exe>/save`, **local only** despite the
 "cloud" name — the `cloud-save` events now do full local-artifact management: list / preview / download /
 delete / upload via `get-game-artifacts`, `get-game-backup-preview`, `download-game-artifact`,
@@ -192,7 +196,7 @@ App` shell (Sidebar + Header + Outlet + BottomPanel).
 - **IPC-wrapping hooks** (`hooks/`): `useDownload`, `useLibrary`, `useUserDetails`, `useGameActions`,
   `useDownloadLayout`, `useCatalogue`, `useGameCollections`, `useFeature`.
 - **Contexts** (per-page): `GameDetailsContext`, `CloudSyncContext`, `SettingsContext`.
-- Intra-renderer bus uses `window` `CustomEvent`s (`hydra:openGameOptions`, …).
+- Intra-renderer bus uses `window` `CustomEvent`s (`gl:openGameOptions`, `gl:openRepacks`, …).
 
 ## Conventions (from `.cursorrules`)
 
@@ -204,9 +208,87 @@ App` shell (Sidebar + Header + Outlet + BottomPanel).
 - **ESLint**: fix properly before disabling; if disabling, comment why.
 - After code changes run `yarn typecheck` (and `yarn lint`).
 
+## Extraction fix (session Jul 2026 — resume here)
+
+Online-Fix torrent repacks were failing to auto-extract (dialog **"Giải nén thất bại"**). Root causes
+were layered — not a single bug.
+
+### Symptoms observed
+
+- Folder after download: `game\<TorrentName>\` with main archive + `Fix Repair\` subfolder.
+- Main archive names: `*.rar.part`, `*.rar`, or `Fix Repair\*_Fix_Repair_*.rar(.part)`.
+- App skipped extraction silently (old) or showed failure dialog (new) while **Terraria extracted OK**.
+- Logs (`%AppData%\gamelaucher\logs\error.txt`): `Archive is locked by another process`, `EBUSY unlink
+  *.rar.part` — torrent client still holding files during/after complete + seed.
+
+### Architecture (single entry point)
+
+**`ExtractionCoordinator`** (`src/main/services/extraction-coordinator.ts`) — all extract paths go through:
+
+```
+prepare → handleExtraction → restore seeding (if shouldSeed)
+```
+
+| Caller | File |
+|--------|------|
+| Auto-extract on download complete | `download-manager.ts` → `handleDownloadCompletion` |
+| Manual "Giải nén lại" | `events/library/extract-game-download.ts` → `runByKey` |
+| Startup pending `extracting: true` | `download-orchestrator.ts` → `run` |
+
+**prepare (torrent):** `DownloadManager.releaseTorrentFiles()` → retry up to 8× (1s settle) until archives
+are readable. **restore:** `resumeSeeding()` if `shouldSeed && (status===seeding || progress===1)`.
+
+### File map
+
+| Area | File | What changed |
+|------|------|----------------|
+| Orchestrator | `extraction-coordinator.ts` | **New** — prepare/retry/release/restore |
+| Torrent lock | `go_rpc/torrent_downloader.go` | `release_files` action + `dropTorrentHandle()`; drops by `game_id`, magnet infohash, and any client torrent whose `info.Name === folder_name` |
+| TS torrent API | `download-manager.ts` | `releaseTorrentFiles()` (not `pause`/`pause_seeding`); `getSeedStatus` null-guard |
+| Archive detect | `shared/archive.ts` | `.rar.part` / `.zip.part` / `.7z.part` + existing split patterns |
+| Find archives | `game-files-manager.ts` | `findArchivePathsInDirectory()` — top-level + immediate subdirs, sort by size (main game first) |
+| 7-Zip wrapper | `7zip.ts` | `REPACK_ARCHIVE_PASSWORDS` default; no empty password; data-integrity errors with extracted files → success; file-lock error message; 30min timeout |
+| Passwords const | `shared/constants.ts` | `REPACK_ARCHIVE_PASSWORDS = ["online-fix.me", "steamrip.com"]` |
+
+### Go RPC action `release_files`
+
+Params: `game_id`, `url` (magnet), `save_path`, `folder_name`. Drops handles only — **does not delete**
+payload files on disk. Distinct from `cancel` semantically but shares `dropTorrentHandle`.
+
+Methods list is now: `start`, `pause`, `cancel`, **`release_files`**, `pause_seeding`, `resume_seeding`, …
+
+### User test environment (Jul 13 2026)
+
+- **Installed app:** `C:\lequan\app\gamelaucher\` (deployed from `dist\win-unpacked\`, keeps `game\` + `save\`).
+- **Games tested:** `YAPYAP`, `Schedule I`, `Terraria` under `C:\lequan\app\gamelaucher\game\`.
+- **Build:** `yarn build:go-rpc && yarn build:win` → `dist\gamelaucher-3.9.8-portable.exe`.
+- **Deploy:** `robocopy dist\win-unpacked C:\lequan\app\gamelaucher /E /XD game save` (stop launcher first).
+
+### Verified manual 7-Zip (archives OK when unlocked)
+
+| Game | Archive | Result |
+|------|---------|--------|
+| Schedule I | `Schedule.I.v0.4.0f9-OFME.rar` (~2.4 GB) | Everything is Ok, ~7.7 GB, `Schedule I\Schedule I.exe` |
+| YAPYAP | `YAPYAP.v1.0.3.606-deeb8-OFME.rar.part` | Mostly OK; 2 DLL data errors (may need re-download) |
+| Terraria | via launcher auto-extract | Full success in logs |
+
+### If extraction still fails tomorrow
+
+1. Check `%AppData%\gamelaucher\logs\info.txt` for `Releasing torrent file handles` + `Archives ready`.
+2. Confirm `gamelaucher-go-rpc.exe` includes `release_files` (rebuild + redeploy).
+3. Pause seed / restart launcher before manual re-extract if lock persists.
+4. If 7-Zip reports **data error** on specific DLLs after extract → torrent incomplete/corrupt; re-download 100%.
+5. `node-7z` treats any stderr `ERROR:` as failure — `7zip.ts` recovers only when some files already extracted + data-integrity wording.
+
+### Related torrent note (separate session)
+
+Torrent **peer discovery** was fixed earlier by restoring simple anacrolix default config in
+`go_rpc/torrent_downloader.go` (forced port 5881 / custom ListenHost caused 0 peers). RPC transport is
+**HTTP** `127.0.0.1:5882/rpc` via `services/go-rpc.ts` (not stdin/stdout).
+
 ## Known tech debt / gotchas
 
-- "PythonRPC" naming is the Go RPC (see top).
+- Go RPC lives in `go-rpc.ts` (`GoRPC` class); legacy strings may still say "Python".
 - Dead code: `getDownloadPayload()` has unreachable HTTP switch branches (download-manager) — only the torrent path is live.
 - `CloudSync` is local-only despite the name (writes tars to `savesPath` = `<exe>/save`, **not** `~/Documents/HydraSaves`).
 - `scripts/postinstall.cjs` is NOT wired (no `postinstall` script in package.json) and is effectively dead now that the Rust native addon it built has been removed.

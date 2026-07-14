@@ -2,6 +2,8 @@ import { FILE_EXTENSIONS_TO_EXTRACT } from "./constants";
 
 const RAR_PART_VOLUME_RE = /(?:^|[.\s_-])part\d+\.rar$/i;
 const FIRST_RAR_PART_VOLUME_RE = /(?:^|[.\s_-])part0*1\.rar$/i;
+const DOT_PART_VOLUME_RE = /\.(?:rar|zip|7z)\.part(?:\d+)?$/i;
+const FIRST_DOT_PART_VOLUME_RE = /\.(?:rar|zip|7z)\.part(?:0*1)?$/i;
 const SPLIT_ARCHIVE_VOLUME_RE = /\.(?:7z|zip|rar)\.\d{3}$/i;
 const FIRST_SPLIT_ARCHIVE_VOLUME_RE = /\.(?:7z|zip|rar)\.001$/i;
 const RAR_CONTINUATION_VOLUME_RE = /\.r\d{2,3}$/i;
@@ -14,6 +16,7 @@ export const isArchiveFile = (fileName: string) => {
     FILE_EXTENSIONS_TO_EXTRACT.some((ext) =>
       normalizedFileName.endsWith(ext)
     ) ||
+    DOT_PART_VOLUME_RE.test(normalizedFileName) ||
     SPLIT_ARCHIVE_VOLUME_RE.test(normalizedFileName) ||
     RAR_CONTINUATION_VOLUME_RE.test(normalizedFileName)
   );
@@ -25,6 +28,9 @@ export const isFirstArchiveVolume = (fileName: string) => {
   if (FIRST_RAR_PART_VOLUME_RE.test(fileName)) return true;
   if (RAR_PART_VOLUME_RE.test(fileName)) return false;
 
+  if (FIRST_DOT_PART_VOLUME_RE.test(fileName)) return true;
+  if (DOT_PART_VOLUME_RE.test(fileName)) return false;
+
   if (FIRST_SPLIT_ARCHIVE_VOLUME_RE.test(fileName)) return true;
   if (SPLIT_ARCHIVE_VOLUME_RE.test(fileName)) return false;
 
@@ -35,6 +41,16 @@ export const isFirstArchiveVolume = (fileName: string) => {
 
 export const getArchiveExtractionRelativePath = (fileName: string) => {
   const withoutTrailingSeparators = fileName.replace(/[\\/]+$/g, "");
+
+  const dotPartName = withoutTrailingSeparators.replace(
+    FIRST_DOT_PART_VOLUME_RE,
+    ""
+  );
+  if (dotPartName !== withoutTrailingSeparators) {
+    return (
+      dotPartName.replace(TRAILING_ARCHIVE_PART_SEPARATOR_RE, "") || dotPartName
+    );
+  }
 
   const rarPartName = withoutTrailingSeparators.replace(
     FIRST_RAR_PART_VOLUME_RE,

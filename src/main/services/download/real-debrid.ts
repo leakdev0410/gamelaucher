@@ -120,7 +120,9 @@ export class RealDebridClient {
     );
   }
 
-  public static async getDownloadUrl(uri: string) {
+  public static async getDownloadEntries(
+    uri: string
+  ): Promise<Array<{ url: string; filename?: string }> | null> {
     let realDebridTorrentId: string | null = null;
 
     if (uri.startsWith("magnet:")) {
@@ -132,7 +134,6 @@ export class RealDebridClient {
 
       if (torrentInfo.status === "waiting_files_selection") {
         await this.selectAllFiles(realDebridTorrentId);
-
         torrentInfo = await this.getTorrentInfo(realDebridTorrentId);
       }
 
@@ -140,13 +141,44 @@ export class RealDebridClient {
         torrentInfo = await this.waitForTorrentDownload(realDebridTorrentId);
       }
 
-      const [link] = torrentInfo.links;
-      const { download } = await this.unrestrictLink(link);
-      return decodeURIComponent(download);
+      if (!torrentInfo.links?.length) {
+        return null;
+      }
+
+      const entries: Array<{ url: string; filename?: string }> = [];
+      for (const link of torrentInfo.links) {
+        const { download, filename } = await this.unrestrictLink(link);
+        const url = decodeURIComponent(download);
+        entries.push({
+          url,
+          filename:
+            filename ||
+            (() => {
+              try {
+                return decodeURIComponent(
+                  new URL(url).pathname.split("/").filter(Boolean).pop() || ""
+                );
+              } catch {
+                return undefined;
+              }
+            })(),
+        });
+      }
+      return entries;
     }
 
-    const { download } = await this.unrestrictLink(uri);
+    const { download, filename } = await this.unrestrictLink(uri);
+    const url = decodeURIComponent(download);
+    return [
+      {
+        url,
+        filename: filename || undefined,
+      },
+    ];
+  }
 
-    return decodeURIComponent(download);
+  public static async getDownloadUrl(uri: string) {
+    const entries = await this.getDownloadEntries(uri);
+    return entries?.[0]?.url ?? null;
   }
 }

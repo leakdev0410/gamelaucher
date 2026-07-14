@@ -61,9 +61,48 @@ export class DownloadManager {
   private static isPreparingDownload = false;
   private static allDebridBatch: AllDebridBatchState | null = null;
   private static maxDownloadSpeedBytesPerSecond: number | null = null;
+  private static completingGameId: string | null = null;
+  private static handlingJsErrorGameId: string | null = null;
+  private static rpcStatusFailures = 0;
+  private static readonly MAX_RPC_STATUS_FAILURES = 8;
 
   public static hasActiveDownload() {
-    return this.downloadingGameId !== null;
+    return this.downloadingGameId !== null || this.isPreparingDownload;
+  }
+
+  private static clearRuntimeDownloadState() {
+    this.downloadingGameId = null;
+    this.usingJsDownloader = false;
+    this.jsDownloader = null;
+    this.allDebridBatch = null;
+    this.isPreparingDownload = false;
+    WindowManager.mainWindow?.setProgressBar(-1);
+    WindowManager.sendToAppWindows("on-download-progress", null);
+  }
+
+  private static async persistDownloadError(
+    downloadId: string,
+    download: Download,
+    error?: unknown
+  ) {
+    if (error) {
+      logger.error("[DownloadManager] Download failed:", error);
+    }
+
+    try {
+      const current = await downloadsSublevel.get(downloadId).catch(() => null);
+      const base = current ?? download;
+      await downloadsSublevel.put(downloadId, {
+        ...base,
+        status: "error",
+        queued: false,
+        pinnedToHero: false,
+        extracting: false,
+      });
+      WindowManager.sendDownloadsUpdated();
+    } catch (dbErr) {
+      logger.error("[DownloadManager] Failed to persist error status", dbErr);
+    }
   }
 
   private static extractFilename(
@@ -290,6 +329,17 @@ export class DownloadManager {
       const download = await downloadsSublevel.get(downloadId);
       if (!download) return null;
 
+      if (status.status === "error") {
+        if (this.handlingJsErrorGameId !== downloadId) {
+          this.handlingJsErrorGameId = downloadId;
+          await this.persistDownloadError(downloadId, download);
+          this.clearRuntimeDownloadState();
+          this.handlingJsErrorGameId = null;
+          void this.processNextQueuedDownload();
+        }
+        return null;
+      }
+
       let { progress, bytesDownloaded, fileSize, folderName } = status;
       let downloadSpeed = status.downloadSpeed;
       let batchFilesTotal: number | undefined;
@@ -386,18 +436,75 @@ export class DownloadManager {
     }
   }
 
+  private static async buildTorrentMetadataProgress(
+    downloadId: string
+  ): Promise<DownloadProgress | null> {
+    const download = await downloadsSublevel.get(downloadId).catch(() => null);
+    if (!download || download.downloader !== Downloader.Torrent) return null;
+
+    return {
+      numPeers: 0,
+      numSeeds: 0,
+      downloadSpeed: 0,
+      timeRemaining: -1,
+      isDownloadingMetadata: true,
+      isCheckingFiles: false,
+      progress: download.progress ?? 0,
+      gameId: downloadId,
+      download,
+    };
+  }
+
+  private static async handleRpcStatusPollFailure(downloadId: string) {
+    if (this.isPreparingDownload) {
+      return this.buildTorrentMetadataProgress(downloadId);
+    }
+
+    this.rpcStatusFailures += 1;
+
+    if (this.rpcStatusFailures < this.MAX_RPC_STATUS_FAILURES) {
+      return this.buildTorrentMetadataProgress(downloadId);
+    }
+
+    const download = await downloadsSublevel.get(downloadId).catch(() => null);
+    if (!download) {
+      this.clearRuntimeDownloadState();
+      return null;
+    }
+
+    logger.error(
+      `[DownloadManager] Go RPC status unavailable for ${downloadId} after ${this.rpcStatusFailures} polls`
+    );
+
+    await this.persistDownloadError(
+      downloadId,
+      download,
+      new Error(DownloadError.TorrentMetadataTimeout)
+    );
+    this.clearRuntimeDownloadState();
+    this.rpcStatusFailures = 0;
+    void this.processNextQueuedDownload();
+
+    return null;
+  }
+
   private static async getDownloadStatusFromRpc(): Promise<DownloadProgress | null> {
+    if (!this.downloadingGameId) return null;
+
+    const downloadId = this.downloadingGameId;
     let response: { data: LibtorrentPayload | null };
 
     try {
       response = await GoRPC.rpc.call<LibtorrentPayload | null>("status");
+      this.rpcStatusFailures = 0;
     } catch (error) {
       logger.error("[DownloadManager] RPC status poll failed", error);
-      return null;
+      return this.handleRpcStatusPollFailure(downloadId);
     }
 
-    if (response.data === null || !this.downloadingGameId) return null;
-    const downloadId = this.downloadingGameId;
+    if (response.data === null) {
+      return this.handleRpcStatusPollFailure(downloadId);
+    }
 
     try {
       const {
@@ -507,64 +614,66 @@ export class DownloadManager {
     game: Game,
     gameId: string
   ) {
-    publishDownloadCompleteNotification(game);
+    if (this.completingGameId === gameId) {
+      return;
+    }
 
-    const userPreferences = await db.get<string, UserPreferences | null>(
-      levelKeys.userPreferences,
-      { valueEncoding: "json" }
-    );
+    this.completingGameId = gameId;
 
-    const shouldSeed = await this.updateDownloadStatus(
-      download,
-      gameId,
-      userPreferences?.seedAfterDownloadComplete
-    );
+    try {
+      publishDownloadCompleteNotification(game);
 
-    if (download.folderName) {
-      const installerPath = path.join(
-        download.downloadPath,
-        download.folderName
+      const userPreferences = await db.get<string, UserPreferences | null>(
+        levelKeys.userPreferences,
+        { valueEncoding: "json" }
       );
 
-      getDirectorySize(installerPath).then(async (installerSizeInBytes) => {
-        const currentGame = await gamesSublevel.get(gameId);
-        if (!currentGame) return;
+      const shouldSeed = await this.updateDownloadStatus(
+        download,
+        gameId,
+        userPreferences?.seedAfterDownloadComplete
+      );
 
-        await gamesSublevel.put(gameId, {
-          ...currentGame,
-          installerSizeInBytes,
-        });
-      });
-    }
+      if (download.folderName) {
+        const installerPath = path.join(
+          download.downloadPath,
+          download.folderName
+        );
 
-    if (download.automaticallyExtract) {
-      const isSeedingTorrent =
-        shouldSeed && download.downloader === Downloader.Torrent;
+        getDirectorySize(installerPath).then(async (installerSizeInBytes) => {
+          const currentGame = await gamesSublevel.get(gameId);
+          if (!currentGame) return;
 
-      if (isSeedingTorrent) {
-        await this.pauseDownload(gameId);
-
-        void this.handleExtraction(download, game).finally(() => {
-          this.resumeSeeding(download).catch((error) => {
-            logger.error(
-              "[DownloadManager] Failed to resume seeding after extraction",
-              error
-            );
+          await gamesSublevel.put(gameId, {
+            ...currentGame,
+            installerSizeInBytes,
           });
         });
-      } else {
-        await this.handleExtraction(download, game);
-        await this.cancelDownload(gameId);
       }
-    } else {
-      const gameFilesManager = new GameFilesManager(game.shop, game.objectId);
-      gameFilesManager.searchAndBindExecutable();
-      if (!shouldSeed) {
-        await this.cancelDownload(gameId);
+
+      if (download.automaticallyExtract) {
+        const { ExtractionCoordinator } = await import(
+          "../extraction-coordinator"
+        );
+        await ExtractionCoordinator.run(download, game);
+
+        if (!shouldSeed && download.downloader !== Downloader.Torrent) {
+          await this.cancelDownload(gameId);
+        }
+      } else {
+        const gameFilesManager = new GameFilesManager(game.shop, game.objectId);
+        gameFilesManager.searchAndBindExecutable();
+        if (!shouldSeed) {
+          await this.cancelDownload(gameId);
+        }
+      }
+
+      await this.processNextQueuedDownload();
+    } finally {
+      if (this.completingGameId === gameId) {
+        this.completingGameId = null;
       }
     }
-
-    await this.processNextQueuedDownload();
   }
 
   private static async updateDownloadStatus(
@@ -609,85 +718,40 @@ export class DownloadManager {
     return false;
   }
 
+  /**
+   * Perform one extraction pass. Throws on failure so
+   * {@link ExtractionCoordinator} can retry; does not mark final failure state.
+   */
   public static async handleExtraction(download: Download, game: Game) {
     const gameFilesManager = new GameFilesManager(game.shop, game.objectId);
     const targetFolderName = download.folderName;
 
     if (!targetFolderName) {
-      await gameFilesManager
-        .failExtraction(new Error("No downloaded archive was found to extract"))
-        .catch((error) => {
-          logger.error(
-            "[DownloadManager] Failed to persist extraction failure state",
-            error
-          );
-        });
-      return;
+      throw new Error("No downloaded archive was found to extract");
     }
 
     const extractionPath = path.join(download.downloadPath, targetFolderName);
 
     if (!fs.existsSync(extractionPath)) {
-      await gameFilesManager
-        .failExtraction(new Error("No downloaded archive was found to extract"))
-        .catch((error) => {
-          logger.error(
-            "[DownloadManager] Failed to persist extraction failure state",
-            error
-          );
-        });
-      return;
+      throw new Error("No downloaded archive was found to extract");
     }
 
     const extractionStats = fs.statSync(extractionPath);
 
     if (extractionStats.isFile() && isArchiveFile(targetFolderName)) {
-      await gameFilesManager.extractDownloadedFile().catch((error) => {
-        logger.error(
-          "[DownloadManager] Failed to extract downloaded file",
-          error
-        );
-        return gameFilesManager.failExtraction(error).catch((failError) => {
-          logger.error(
-            "[DownloadManager] Failed to persist extraction failure state",
-            failError
-          );
-        });
-      });
-    } else if (extractionStats.isDirectory()) {
-      await gameFilesManager
-        .extractFilesInDirectory(extractionPath)
-        .then(async (success) => {
-          if (success) {
-            await gameFilesManager.setExtractionComplete();
-          }
-        })
-        .catch((error) => {
-          logger.error(
-            "[DownloadManager] Failed to extract files in directory",
-            error
-          );
-          return gameFilesManager.failExtraction(error).catch((failError) => {
-            logger.error(
-              "[DownloadManager] Failed to persist extraction failure state",
-              failError
-            );
-          });
-        });
-    } else {
-      await gameFilesManager
-        .failExtraction(
-          new Error(
-            `Invalid extraction source type for "${download.folderName ?? "unknown"}"`
-          )
-        )
-        .catch((error) => {
-          logger.error(
-            "[DownloadManager] Failed to persist extraction failure state",
-            error
-          );
-        });
+      await gameFilesManager.extractDownloadedFile();
+      return;
     }
+
+    if (extractionStats.isDirectory()) {
+      await gameFilesManager.extractFilesInDirectory(extractionPath);
+      await gameFilesManager.setExtractionComplete();
+      return;
+    }
+
+    throw new Error(
+      `Invalid extraction source type for "${download.folderName ?? "unknown"}"`
+    );
   }
 
   private static async processNextQueuedDownload() {
@@ -742,16 +806,17 @@ export class DownloadManager {
     let seedStatus: LibtorrentPayload[] = [];
 
     try {
-      seedStatus = await GoRPC.rpc
-        .call<LibtorrentPayload[] | []>("seed_status")
-        .then((res) => res.data);
+      seedStatus =
+        (await GoRPC.rpc
+          .call<LibtorrentPayload[] | null>("seed_status")
+          .then((res) => res.data)) ?? [];
     } catch (error) {
       logger.error("[DownloadManager] RPC seed status poll failed", error);
       WindowManager.sendToAppWindows("on-seeding-status", []);
       return;
     }
 
-    if (!seedStatus.length) {
+    if (!Array.isArray(seedStatus) || !seedStatus.length) {
       WindowManager.sendToAppWindows("on-seeding-status", []);
       return;
     }
@@ -767,7 +832,14 @@ export class DownloadManager {
         path.join(download.downloadPath, status.folderName)
       );
 
-      if (totalSize < status.fileSize) {
+      // After extract+delete-archives, on-disk size can be smaller than the
+      // original torrent payload. Only demote incomplete seeds (progress < 1).
+      const expectedSize =
+        download.selectedFilesSize ?? status.fileSize ?? download.fileSize ?? 0;
+      const isCompleteSeed =
+        (download.progress ?? 0) >= 1 || download.status === "seeding";
+
+      if (totalSize < expectedSize && !isCompleteSeed) {
         await this.pauseSeeding(status.gameId);
 
         await downloadsSublevel.put(status.gameId, {
@@ -776,13 +848,17 @@ export class DownloadManager {
           shouldSeed: false,
           pinnedToHero: false,
           progress:
-            status.fileSize > 0
-              ? Math.min(totalSize / status.fileSize, 1)
+            expectedSize > 0
+              ? Math.min(totalSize / expectedSize, 1)
               : download.progress,
         });
         WindowManager.sendDownloadsUpdated();
 
         WindowManager.sendToAppWindows("on-hard-delete");
+      } else if (totalSize < expectedSize && isCompleteSeed) {
+        logger.warn(
+          `[DownloadManager] Seed size smaller than expected for ${status.gameId} (disk=${totalSize}, expected=${expectedSize}); keeping seeding (likely extracted/deleted archives)`
+        );
       }
     }
 
@@ -842,9 +918,34 @@ export class DownloadManager {
   }
 
   static async resumeSeeding(download: Download) {
+    const gameId = levelKeys.game(download.shop, download.objectId);
+
+    // Never re-attach torrent handles while extraction is still holding/retrying files.
+    // Use live DB + in-memory set only (caller snapshot of `extracting` may be stale).
+    const { ExtractionCoordinator } = await import("../extraction-coordinator");
+    if (
+      ExtractionCoordinator.isExtractionInProgress(
+        download.shop,
+        download.objectId
+      )
+    ) {
+      logger.info(
+        `[DownloadManager] Skipping resumeSeeding for ${gameId} (extraction in progress)`
+      );
+      return;
+    }
+
+    const latest = await downloadsSublevel.get(gameId);
+    if (latest?.extracting) {
+      logger.info(
+        `[DownloadManager] Skipping resumeSeeding for ${gameId} (extracting flag set)`
+      );
+      return;
+    }
+
     await GoRPC.rpc.call("action", {
       action: "resume_seeding",
-      game_id: levelKeys.game(download.shop, download.objectId),
+      game_id: gameId,
       url: download.uri,
       save_path: download.downloadPath,
     });
@@ -855,6 +956,43 @@ export class DownloadManager {
       action: "pause_seeding",
       game_id: downloadKey,
     });
+  }
+
+  /** Release torrent file handles on disk without deleting payload data. */
+  static async releaseTorrentFiles(download: Download) {
+    const gameId = levelKeys.game(download.shop, download.objectId);
+
+    logger.info(
+      `[DownloadManager] Releasing torrent file handles for ${gameId} (${download.folderName ?? "unknown"})`
+    );
+
+    try {
+      // Call twice: first drop maps, second catches any re-attached handle from seed status polls.
+      for (let pass = 0; pass < 2; pass++) {
+        await GoRPC.rpc.call("action", {
+          action: "release_files",
+          game_id: gameId,
+          url: download.uri ?? undefined,
+          save_path: download.downloadPath,
+          folder_name: download.folderName ?? undefined,
+        });
+      }
+    } catch (error) {
+      logger.error(
+        "[DownloadManager] Failed to release torrent files for extraction",
+        error
+      );
+      throw error;
+    }
+
+    if (gameId === this.downloadingGameId) {
+      WindowManager.mainWindow?.setProgressBar(-1);
+      WindowManager.sendToAppWindows("on-download-progress", null);
+      this.downloadingGameId = null;
+      this.isPreparingDownload = false;
+      this.usingJsDownloader = false;
+      this.allDebridBatch = null;
+    }
   }
 
   private static async getJsDownloadOptions(download: Download): Promise<{
@@ -1272,6 +1410,11 @@ export class DownloadManager {
     const hasSelectedFileIndices =
       Array.isArray(download.fileIndices) && download.fileIndices.length > 0;
 
+    // Go RPC accepts:
+    // - magnet:  → fetch metadata from swarm (Hydra default)
+    // - http(s)://*.torrent → download .torrent file then start (full metainfo)
+    // - local path / metainfo_base64 → load metainfo immediately
+    // Payload shape matches Hydra download-manager getDownloadPayload(Torrent).
     return {
       action: "start",
       game_id: downloadId,
@@ -1306,29 +1449,76 @@ export class DownloadManager {
       this.usingJsDownloader = true;
 
       try {
+        // Multi-file batch path (AllDebrid magnets, RealDebrid multi-link torrents)
+        let batchEntries:
+          | Array<{
+              url: string;
+              filename: string;
+              size?: number;
+              isLocked?: boolean;
+            }>
+          | null = null;
+
         if (download.downloader === Downloader.AllDebrid) {
           const entries = await AllDebridClient.getDownloadEntries(
             download.uri
           );
+          if (this.downloadingGameId !== downloadId) {
+            this.isPreparingDownload = false;
+            this.usingJsDownloader = false;
+            return;
+          }
           if (!entries?.length) {
             this.isPreparingDownload = false;
             this.usingJsDownloader = false;
             this.downloadingGameId = null;
             throw new Error(DownloadError.NotCachedOnAllDebrid);
           }
+          batchEntries = entries.map((entry) => ({
+            ...entry,
+            filename: this.sanitizeRelativePath(entry.filename),
+          }));
+        } else if (
+          download.downloader === Downloader.RealDebrid &&
+          download.uri.startsWith("magnet:")
+        ) {
+          const entries = await RealDebridClient.getDownloadEntries(
+            download.uri
+          );
+          if (this.downloadingGameId !== downloadId) {
+            this.isPreparingDownload = false;
+            this.usingJsDownloader = false;
+            return;
+          }
+          if (!entries?.length) {
+            this.isPreparingDownload = false;
+            this.usingJsDownloader = false;
+            this.downloadingGameId = null;
+            throw new Error(DownloadError.NotCachedOnRealDebrid);
+          }
+          if (entries.length > 1) {
+            batchEntries = entries.map((entry) => ({
+              url: entry.url,
+              filename: this.sanitizeRelativePath(
+                entry.filename || "download"
+              ),
+              isLocked: false,
+            }));
+          }
+        }
 
+        if (batchEntries && batchEntries.length > 0) {
           this.allDebridBatch = {
             downloadId,
             gameId: downloadId,
             savePath: download.downloadPath,
-            entries: entries.map((entry) => ({
-              ...entry,
-              filename: this.sanitizeRelativePath(entry.filename),
-            })),
+            entries: batchEntries,
             currentIndex: 0,
             completedBytes: 0,
-            totalBytes: entries.every((item) => typeof item.size === "number")
-              ? entries.reduce((acc, item) => acc + (item.size ?? 0), 0)
+            totalBytes: batchEntries.every(
+              (item) => typeof item.size === "number"
+            )
+              ? batchEntries.reduce((acc, item) => acc + (item.size ?? 0), 0)
               : 0,
             lastSpeedUpdate: Date.now(),
             bytesAtLastSpeedUpdate: 0,
@@ -1341,35 +1531,22 @@ export class DownloadManager {
           );
           this.isPreparingDownload = false;
           void this.runAllDebridBatch().catch(async (err) => {
-            logger.error("[DownloadManager] AllDebrid batch error:", err);
-            this.usingJsDownloader = false;
-            this.jsDownloader = null;
-            this.allDebridBatch = null;
-            this.isPreparingDownload = false;
-            this.downloadingGameId = null;
-            WindowManager.sendToAppWindows("on-download-progress", null);
-            WindowManager.mainWindow?.setProgressBar(-1);
-
-            try {
-              await downloadsSublevel.put(downloadId, {
-                ...download,
-                status: "error",
-                queued: false,
-                pinnedToHero: false,
-              });
-              WindowManager.sendDownloadsUpdated();
-            } catch (dbErr) {
-              logger.error(
-                "[DownloadManager] Failed to persist error status",
-                dbErr
-              );
+            if (this.downloadingGameId !== downloadId) {
+              return;
             }
-
+            await this.persistDownloadError(downloadId, download, err);
+            this.clearRuntimeDownloadState();
             void this.processNextQueuedDownload();
           });
         } else {
           this.allDebridBatch = null;
           const options = await this.getJsDownloadOptions(download);
+
+          if (this.downloadingGameId !== downloadId) {
+            this.isPreparingDownload = false;
+            this.usingJsDownloader = false;
+            return;
+          }
 
           if (!options) {
             this.isPreparingDownload = false;
@@ -1386,42 +1563,25 @@ export class DownloadManager {
 
           this.logResolvedUrl(options.url);
           this.jsDownloader.startDownload(options).catch(async (err) => {
-            logger.error("[DownloadManager] JS download error:", err);
-            this.usingJsDownloader = false;
-            this.jsDownloader = null;
-            this.allDebridBatch = null;
-            this.isPreparingDownload = false;
-            this.downloadingGameId = null;
-            WindowManager.sendToAppWindows("on-download-progress", null);
-            WindowManager.mainWindow?.setProgressBar(-1);
-
-            try {
-              await downloadsSublevel.put(downloadId, {
-                ...download,
-                status: "error",
-                queued: false,
-                pinnedToHero: false,
-              });
-              WindowManager.sendDownloadsUpdated();
-            } catch (dbErr) {
-              logger.error(
-                "[DownloadManager] Failed to persist error status",
-                dbErr
-              );
+            if (this.downloadingGameId !== downloadId) {
+              return;
             }
-
+            await this.persistDownloadError(downloadId, download, err);
+            this.clearRuntimeDownloadState();
             void this.processNextQueuedDownload();
           });
         }
       } catch (err) {
-        this.isPreparingDownload = false;
-        this.usingJsDownloader = false;
-        this.downloadingGameId = null;
-        this.allDebridBatch = null;
+        if (this.downloadingGameId === downloadId) {
+          this.isPreparingDownload = false;
+          this.usingJsDownloader = false;
+          this.downloadingGameId = null;
+          this.allDebridBatch = null;
+        }
         throw err;
       }
     } else {
-      logger.log("[DownloadManager] Using Python RPC downloader");
+      logger.log("[DownloadManager] Using Go RPC downloader");
       const payload = await this.getDownloadPayload(download);
       const isSelectiveTorrentStart =
         download.downloader === Downloader.Torrent &&
@@ -1443,8 +1603,12 @@ export class DownloadManager {
       }
 
       try {
+        // Match Hydra PythonRPC: non-selective start returns almost immediately
+        // (metadata continues in the torrent client). Selective waits for metadata.
+        // 15s allows a short HTTP metainfo-cache probe (~3s) + AddTorrent without
+        // the old 10s race that left downloads stuck at 0%/N/A after RPC timeout.
         await GoRPC.rpc.call("action", payload, {
-          timeout: isSelectiveTorrentStart ? 60_000 : 10_000,
+          timeout: isSelectiveTorrentStart ? 60_000 : 15_000,
         });
 
         const downloadWasCancelledOrReplaced =
@@ -1463,6 +1627,7 @@ export class DownloadManager {
         }
 
         this.isPreparingDownload = false;
+        this.rpcStatusFailures = 0;
       } catch (error) {
         if (this.downloadingGameId === downloadId) {
           this.downloadingGameId = previousDownloadingGameId;

@@ -1,28 +1,24 @@
 import type { ProcessPayload } from "./download/types";
+import {
+  buildSystemProcessMap,
+  listSystemProcesses,
+  type SystemProcessMap,
+} from "./process-list";
 
-export type SystemProcessMap = {
-  processMap: Record<string, string[]>;
-  winePrefixMap: Record<string, string>;
-  linuxProcesses: Array<{
-    name: string;
-    cwd: string;
-    exe: string;
-    steamCompatDataPath: string | null;
-  }>;
-};
+export type { SystemProcessMap };
 
-// The native (Rust) addon was intentionally removed from this fork. These
-// stubs keep the call sites compiling; the native-backed capabilities
-// (system process / playtime detection and native profile-image processing)
-// are disabled — process listing returns empty and images pass through
-// unprocessed.
+/**
+ * Process / image helpers formerly provided by the removed Rust native addon.
+ * Process listing is implemented in pure Node (see process-list.ts).
+ * Profile image processing remains a pass-through (no native convert).
+ */
 export class NativeAddon {
   static async listProcesses(): Promise<ProcessPayload[]> {
-    return [];
+    return listSystemProcesses();
   }
 
   static async getSystemProcessMap(): Promise<SystemProcessMap> {
-    return { processMap: {}, winePrefixMap: {}, linuxProcesses: [] };
+    return buildSystemProcessMap();
   }
 
   static processProfileImage(

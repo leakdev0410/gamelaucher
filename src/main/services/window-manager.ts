@@ -276,15 +276,28 @@ export class WindowManager {
 
     const initialHash = userPreferences?.launchToLibraryPage ? "library" : "";
 
-    this.loadMainWindowURL(initialHash);
+    void this.loadMainWindowURL(initialHash);
     this.mainWindow.removeMenu();
 
-    this.mainWindow.on("ready-to-show", () => {
+    let handedOffFromSplash = false;
+    const handOffFromSplash = () => {
+      if (handedOffFromSplash) return;
+      handedOffFromSplash = true;
       if (!app.isPackaged || isStaging)
         WindowManager.mainWindow?.webContents.openDevTools();
       WindowManager.closeSplashWindow();
       WindowManager.mainWindow?.show();
+    };
+
+    this.mainWindow.on("ready-to-show", () => {
+      handOffFromSplash();
     });
+
+    // Hard fallback: never leave the user stuck on "Đang khởi động…"
+    // if ready-to-show is delayed (slow disk / renderer compile / DNS).
+    setTimeout(() => {
+      handOffFromSplash();
+    }, 4_000);
 
     this.mainWindow.on("close", async () => {
       const mainWindow = this.mainWindow;

@@ -362,6 +362,37 @@ export class AllDebridClient {
     return this.normalizeMagnets(response.data.data.magnets);
   }
 
+  private static readonly MAGNET_READY_POLL_MS = 5000;
+  private static readonly MAGNET_READY_MAX_ATTEMPTS = 60; // ~5 minutes
+
+  private static async waitForMagnetReady(magnetId: number): Promise<boolean> {
+    for (let attempt = 0; attempt < this.MAGNET_READY_MAX_ATTEMPTS; attempt++) {
+      const magnets = await this.getMagnetStatus(magnetId);
+      const [magnetStatus] = magnets;
+      const statusCode = magnetStatus?.statusCode;
+
+      if (statusCode === 4) {
+        return true;
+      }
+
+      if (statusCode !== undefined && statusCode >= 5) {
+        logger.error(
+          `[AllDebrid] Magnet id=${magnetId} entered error while waiting: ${magnetStatus?.status} (code=${statusCode})`
+        );
+        return false;
+      }
+
+      logger.log(
+        `[AllDebrid] Waiting for magnet id=${magnetId} (status=${magnetStatus?.status}, code=${statusCode}, attempt=${attempt + 1}/${this.MAGNET_READY_MAX_ATTEMPTS})`
+      );
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.MAGNET_READY_POLL_MS)
+      );
+    }
+
+    return false;
+  }
+
   private static async getMagnetFiles(id: number) {
     const payload = new URLSearchParams({
       agent: this.agent,
@@ -467,11 +498,15 @@ export class AllDebridClient {
       return null;
     }
 
+    // statusCode 4 = Ready. Lower codes mean still processing — poll instead of
+    // immediately treating as "not cached".
     if (statusCode !== undefined && statusCode !== 4) {
-      logger.warn(
-        `[AllDebrid] Magnet id=${magnetId} is not ready yet: ${magnetStatus?.status} (code=${statusCode}). Torrent is still processing on AllDebrid servers.`
-      );
-      return null;
+      const ready = await this.waitForMagnetReady(magnetId);
+      if (!ready) {
+        throw new Error(
+          `AllDebrid magnet ${magnetId} is still processing (last status=${magnetStatus?.status}, code=${statusCode})`
+        );
+      }
     }
 
     const links = await this.getMagnetFiles(magnetId);

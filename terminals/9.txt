@@ -1,0 +1,11 @@
+---
+pid: 11144
+cwd: "C:\lequan\code\gamelaucher"
+command: "Stop-Process -Name \"gamelaucher-go-rpc*\" -Force -ErrorAction SilentlyContinue; Start-Sleep 1; $magnet = \"magnet:?xt=urn:btih:CE1F8BB32B3A92C13D2B4681439DD7101CE98366&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337\"; $save = \"C:\\lequan\\code\\gamelaucher\\test-fixed-rpc\"; $pwd = \"fixtest\"; $exe = \"C:\\lequan\\code\\gamelaucher\\gamelaucher-go-rpc\\gamelaucher-go-rpc.exe\"; $p = Start-Process -FilePath $exe -ArgumentList \"5881\",$pwd -PassThru -WindowStyle Hidden; Start-Sleep 3; $body = @{id=1;method=\"action\";params=@{action=\"start\";game_id=\"t:1\";url=$magnet;save_path=$save};rpc_password=$pwd} | ConvertTo-Json -Compress -Depth 5; Invoke-RestMethod -Uri \"http://127.0.0.1:5882/rpc\" -Method Post -Body $body -ContentType \"application/json\" -TimeoutSec 20 | Out-Null; for ($i=1;$i -le 4;$i++) { Start-Sleep 5; $sb = @{id=($i+1);method=\"status\";params=@{};rpc_password=$pwd} | ConvertTo-Json -Compress; $st = Invoke-RestMethod -Uri \"http://127.0.0.1:5882/rpc\" -Method Post -Body $sb -ContentType \"application/json\" -TimeoutSec 10; Write-Host \"T+$($i*5)s peers=$($st.result.numPeers) fileSize=$($st.result.fileSize) status=$($st.result.status)\" }; Stop-Process -Id $p.Id -Force"
+started_at: 2026-07-13T04:46:46.098Z
+running_for_ms: 5839993  
+---
+T+5s peers=5 fileSize=8516239 status=3
+T+10s peers=6 fileSize=8516239 status=3
+T+15s peers=6 fileSize=8516239 status=3
+T+20s peers=0 fileSize=8516239 status=4

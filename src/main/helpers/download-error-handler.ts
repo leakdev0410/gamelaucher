@@ -1,40 +1,29 @@
 import { AxiosError } from "axios";
 import { Downloader, DownloadError } from "@shared";
+import { GoRpcError } from "@main/services/go-rpc";
 
 type DownloadErrorResult = { ok: false; error?: string };
 const KNOWN_DOWNLOAD_ERRORS = new Set<string>(Object.values(DownloadError));
+
+const extractRpcErrorCode = (err: AxiosError): string | undefined => {
+  const data = err.response?.data as
+    | { error?: string | { code?: string; message?: string } }
+    | undefined;
+
+  if (!data?.error) return undefined;
+  if (typeof data.error === "string") return data.error;
+  return data.error.code ?? data.error.message;
+};
 
 const handleAxiosError = (
   err: AxiosError,
   downloader: Downloader
 ): DownloadErrorResult | null => {
-  const rpcErrorCode = (err.response?.data as { error?: string } | undefined)
-    ?.error;
+  const rpcErrorCode = extractRpcErrorCode(err);
 
   if (downloader === Downloader.Torrent) {
-    if (rpcErrorCode === "invalid_magnet") {
-      return { ok: false, error: DownloadError.InvalidMagnet };
-    }
-
-    if (rpcErrorCode === "metadata_timeout") {
-      return { ok: false, error: DownloadError.TorrentMetadataTimeout };
-    }
-
-    if (rpcErrorCode === "metadata_incomplete") {
-      return { ok: false, error: DownloadError.TorrentMetadataIncomplete };
-    }
-
-    if (rpcErrorCode === "empty_selection") {
-      return { ok: false, error: DownloadError.TorrentNoFilesSelected };
-    }
-
-    if (rpcErrorCode === "invalid_file_indices") {
-      return { ok: false, error: DownloadError.TorrentInvalidFileSelection };
-    }
-
-    if (rpcErrorCode === "too_many_files") {
-      return { ok: false, error: DownloadError.TorrentTooManyFiles };
-    }
+    const mapped = rpcErrorCode ? mapTorrentErrorCode(rpcErrorCode) : null;
+    if (mapped) return mapped;
 
     if (rpcErrorCode) {
       return { ok: false, error: DownloadError.TorrentFilesUnavailable };
@@ -153,6 +142,12 @@ export const handleDownloadError = (
   err: unknown,
   downloader: Downloader
 ): DownloadErrorResult => {
+  if (err instanceof GoRpcError && downloader === Downloader.Torrent) {
+    const mapped = mapTorrentErrorCode(err.code) ?? mapTorrentErrorCode(err.message);
+    if (mapped) return mapped;
+    return { ok: false, error: DownloadError.TorrentFilesUnavailable };
+  }
+
   if (err instanceof AxiosError) {
     const result = handleAxiosError(err, downloader);
     if (result) return result;
@@ -160,7 +155,10 @@ export const handleDownloadError = (
 
   if (err instanceof Error) {
     if (downloader === Downloader.Torrent) {
-      const mapped = mapTorrentErrorCode(err.message);
+      const mapped =
+        mapTorrentErrorCode(err.message) ??
+        // GoRpcError-like message sometimes embeds the code only
+        mapTorrentErrorCode(err.name);
       if (mapped) return mapped;
     }
 

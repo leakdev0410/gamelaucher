@@ -1,4 +1,5 @@
 export * from "./logger";
+export * from "./cloudflare-dns";
 export * from "./steam";
 export * from "./steam-250";
 export * from "./window-manager";
@@ -12,6 +13,7 @@ export * from "./ludusavi";
 export * from "./cloud-sync";
 export * from "./7zip";
 export * from "./game-files-manager";
+export * from "./extraction-coordinator";
 export * from "./game-executables";
 export * from "./common-redist-manager";
 export * from "./ws";

@@ -1,0 +1,33 @@
+---
+pid: 4712
+cwd: "C:\lequan\code\gamelaucher"
+command: "$magnet = \"magnet:?xt=urn:btih:CE1F8BB32B3A92C13D2B4681439DD7101CE98366&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337\"; $save = \"C:\\lequan\\code\\gamelaucher\\test-old-rpc\"; New-Item -ItemType Directory -Force -Path $save | Out-Null; foreach ($label in @(\"OLD-HTTP\",\"NEW-STDIN\")) { Write-Host \"=== $label ===\"; Stop-Process -Name \"gamelaucher-go-rpc*\" -Force -ErrorAction SilentlyContinue; Start-Sleep 1; $exe = if ($label -eq \"OLD-HTTP\") { \"C:\\lequan\\code\\gamelaucher\\gamelaucher-go-rpc\\gamelaucher-go-rpc-head.exe\" } else { \"C:\\lequan\\code\\gamelaucher\\gamelaucher-go-rpc\\gamelaucher-go-rpc.exe\" }; $pwd = \"test$label\"; $p = Start-Process -FilePath $exe -ArgumentList \"5881\",$pwd -PassThru -RedirectStandardOutput \"C:\\lequan\\code\\gamelaucher\\out-$label.txt\" -RedirectStandardError \"C:\\lequan\\code\\gamelaucher\\err-$label.txt\" -WindowStyle Hidden; Start-Sleep 3; if ($label -eq \"OLD-HTTP\") { $body = @{id=1;method=\"action\";params=@{action=\"start\";game_id=\"t:1\";url=$magnet;save_path=$save};rpc_password=$pwd} | ConvertTo-Json -Compress -Depth 5; try { Invoke-RestMethod -Uri \"http://127.0.0.1:5882/rpc\" -Method Post -Body $body -ContentType \"application/json\" -TimeoutSec 20 | ConvertTo-Json -Compress } catch { Write-Host \"START ERR: $_\" }; for ($i=1;$i -le 6;$i++) { Start-Sleep 5; $sb = @{id=($i+1);method=\"status\";params=@{};rpc_password=$pwd} | ConvertTo-Json -Compress; try { $st = Invoke-RestMethod -Uri \"http://127.0.0.1:5882/rpc\" -Method Post -Body $sb -ContentType \"application/json\" -TimeoutSec 10; Write-Host \"T+$($i*5)s peers=$($st.result.numPeers) seeds=$($st.result.numSeeds) fileSize=$($st.result.fileSize) status=$($st.result.status)\" } catch { Write-Host \"STATUS ERR: $_\" } } } else { node -e \"const cp=require('child_process');const fs=require('fs');const pwd='$pwd';let buf='';const pending=new Map();let id=1;function call(m,p,t=15000){return new Promise((res,rej)=>{const my=++id;const timer=setTimeout(()=>rej('timeout'),t);pending.set(my,{res,rej,timer});process.stdin.write(JSON.stringify({id:my,method:m,params:p||{},rpc_password:pwd})+'\\n');});} process.stdin.on('data',d=>{buf+=d;let i;while((i=buf.indexOf('\\n'))>=0){const l=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!l)return;const j=JSON.parse(l);if(j.event)return;const p=pending.get(j.id);if(p){clearTimeout(p.timer);pending.delete(j.id);p.res(j);}}}); (async()=>{await call('action',{action:'start',game_id:'t:1',url:process.argv[1],save_path:process.argv[2]},20000); for(let i=0;i<6;i++){await new Promise(r=>setTimeout(r,5000)); const st=await call('status',{}); const r=st.result; console.log('T+'+((i+1)*5)+'s peers='+r.numPeers+' seeds='+r.numSeeds+' fileSize='+r.fileSize+' status='+r.status);} })().catch(e=>console.error(e));\" $magnet $save 2>&1 }; Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue; Start-Sleep 1 }"
+started_at: 2026-07-13T04:43:31.872Z
+running_for_ms: 6035003  
+---
+=== OLD-HTTP ===
+{"id":1}
+T+5s peers=2 seeds=2 fileSize=8516239 status=4
+T+10s peers=5 seeds=5 fileSize=8516239 status=4
+T+15s peers=0 seeds=0 fileSize=8516239 status=4
+T+20s peers=0 seeds=0 fileSize=8516239 status=4
+T+25s peers=0 seeds=0 fileSize=8516239 status=4
+T+30s peers=0 seeds=0 fileSize=8516239 status=4
+=== NEW-STDIN ===
+node : TypeError: process.stdin.write is not a function
+At line:1 char:1699
++ ...  } } else { node -e "const cp=require('child_process');const fs=requi ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (TypeError: proc... not a function:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    at [eval]:1:291
+    at new Promise (<anonymous>)
+    at call ([eval]:1:162)
+    at [eval]:1:653
+    at [eval]:1:987
+    at runScriptInThisContext (node:internal/vm:219:10)
+    at node:internal/process/execution:451:12
+    at [eval]-wrapper:6:24
+    at runScriptInContext (node:internal/process/execution:449:60)
+    at evalFunction (node:internal/process/execution:283:30)

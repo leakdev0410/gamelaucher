@@ -429,17 +429,27 @@ registerEvent(
   }
 );
 
+function cancelTransferState(id: string) {
+  const s = activeTransfers.get(id);
+  if (!s) return;
+  s.cancelled = true;
+  s.currentStreams.forEach((stream) => stream.destroy());
+  s.currentStreams.clear();
+  s.pendingRejects.forEach((reject) => reject(new Error("cancelled")));
+  s.pendingRejects = [];
+}
+
+/** Cancel every in-flight transfer (used on app quit). */
+export function cancelAllGameTransfers() {
+  for (const id of [...activeTransfers.keys()]) {
+    cancelTransferState(id);
+  }
+}
+
 // ── CANCEL ────────────────────────────────────────────────────────────────────
 registerEvent(
   "cancelGameTransfer",
   async (_e, shop: GameShop, objectId: string) => {
-    const s = activeTransfers.get(`${shop}:${objectId}`);
-    if (s) {
-      s.cancelled = true;
-      s.currentStreams.forEach((stream) => stream.destroy());
-      s.currentStreams.clear();
-      s.pendingRejects.forEach((reject) => reject(new Error("cancelled")));
-      s.pendingRejects = [];
-    }
+    cancelTransferState(`${shop}:${objectId}`);
   }
 );

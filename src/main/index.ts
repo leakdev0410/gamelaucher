@@ -1,3 +1,6 @@
+// Install Cloudflare DNS (1.1.1.1) before any other main-process network import.
+import "./services/cloudflare-dns";
+
 import { app, BrowserWindow, dialog, net, protocol } from "electron";
 import i18n from "i18next";
 import path from "node:path";
@@ -10,11 +13,12 @@ import {
   Lock,
   PowerSaveBlockerManager,
 } from "@main/services";
+import { installChromiumCloudflareDns } from "./services/cloudflare-dns";
 import resources from "@locales";
 import { GoRPC } from "./services/go-rpc";
 import { db, gamesSublevel, levelKeys } from "./level";
 import { GameShop, UserPreferences } from "@types";
-import { loadState } from "./main";
+import { loadState, loadStateDeferred } from "./main";
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -55,6 +59,9 @@ if (process.defaultApp) {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
   electronApp.setAppUserModelId("com.lequan.gamelaucher");
+
+  // Chromium/net.fetch + renderer: resolve hosts via Cloudflare DoH.
+  installChromiumCloudflareDns();
 
   // Show a splash window immediately so the user sees the app is starting,
   // instead of waiting for the heavy renderer to load with no feedback.
@@ -130,7 +137,29 @@ app.whenReady().then(async () => {
     });
   });
 
-  await loadState();
+  // Critical path only (IPC + local auth). Hard cap so splash never sticks.
+  try {
+    await Promise.race([
+      loadState(),
+      new Promise<void>((_, reject) => {
+        setTimeout(
+          () => reject(new Error("loadState critical path timed out")),
+          8_000
+        );
+      }),
+    ]);
+  } catch (error) {
+    logger.error(
+      "Critical startup failed or timed out — opening UI anyway",
+      error
+    );
+    // Best-effort: still register events so renderer IPC works.
+    try {
+      await import("./events");
+    } catch (eventsError) {
+      logger.error("Failed to register events after startup timeout", eventsError);
+    }
+  }
 
   const language = await db
     .get<string, string>(levelKeys.language, {
@@ -146,14 +175,18 @@ app.whenReady().then(async () => {
   );
   const isRunDeepLink = deepLinkArg?.startsWith("hydralauncher://run");
 
+  // Always leave splash as soon as the main window can open.
   if (!process.argv.includes("--hidden") && !isRunDeepLink) {
-    WindowManager.createMainWindow();
+    await WindowManager.createMainWindow();
   } else {
     WindowManager.closeSplashWindow();
   }
 
   WindowManager.createNotificationWindow();
   WindowManager.createSystemTray(language || "en");
+
+  // Downloads / seed / RPC / network after UI is visible.
+  void loadStateDeferred();
 
   if (deepLinkArg) {
     handleDeepLinkPath(deepLinkArg);
@@ -254,18 +287,40 @@ app.on("window-all-closed", () => {
 
 let canAppBeClosed = false;
 
-app.on("before-quit", async (e) => {
-  await Lock.releaseLock();
+app.on("before-quit", (e) => {
+  if (canAppBeClosed) return;
 
-  if (!canAppBeClosed) {
-    e.preventDefault();
+  // preventDefault must run synchronously; async work runs after.
+  e.preventDefault();
+
+  void (async () => {
+    try {
+      const { cancelAllGameTransfers } = await import(
+        "./events/library/transfer-game-files"
+      );
+      cancelAllGameTransfers();
+    } catch {
+      // Transfer module may not be loaded yet during early quit.
+    }
+
     PowerSaveBlockerManager.reset();
-    /* Disconnects Go RPC */
     GoRPC.kill();
-    await clearGamesPlaytime();
+
+    try {
+      await clearGamesPlaytime();
+    } catch (error) {
+      logger.error("Failed to flush playtime on quit", error);
+    }
+
+    try {
+      await Lock.releaseLock();
+    } catch (error) {
+      logger.error("Failed to release lock on quit", error);
+    }
+
     canAppBeClosed = true;
     app.quit();
-  }
+  })();
 });
 
 app.on("activate", () => {

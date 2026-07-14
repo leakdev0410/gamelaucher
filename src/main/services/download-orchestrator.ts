@@ -78,8 +78,8 @@ export class DownloadOrchestrator {
   }
 
   private static async activateDownload(download: Download) {
-    await DownloadManager.resumeDownload(download);
-
+    // Mark active in DB first so concurrent resume/start see a busy queue
+    // while URL resolution / Go RPC prepare is still running.
     const activeDownload: Download = {
       ...download,
       status: "active",
@@ -91,6 +91,19 @@ export class DownloadOrchestrator {
     };
 
     await downloadsSublevel.put(getGameKey(download), activeDownload);
+
+    try {
+      await DownloadManager.resumeDownload(activeDownload);
+    } catch (error) {
+      await downloadsSublevel.put(getGameKey(download), {
+        ...activeDownload,
+        status: "error",
+        queued: false,
+        pinnedToHero: false,
+        extracting: false,
+      });
+      throw error;
+    }
 
     return activeDownload;
   }
@@ -226,9 +239,19 @@ export class DownloadOrchestrator {
       const nextDownload: Download = { ...download };
       let shouldPersist = false;
 
+      // Legacy Hydra/Nimbus downloader value (7) is no longer supported.
+      if ((nextDownload.downloader as number) === 7) {
+        nextDownload.status = "error";
+        nextDownload.queued = false;
+        nextDownload.pinnedToHero = false;
+        nextDownload.extracting = false;
+        shouldPersist = true;
+      }
+
       if (nextDownload.extracting) {
         pendingExtractions.push({ ...nextDownload });
-        nextDownload.extracting = false;
+        // Keep extracting=true so startup seed resume skips this game and does
+        // not re-lock archives while ExtractionCoordinator runs.
         shouldPersist = true;
       }
 
@@ -270,7 +293,10 @@ export class DownloadOrchestrator {
           .get(levelKeys.game(pendingDownload.shop, pendingDownload.objectId))
           .catch(() => null);
         if (game) {
-          void DownloadManager.handleExtraction(pendingDownload, game);
+          void import("./extraction-coordinator").then(
+            ({ ExtractionCoordinator }) =>
+              ExtractionCoordinator.run(pendingDownload, game)
+          );
         }
       }
     }
@@ -302,7 +328,7 @@ export class DownloadOrchestrator {
           getDownloadId(entry) !== getDownloadId(download)
       ) ?? null;
 
-    if (currentActiveDownload) {
+    if (currentActiveDownload || DownloadManager.hasActiveDownload()) {
       await this.queueDownload(download);
       WindowManager.sendDownloadsUpdated();
       return { ok: true };
@@ -346,7 +372,15 @@ export class DownloadOrchestrator {
           getDownloadId(entry) !== getDownloadId(download)
       ) ?? null;
 
-    if (currentActiveDownload && strategy === "queueIfActive") {
+    const runtimeBusy =
+      DownloadManager.hasActiveDownload() &&
+      !currentActiveDownload &&
+      strategy === "queueIfActive";
+
+    if (
+      (currentActiveDownload || runtimeBusy) &&
+      strategy === "queueIfActive"
+    ) {
       await this.queueDownload(download, { toFront: true });
       WindowManager.sendDownloadsUpdated();
       return true;

@@ -1,0 +1,23 @@
+---
+pid: 6612
+cwd: "C:\lequan\code\gamelaucher"
+command: "Set-Location \"C:\\lequan\\app\\gamelaucher\\game\\Schedule I\"; $sw = [Diagnostics.Stopwatch]::StartNew(); & \"C:\\lequan\\code\\gamelaucher\\binaries\\7z.exe\" x \"-ponline-fix.me\" -y \"C:\\lequan\\app\\gamelaucher\\game\\Schedule I\\Schedule.I.v0.4.0f9-OFME.rar.part\" 2>&1 | Tee-Object -Variable out | Out-Null; $sw.Stop(); $out | Select-Object -Last 15; \"Elapsed: $([math]::Round($sw.Elapsed.TotalSeconds,1))s\""
+started_at: 2026-07-13T06:01:19.456Z
+running_for_ms: 1369989  
+---
+Physical Size = 2493554034
+Characteristics = Recovery
+Encrypted = +
+Solid = -
+Blocks = 255
+Method = v6:32M:m1
+Multivolume = -
+Volumes = 1
+
+Everything is Ok
+
+Folders: 96
+Files: 159
+Size:       7707804975
+Compressed: 2493554034
+Elapsed: 23.9s

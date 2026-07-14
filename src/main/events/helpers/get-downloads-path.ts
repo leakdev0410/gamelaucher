@@ -1,6 +1,7 @@
 import { defaultDownloadsPath } from "@main/constants";
 import { db, levelKeys } from "@main/level";
 import type { UserPreferences } from "@types";
+import { ensureDownloadsPathExists } from "@main/helpers/ensure-downloads-path";
 
 export const getDownloadsPath = async () => {
   const userPreferences = await db.get<string, UserPreferences | null>(
@@ -10,7 +11,12 @@ export const getDownloadsPath = async () => {
     }
   );
 
-  if (userPreferences?.downloadsPath) return userPreferences.downloadsPath;
+  const downloadsPath =
+    userPreferences?.downloadsPath?.trim() || defaultDownloadsPath;
 
-  return defaultDownloadsPath;
+  // Always create the path so first download / settings never fails with
+  // "cannot write" just because the portable `game` folder was missing.
+  ensureDownloadsPathExists(downloadsPath);
+
+  return downloadsPath;
 };

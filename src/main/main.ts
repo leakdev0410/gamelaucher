@@ -1,4 +1,4 @@
-﻿import { downloadsSublevel } from "./level/sublevels/downloads";
+import { downloadsSublevel } from "./level/sublevels/downloads";
 import { orderBy } from "lodash-es";
 import { Downloader } from "@shared";
 import { levelKeys, db } from "./level";
@@ -51,6 +51,11 @@ const hasMissingSeedFiles = async (download: Download): Promise<boolean> => {
   return currentSize < expectedSize;
 };
 
+/**
+ * Critical startup only — must stay offline-safe and fast so the splash can
+ * hand off to the main window. Network, seed scans, RPC, and main loop run in
+ * `loadStateDeferred`.
+ */
 export const loadState = async () => {
   await Lock.acquireLock();
 
@@ -61,6 +66,7 @@ export const loadState = async () => {
     }
   );
 
+  // Register all IPC handlers before the renderer loads.
   await import("./events");
 
   if (userPreferences?.realDebridApiToken) {
@@ -81,108 +87,169 @@ export const loadState = async () => {
 
   GofileApi.initialize();
 
-  Ludusavi.copyConfigFileToUserData();
-  Ludusavi.copyBinaryToUserData();
-
-  await ApiClient.setupApi().then(async () => {
-    uploadGamesBatch();
-    void migrateDownloadSources();
-
-    const { syncDownloadSourcesFromApi } = await import("./services/user");
-    void syncDownloadSourcesFromApi();
-    void seedDownloadSources();
-
-    // Check for new download options on startup (if enabled)
-    (async () => {
-      await DownloadSourcesChecker.checkForChanges();
-    })();
-    WSClient.connect();
-  });
-
-  const downloadToResume =
-    await DownloadOrchestrator.bootstrapDownloadsOnStartup();
-  const normalizedDownloads = await downloadsSublevel
-    .values()
-    .all()
-    .then((games) => orderBy(games, "timestamp", "desc"));
-
-  const downloadsToSeed: Download[] = [];
-
-  for (const game of normalizedDownloads) {
-    if (
-      !game.shouldSeed ||
-      game.downloader !== Downloader.Torrent ||
-      game.progress !== 1 ||
-      game.status !== "seeding" ||
-      game.uri === null
-    ) {
-      continue;
-    }
-
-    if (!(await hasMissingSeedFiles(game))) {
-      downloadsToSeed.push(game);
-      continue;
-    }
-
-    const gameKey = levelKeys.game(game.shop, game.objectId);
-    const expectedSize = game.selectedFilesSize ?? game.fileSize ?? 0;
-    let progress = game.progress;
-
-    if (game.folderName) {
-      const downloadTargetPath = path.join(game.downloadPath, game.folderName);
-      const currentSize = fs.existsSync(downloadTargetPath)
-        ? await getDirSize(downloadTargetPath)
-        : 0;
-      progress =
-        expectedSize > 0
-          ? Math.min(currentSize / expectedSize, 1)
-          : game.progress;
-    }
-
-    await downloadsSublevel.put(gameKey, {
-      ...game,
-      status: "paused",
-      shouldSeed: false,
-      queued: false,
-      pinnedToHero: false,
-      progress,
-    });
-
-    logger.warn(
-      `[Startup] Seed files missing for ${gameKey}; seeding was disabled`
-    );
+  try {
+    Ludusavi.copyConfigFileToUserData();
+    Ludusavi.copyBinaryToUserData();
+  } catch (error) {
+    logger.error("[Startup] Ludusavi copy failed (continuing)", error);
   }
 
-  // For torrents use Python RPC; HTTP downloads use JS downloader.
-  const isTorrent = downloadToResume?.downloader === Downloader.Torrent;
+  // Local auth from LevelDB only — no network wait here.
+  await ApiClient.setupApi();
 
-  // Start the heavier Python RPC asynchronously so it doesn't block window creation
-  const startDownloads = async () => {
-    if (downloadToResume && !isTorrent) {
-      // Start Python RPC for seeding only, then resume HTTP download with JS
-      await DownloadManager.startRPC(undefined, downloadsToSeed);
-      await DownloadManager.startDownload(downloadToResume).catch((err) => {
-        // If resume fails, just log it - user can manually retry
-        logger.error("Failed to auto-resume download:", err);
+  // Create portable default download folder (`<exe>/game`) on first launch.
+  try {
+    const { ensureDefaultGameFolder } = await import(
+      "./helpers/ensure-downloads-path"
+    );
+    ensureDefaultGameFolder();
+  } catch (error) {
+    logger.error("[Startup] Failed to create default game folder", error);
+  }
+
+  // Warm the Go torrent RPC early so the first magnet start is not cold-spawn.
+  void DownloadManager.startRPC().catch((error) => {
+    logger.error("[Startup] Failed to pre-start Go RPC", error);
+  });
+};
+
+/**
+ * Heavy / network work after the main window is shown.
+ * Safe to call without awaiting from the UI bootstrap path.
+ */
+export const loadStateDeferred = async () => {
+  try {
+    // Background network tasks (must not block UI).
+    void uploadGamesBatch();
+    void migrateDownloadSources();
+    void import("./services/user")
+      .then(({ syncDownloadSourcesFromApi }) => syncDownloadSourcesFromApi())
+      .catch((error) =>
+        logger.error("[Startup] syncDownloadSourcesFromApi failed", error)
+      );
+    void seedDownloadSources();
+    void DownloadSourcesChecker.checkForChanges().catch((error) =>
+      logger.error("[Startup] DownloadSourcesChecker failed", error)
+    );
+    void WSClient.connect();
+
+    const downloadToResume =
+      await DownloadOrchestrator.bootstrapDownloadsOnStartup();
+    const normalizedDownloads = await downloadsSublevel
+      .values()
+      .all()
+      .then((games) => orderBy(games, "timestamp", "desc"));
+
+    const downloadsToSeed: Download[] = [];
+
+    for (const game of normalizedDownloads) {
+      if (
+        !game.shouldSeed ||
+        game.downloader !== Downloader.Torrent ||
+        game.progress !== 1 ||
+        game.status !== "seeding" ||
+        game.uri === null ||
+        // Do not re-lock archives that are mid-extraction (pending or active).
+        game.extracting
+      ) {
+        continue;
+      }
+
+      // Skip expensive recursive size scan when we already know progress is 1
+      // and folder exists — only check missing path.
+      const folderMissing =
+        !game.folderName ||
+        !fs.existsSync(path.join(game.downloadPath, game.folderName));
+
+      if (!folderMissing) {
+        // Cheap existence check only; full size verify is optional & capped.
+        let missing = false;
+        try {
+          missing = await Promise.race([
+            hasMissingSeedFiles(game),
+            new Promise<boolean>((resolve) => {
+              setTimeout(() => resolve(false), 3_000);
+            }),
+          ]);
+        } catch {
+          missing = false;
+        }
+
+        if (!missing) {
+          downloadsToSeed.push(game);
+          continue;
+        }
+      }
+
+      const gameKey = levelKeys.game(game.shop, game.objectId);
+      const expectedSize = game.selectedFilesSize ?? game.fileSize ?? 0;
+      let progress = game.progress;
+
+      if (game.folderName) {
+        const downloadTargetPath = path.join(
+          game.downloadPath,
+          game.folderName
+        );
+        const currentSize = fs.existsSync(downloadTargetPath)
+          ? await Promise.race([
+              getDirSize(downloadTargetPath),
+              new Promise<number>((resolve) => {
+                setTimeout(() => resolve(expectedSize), 3_000);
+              }),
+            ])
+          : 0;
+        progress =
+          expectedSize > 0
+            ? Math.min(currentSize / expectedSize, 1)
+            : game.progress;
+      }
+
+      await downloadsSublevel.put(gameKey, {
+        ...game,
+        status: "paused",
+        shouldSeed: false,
+        queued: false,
+        pinnedToHero: false,
+        progress,
       });
-    } else {
-      // Use Python RPC for everything (torrent or fallback)
-      await DownloadManager.startRPC(
-        downloadToResume ?? undefined,
-        downloadsToSeed
+
+      logger.warn(
+        `[Startup] Seed files missing for ${gameKey}; seeding was disabled`
       );
     }
-  };
 
-  startDownloads().catch((err) => {
-    logger.error("Failed to start downloads/RPC on startup:", err);
-  });
+    const isTorrent = downloadToResume?.downloader === Downloader.Torrent;
 
-  WindowManager.sendDownloadsUpdated();
+    const startDownloads = async () => {
+      if (downloadToResume && !isTorrent) {
+        await DownloadManager.startRPC(undefined, downloadsToSeed);
+        await DownloadManager.startDownload(downloadToResume).catch((err) => {
+          logger.error("Failed to auto-resume download:", err);
+        });
+      } else {
+        await DownloadManager.startRPC(
+          downloadToResume ?? undefined,
+          downloadsToSeed
+        );
+      }
+    };
 
-  startMainLoop();
+    void startDownloads().catch((err) => {
+      logger.error("Failed to start downloads/RPC on startup:", err);
+    });
 
-  CommonRedistManager.downloadCommonRedist();
+    WindowManager.sendDownloadsUpdated();
+    startMainLoop();
 
-  SystemPath.checkIfPathsAreAvailable();
+    void CommonRedistManager.downloadCommonRedist();
+    SystemPath.checkIfPathsAreAvailable();
+  } catch (error) {
+    logger.error("[Startup] loadStateDeferred failed", error);
+    // Still start the main loop so download watchers / process watcher work.
+    try {
+      startMainLoop();
+    } catch (loopError) {
+      logger.error("[Startup] startMainLoop failed", loopError);
+    }
+  }
 };

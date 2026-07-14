@@ -107,7 +107,7 @@ const openGameInstaller = async (
     objectId
   );
 
-  if (!download?.folderName) return true;
+  if (!download?.folderName) return false;
 
   const gamePath = path.join(
     download.downloadPath ?? (await getDownloadsPath()),
@@ -115,7 +115,7 @@ const openGameInstaller = async (
   );
 
   if (!fs.existsSync(gamePath)) {
-    return true;
+    return false;
   }
 
   if (process.platform === "darwin") {

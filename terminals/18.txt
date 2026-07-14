@@ -1,0 +1,12 @@
+---
+pid: 13296
+cwd: "C:\lequan\code\gamelaucher"
+command: "cd C:\\lequan\\code\\gamelaucher; yarn typecheck 2>&1"
+started_at: 2026-07-13T06:03:59.777Z
+running_for_ms: 1210001  
+---
+yarn run v1.22.22
+$ yarn typecheck:node && yarn typecheck:web
+$ tsc --noEmit -p tsconfig.node.json --composite false
+$ tsc --noEmit -p tsconfig.web.json --composite false
+Done in 24.51s.
