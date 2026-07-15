@@ -89,6 +89,8 @@ export class ExtractionCoordinator {
     await this.ensureExtractingFlag(download, true);
 
     try {
+      // Batch retries until success or the user declines the continue dialog.
+      // eslint-disable-next-line no-constant-condition -- intentional retry loop (exits via return/throw)
       while (true) {
         for (
           let batchAttempt = 0;
