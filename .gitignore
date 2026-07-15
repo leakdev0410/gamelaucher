@@ -23,3 +23,15 @@ Future-updates.md
 TO-DO.md
 .planning/
 .claude/
+
+# Local torrent/RPC smoke-test downloads (must not be pushed; GitHub 100MB limit)
+test-torrent-dl/
+test-torrent-dl2/
+test-fixed-rpc/
+test-magnet-idm/
+test-magnet-idm-long/
+test-old-rpc/
+terminals/
+err-*.txt
+out-*.txt
+*.mp4.part
