@@ -24,7 +24,6 @@ import {
 } from "@renderer/hooks";
 
 import "./header.scss";
-import { AutoUpdateSubHeader } from "./auto-update-sub-header";
 import { ScanGamesModal } from "./scan-games-modal";
 import { setFilters, setLibrarySearchQuery } from "@renderer/features";
 import cn from "classnames";
@@ -434,8 +433,6 @@ export function Header() {
       {isOnLibraryPage && window.electron.platform === "win32" && (
         <Tooltip id={scanButtonTooltipId} style={{ zIndex: 1 }} />
       )}
-
-      <AutoUpdateSubHeader />
 
       <SearchDropdown
         visible={

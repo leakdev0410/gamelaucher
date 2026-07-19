@@ -1,7 +1,0 @@
----
-pid: 3036
-cwd: "C:\lequan\code\gamelaucher"
-command: "cd \"C:\\lequan\\code\\gamelaucher\\go_rpc\"; go build -o \"C:\\lequan\\code\\gamelaucher\\gamelaucher-go-rpc\\gamelaucher-go-rpc.exe\" . 2>&1"
-started_at: 2026-07-13T04:18:05.858Z
-running_for_ms: 7565000  
----
