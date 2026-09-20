@@ -24,7 +24,7 @@ upstream remote still `hydralauncher/hydra`). Key fork traits to keep in mind:
   default downloads at `<exe>/game`. `executableBaseDir` = `PORTABLE_EXECUTABLE_DIR` in a portable build,
   the install dir when installed, the project root in dev. Logs/Backups/Assets/CommonRedist still live
   under `userData`.
-- **Rebranded to "Game Launcher"** (window title in renderer is hardcoded).
+- **Rebranded to "Leak Launcher"** (window title in renderer is hardcoded).
 - **Fork-added features**: a pure-Node HTTP downloader (`js-http-downloader.ts`), multi download-directory
   support (`shared/download-directories.ts`), cross-drive game transfer (`transferGameFiles`), a Vietnamese
   locale (`src/locales/vi`), Cloudflare DNS override (`services/cloudflare-dns.ts` — loaded first in

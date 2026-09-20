@@ -146,7 +146,7 @@ export function GeneralSettingsSection({
         selectedDrive.length > 1 && selectedDrive.endsWith(pathSeparator)
           ? selectedDrive.slice(0, -1)
           : selectedDrive;
-      fullDest = `${normalizedDrive}${pathSeparator}Game Launcher Games`;
+      fullDest = `${normalizedDrive}${pathSeparator}Leak Launcher Games`;
     } else if (customPath.trim()) {
       fullDest = customPath.trim();
     } else {

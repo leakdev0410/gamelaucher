@@ -40,7 +40,7 @@ if (!gotTheLock) {
 
   if (!isDeepLinkHandoff) {
     dialog.showErrorBox(
-      "Game Launcher is already running",
+      "Leak Launcher is already running",
       "Ứng dụng đang được mở. Vui lòng kiểm tra khay hệ thống (system tray) hoặc các cửa sổ đang mở."
     );
   }

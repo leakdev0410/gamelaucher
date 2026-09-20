@@ -516,7 +516,7 @@ declare global {
     onCustomThemeUpdated: (cb: () => void) => () => Electron.IpcRenderer;
     closeEditorWindow: (themeId?: string) => Promise<void>;
 
-    /* Game Launcher Window */
+    /* Leak Launcher Window */
     showGameLauncherWindow: () => Promise<void>;
     closeGameLauncherWindow: () => Promise<void>;
     openMainWindow: () => Promise<void>;

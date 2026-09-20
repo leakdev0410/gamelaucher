@@ -136,7 +136,7 @@ export class WindowManager {
       resizable: false,
       center: true,
       backgroundColor: "#f5f4ee",
-      title: "Game Launcher",
+      title: "Leak Launcher",
       icon,
       webPreferences: { sandbox: true },
     });
@@ -156,8 +156,7 @@ export class WindowManager {
       @keyframes spin{to{transform:rotate(360deg);}}
     </style></head><body>
       ${logoBase64 ? `<img class="logo" src="data:image/png;base64,${logoBase64}"/>` : ""}
-      <div class="name">Game Launcher</div>
-      <div class="author">by Lê Quân</div>
+      <div class="name">Leak Launcher</div>
       <div class="spinner"></div>
       <div class="status">Đang khởi động…</div>
     </body></html>`;
@@ -771,7 +770,7 @@ export class WindowManager {
       tray.popUpContextMenu(contextMenu);
     };
 
-    tray.setToolTip("Game Launcher");
+    tray.setToolTip("Leak Launcher");
 
     if (process.platform === "win32") {
       await updateSystemTray();

@@ -129,7 +129,7 @@ export class GoRPC {
 
     if (resolvedBinaryPath) {
       if (!fs.existsSync(resolvedBinaryPath)) {
-        dialog.showErrorBox("Fatal", "Game Launcher RPC binary not found.");
+        dialog.showErrorBox("Fatal", "Leak Launcher RPC binary not found.");
         app.quit();
         throw new Error("RPC binary not found");
       }

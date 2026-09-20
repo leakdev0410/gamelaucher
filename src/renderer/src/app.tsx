@@ -309,10 +309,7 @@ export function App() {
         <div className="title-bar">
           <h4>
             <span className="title-bar__dot" />
-            Game Launcher
-            <span style={{ opacity: 0.55, fontWeight: 400, fontSize: "12px" }}>
-              by Lê Quân
-            </span>
+            Leak Launcher
           </h4>
         </div>
       )}

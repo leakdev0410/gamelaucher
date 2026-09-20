@@ -25,7 +25,7 @@ interface FormValues {
 }
 
 const DEFAULT_THEME_CODE = `/*
-  Here you can edit CSS for your theme and apply it on Game Launcher.
+  Here you can edit CSS for your theme and apply it on Leak Launcher.
   There are a few classes already in place, you can use them to style the launcher.
 
   Happy hacking!

@@ -169,7 +169,7 @@ export class ApiClient {
     // http(s)Agent defaults (Cloudflare DNS lookup) are set in cloudflare-dns.ts
     this.instance = axios.create({
       baseURL: appConfig.apiUrl,
-      headers: { "User-Agent": `Game Launcher v${appVersion}` },
+      headers: { "User-Agent": `Leak Launcher v${appVersion}` },
     });
 
     if (this.ADD_LOG_INTERCEPTOR) {

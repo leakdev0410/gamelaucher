@@ -773,7 +773,7 @@ contextBridge.exposeInMainWorld("electron", {
   closeEditorWindow: (themeId?: string) =>
     ipcRenderer.invoke("closeEditorWindow", themeId),
 
-  /* Game Launcher Window */
+  /* Leak Launcher Window */
   showGameLauncherWindow: () => ipcRenderer.invoke("showGameLauncherWindow"),
   closeGameLauncherWindow: () => ipcRenderer.invoke("closeGameLauncherWindow"),
   openMainWindow: () => ipcRenderer.invoke("openMainWindow"),
