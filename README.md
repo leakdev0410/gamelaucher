@@ -12,12 +12,34 @@
 
 ## Tính năng
 
-- Thêm các trò chơi bạn sở hữu vào thư viện của mình
-- Có một hồ sơ cá nhân đẹp mắt để hiển thị những gì bạn đang chơi cho bạn bè
-- Lưu tiến trình trò chơi của bạn bằng lưu trữ cục bộ (local save)
-- Mở khóa các thành tựu (achievements)
-- Điều hướng qua một danh mục phong phú với thuật toán gợi ý mạnh mẽ
-- Khám phá những trò chơi mới mà bạn chưa từng chơi trước đây
+### Quản lý game
+- Duyệt catalogue Steam, tìm kiếm, lọc theo nhiều tiêu chí (Proton compatibility, năm phát hành, hệ điều hành)
+- Thêm game tùy chỉnh từ đường dẫn executable bất kỳ
+- Theo dõi thời gian chơi (playtime) và achievements real-time
+- Backup / restore saves cục bộ qua Ludusavi
+- Tạo Steam shortcut cho game đã cài
+
+### Tải xuống
+- Torrent client tích hợp (viết bằng **Go** — fork migration từ Python của upstream)
+- Hỗ trợ **debrid services**: Real-Debrid, AllDebrid, Premiumize, TorBox
+- Hỗ trợ **hosters**: Gofile, PixelDrain, Datanodes, Mediafire, Buzzheavier, FuckingFast, VikingFile, Rootz
+- Tự động giải nén sau khi tải (Online-Fix, SteamRip và nhiều repack phổ biến khác)
+- Hàng đợi download, pause / resume, theo dõi tiến độ và tốc độ real-time
+- **Nhiều thư mục tải xuống** + chuyển toàn bộ game giữa các ổ đĩa khác nhau (cross-drive transfer)
+- Notification khi download hoàn tất
+
+### Cá nhân hóa
+- **Theme editor** đầy đủ (mở trong cửa sổ riêng, hỗ trợ live preview và import CSS)
+- 34 ngôn ngữ UI (bao gồm **tiếng Việt**)
+- Thông báo cục bộ cho download và repack mới
+- Collection / ghim game yêu thích
+
+### Tích hợp hệ thống
+- **Windows Defender exclusion** (thêm thư mục vào danh sách loại trừ qua UAC prompt)
+- Proton / Wine / MangoHUD / GameMode support
+- **Portable mode**: data lưu cạnh file thực thi — LevelDB, saves, downloads đi cùng `.exe`
+- **Cloudflare DNS override** (tránh ISP chặn DNS)
+- Chuyển toàn bộ game giữa các ổ đĩa với progress tracking
 
 ## Build từ Source Code
 
