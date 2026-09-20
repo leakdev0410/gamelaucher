@@ -1,12 +1,24 @@
 {
   "name": "gamelaucher",
   "version": "3.9.8",
-  "description": "gamelaucher",
+  "description": "Personal fork of hydralauncher/hydra (game launcher) — Vietnam-locale, theme tweaks, Go RPC migration, and personal modifications.",
   "main": "./out/main/index.js",
-  "author": "Lê Quân",
+  "author": {
+    "name": "Lê Quân",
+    "email": "",
+    "url": "https://github.com/leakdev0410/gamelaucher"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/hydralauncher/hydra.git"
+    "url": "https://github.com/leakdev0410/gamelaucher.git"
+  },
+  "bugs": {
+    "url": "https://github.com/leakdev0410/gamelaucher/issues"
+  },
+  "homepage": "https://github.com/leakdev0410/gamelaucher#readme",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/hydralauncher/hydra"
   },
   "type": "module",
   "resolutions": {

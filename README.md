@@ -8,6 +8,8 @@
 
 </div>
 
+> ⚠️ **Fork của [hydralauncher/hydra](https://github.com/hydralauncher/hydra).** Đây là phiên bản cá nhân của dự án mã nguồn mở Hydra do Los Broxas phát triển, với các sửa đổi cho phù hợp với nhu cầu cá nhân (giao diện tiếng Việt, chuyển torrent RPC sang Go, điều chỉnh theme, và một số tinh chỉnh khác). Toàn bộ credit thuộc về các tác giả gốc — xem [Người đóng góp](#người-đóng-góp) và [LICENSE](LICENSE).
+
 ## Tính năng
 
 - Thêm các trò chơi bạn sở hữu vào thư viện của mình
