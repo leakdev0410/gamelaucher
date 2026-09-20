@@ -9,7 +9,7 @@ import {
 } from "@primer/octicons-react";
 import PointsIcon from "@renderer/assets/icons/star.svg?react";
 import { MAX_MINUTES_TO_SHOW_IN_PLAYTIME } from "@renderer/constants";
-import { darkenColor } from "@renderer/helpers";
+import { lightenColor } from "@renderer/helpers";
 import { logger } from "@renderer/logger";
 import { average } from "color.js";
 import type { Game, GameShop, ShopAssets } from "@types";
@@ -268,13 +268,13 @@ export default function GameLauncher() {
 
   const backgroundStyle = accentColor
     ? {
-        background: `linear-gradient(135deg, ${darkenColor(accentColor, 0.7)} 0%, ${darkenColor(accentColor, 0.8, 0.9)} 50%, ${darkenColor(accentColor, 0.85, 0.8)} 100%)`,
+        background: `linear-gradient(135deg, ${lightenColor(accentColor, 0.55)} 0%, ${lightenColor(accentColor, 0.7, 0.9)} 50%, ${lightenColor(accentColor, 0.8, 0.85)} 100%)`,
       }
     : undefined;
 
   const glowStyle = accentColor
     ? {
-        background: `radial-gradient(ellipse at top right, ${darkenColor(accentColor, 0.3, 0.15)} 0%, transparent 50%)`,
+        background: `radial-gradient(ellipse at top right, ${lightenColor(accentColor, 0.2, 0.18)} 0%, transparent 50%)`,
       }
     : undefined;
 

@@ -54,7 +54,7 @@ const getProgramDataPath = () => {
   return path.join("drive_c", "ProgramData");
 };
 
-//TODO: change to a automatized method
+// Change to an automated method
 const publicDocuments = getPublicDocumentsPath();
 const programData = getProgramDataPath();
 const appData = getAppDataPath();

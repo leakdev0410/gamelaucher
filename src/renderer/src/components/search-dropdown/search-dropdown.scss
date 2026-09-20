@@ -2,15 +2,17 @@
 
 .search-dropdown {
   position: fixed;
-  background-color: globals.$dark-background-color;
-  border: 1px solid globals.$border-color;
-  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  border: 1px solid globals.$border-strong;
+  border-radius: globals.$radius-md;
   max-height: 350px;
   overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
   z-index: 1000;
-  margin-top: 4px;
-  width: 250px;
+  margin-top: 8px;
+  width: 280px;
+  color: globals.$muted-color;
 
   &__section {
     padding: 4px 0;
@@ -29,7 +31,7 @@
   }
 
   &__section-title {
-    color: globals.$muted-color;
+    color: globals.$body-color;
     font-size: 12px;
     font-weight: 500;
     text-transform: uppercase;
@@ -48,7 +50,7 @@
     border: none;
 
     &:hover {
-      color: #ffffff;
+      color: globals.$muted-color;
     }
   }
 
@@ -83,8 +85,8 @@
     background-color: transparent;
 
     &:hover {
-      color: #ff3333;
-      background-color: rgba(255, 85, 85, 0.2);
+      color: globals.$danger-color;
+      background-color: rgba(192, 69, 58, 0.14);
     }
   }
 
@@ -96,14 +98,15 @@
     padding: 8px 12px;
     cursor: pointer;
     transition: background-color 0.1s ease;
-    color: #2b2a27;
+    color: globals.$muted-color;
     text-align: left;
     border: none;
     background: transparent;
 
     &:hover,
     &--active {
-      background-color: globals.$background-color;
+      background-color: globals.$overlay-active;
+      color: globals.$muted-color;
     }
 
     &:focus {

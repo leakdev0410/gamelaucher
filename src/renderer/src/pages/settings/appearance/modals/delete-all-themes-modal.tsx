@@ -19,9 +19,9 @@ export const DeleteAllThemesModal = ({
   const { t } = useTranslation("settings");
 
   const handleDeleteAllThemes = async () => {
-    const allThemes = (await levelDBService.values("themes")) as {
+    const allThemes = (await levelDBService.values("themes")) as Array<{
       isActive?: boolean;
-    }[];
+    }>;
     const activeTheme = allThemes.find((theme) => theme.isActive);
 
     if (activeTheme) {

@@ -3,6 +3,7 @@ export * from "./bottom-panel/bottom-panel";
 export * from "./button/button";
 export * from "./game-card/game-card";
 export * from "./header/header";
+export * from "./top-nav/top-nav";
 export * from "./hero/hero";
 export * from "./modal/modal";
 export * from "./sidebar/sidebar";

@@ -29,7 +29,7 @@
     width: 14px;
     height: 14px;
     flex-shrink: 0;
-    filter: brightness(0) saturate(100%) invert(100%);
+    filter: brightness(0) saturate(100%);
   }
 
   &__option-list {
@@ -44,7 +44,7 @@
     touch-action: manipulation;
 
     &.radio-field--selected .radio-field__label {
-      color: #ffffff;
+      color: globals.$muted-color;
     }
   }
 
@@ -53,12 +53,12 @@
     height: 8px;
     border-radius: 50%;
     background: var(--proton-option-color);
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
     flex-shrink: 0;
   }
 
   &__option-label {
-    color: rgba(0, 0, 0, 0.86);
+    color: globals.$muted-color;
     font-size: 12px;
     font-weight: 600;
     line-height: 1.2;

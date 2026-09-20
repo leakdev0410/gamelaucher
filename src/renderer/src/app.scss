@@ -1,25 +1,69 @@
 @use "./scss/globals.scss";
 
+:root {
+  --bg: #{globals.$background-color};
+  --bg-elevated: #ffffff;
+  --surface-0: #{globals.$surface-0};
+  --surface-1: #{globals.$surface-1};
+  --surface-2: #{globals.$surface-2};
+  --surface-3: #{globals.$surface-3};
+  --border: #{globals.$border-color};
+  --border-mid: #{globals.$border-mid};
+  --border-strong: #{globals.$border-strong};
+  --text: #{globals.$muted-color};
+  --text-primary: #{globals.$muted-color};
+  --text-secondary: #{globals.$body-color};
+  --text-muted: #{globals.$text-muted};
+  --text-dim: #{globals.$text-dim};
+  --accent: #{globals.$brand-teal};
+  --accent-soft: rgba(217, 119, 87, 0.1);
+  --accent-ink: #{globals.$brand-ink};
+  --accent-hover: #{globals.$brand-hover};
+  --color-primary: #{globals.$brand-teal};
+  --color-primary-rgb: 217, 119, 87;
+  --color-text: #{globals.$muted-color};
+  --color-text-primary: #{globals.$muted-color};
+  --color-text-secondary: #{globals.$body-color};
+  --color-background: #{globals.$background-color};
+  --color-background-light: #{globals.$surface-1};
+  --color-background-secondary: #{globals.$surface-1};
+  --color-surface: #{globals.$surface-0};
+  --color-border: #{globals.$border-color};
+  --danger: #{globals.$danger-color};
+  --success: #{globals.$success-color};
+  --warning: #{globals.$warning-color};
+  --radius-sm: #{globals.$radius-sm};
+  --radius-md: #{globals.$radius-md};
+  --radius-lg: #{globals.$radius-lg};
+  --font-display: #{globals.$font-display};
+  --font-body: #{globals.$font-body};
+  --ease: #{globals.$ease};
+  --titlebar-h: #{globals.$titlebar-h};
+  --nav-h: #{globals.$nav-h};
+  --status-h: #{globals.$status-h};
+}
+
 * {
   box-sizing: border-box;
 }
 
 ::-webkit-scrollbar {
-  width: 9px;
-  background-color: globals.$dark-background-color;
+  width: 8px;
+  height: 8px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: rgba(0, 0, 0, 0.2);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 24px;
+  background: rgba(48, 45, 38, 0.16);
+  border-radius: 99px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.3);
+  background: rgba(48, 45, 38, 0.26);
 }
 
 html,
@@ -32,12 +76,30 @@ main {
 body {
   overflow: hidden;
   user-select: none;
-  font-family:
-    Noto Sans,
-    sans-serif;
+  font-family: var(--font-body);
   font-size: globals.$body-font-size;
-  color: globals.$body-color;
+  color: var(--text);
   margin: 0;
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-fill-color: inherit;
+}
+
+/* Global Claude Cream text — prevent “missing” labels after theme inversion */
+button,
+input,
+select,
+textarea,
+label,
+a,
+span,
+li,
+td,
+th,
+small,
+strong {
+  color: inherit;
+  -webkit-text-fill-color: inherit;
 }
 
 button {
@@ -45,6 +107,27 @@ button {
   background-color: transparent;
   border: none;
   font-family: inherit;
+}
+
+input,
+select,
+textarea {
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--text);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  -webkit-text-fill-color: var(--text-muted);
+  opacity: 1;
+}
+
+/* Native <select> options on Chromium/Windows */
+option {
+  color: #30302a;
+  background-color: #ffffff;
 }
 
 h1,
@@ -55,23 +138,53 @@ h5,
 h6,
 p {
   margin: 0;
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  color: var(--text);
 }
 
 p {
-  line-height: 20px;
+  line-height: 1.45;
+  color: var(--text-secondary);
 }
 
-#root,
-main {
-  display: flex;
+label {
+  color: var(--text-secondary);
+}
+
+small {
+  color: var(--text-muted);
 }
 
 #root {
+  display: flex;
   flex-direction: column;
+  background:
+    radial-gradient(
+      1200px 600px at 80% -10%,
+      rgba(217, 119, 87, 0.06),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px 500px at -5% 40%,
+      rgba(217, 119, 87, 0.03),
+      transparent 50%
+    ),
+    var(--bg);
 }
 
 main {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 input::-webkit-outer-spin-button,
@@ -93,6 +206,52 @@ progress[value] {
   appearance: none;
 }
 
+/* ── Title bar ── */
+.title-bar {
+  display: flex;
+  width: 100%;
+  height: var(--titlebar-h);
+  min-height: var(--titlebar-h);
+  background: var(--bg-elevated);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  -webkit-app-region: drag;
+  z-index: globals.$title-bar-z-index;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+
+  h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--text-secondary);
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(217, 119, 87, 0.45);
+  }
+
+  &__cloud-text {
+    background: linear-gradient(
+      270deg,
+      globals.$brand-teal 0%,
+      globals.$brand-blue 100%
+    );
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* ── App content shell (full-width after top nav) ── */
 .container {
   width: 100%;
   height: 100%;
@@ -101,37 +260,98 @@ progress[value] {
   flex-direction: column;
   container-name: globals.$app-container;
   container-type: inline-size;
+  min-height: 0;
+  flex: 1;
 
   &__content {
     overflow-y: auto;
-    align-items: center;
+    align-items: stretch;
     display: flex;
     flex-direction: column;
     position: relative;
     height: 100%;
-    background: linear-gradient(
-      0deg,
-      globals.$dark-background-color 50%,
-      globals.$background-color 100%
-    );
+    min-height: 0;
+    background: transparent;
+    animation: view-in 0.28s var(--ease);
   }
 }
 
-.title-bar {
-  display: flex;
-  width: 100%;
-  height: 35px;
-  min-height: 35px;
-  background-color: globals.$dark-background-color;
-  align-items: center;
-  padding: 0 calc(globals.$spacing-unit * 2);
-  -webkit-app-region: drag;
-  z-index: 4;
-  border-bottom: 1px solid globals.$border-color;
-
-  &__cloud-text {
-    background: linear-gradient(270deg, #16b195 50%, #3e62c0 100%);
-    background-clip: text;
-    color: transparent;
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
   }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Shared page primitives (design parity) */
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  width: 100%;
+
+  &__title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: var(--text);
+  }
+
+  &__sub {
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-mid);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  &.is-active,
+  &--active {
+    background: var(--accent-soft);
+    border-color: rgba(217, 119, 87, 0.35);
+    color: var(--accent);
+  }
+}
+
+/* Claude Cream safety net — neutralize leftover panels from custom themes/legacy */
+.header {
+  display: none !important;
+}
+
+.sidebar {
+  display: none !important;
 }

@@ -30,13 +30,13 @@
         margin: 0;
         font-size: 20px;
         font-weight: 700;
-        color: rgba(0, 0, 0, 0.95);
+        color: globals.$muted-color;
       }
     }
 
     &-count {
-      background-color: rgba(0, 0, 0, 0.1);
-      color: rgba(0, 0, 0, 0.7);
+      background-color: globals.$surface-2;
+      color: globals.$body-color;
       padding: 4px 8px;
       border-radius: 6px;
       font-size: 12px;
@@ -78,9 +78,9 @@
     height: 100%;
     background: linear-gradient(
       to bottom,
-      rgba(250, 249, 245, 0) 0%,
-      rgb(250, 249, 245) 70%,
-      rgb(250, 249, 245) 100%
+      rgba(globals.$background-color, 0) 0%,
+      rgba(globals.$background-color, 0.9) 55%,
+      globals.$background-color 100%
     );
   }
 
@@ -127,7 +127,7 @@
       }
 
       &:focus {
-        outline: 2px solid rgba(0, 0, 0, 0.5);
+        outline: 2px solid rgba(217, 119, 87, 0.45);
         outline-offset: 4px;
         border-radius: 4px;
       }
@@ -156,7 +156,7 @@
     h1 {
       font-size: 20px;
       font-weight: 700;
-      color: #2b2a27;
+      color: #ececee;
       text-shadow: 2px 2px 12px rgba(0, 0, 0, 0.9);
       margin: 0;
       cursor: pointer;
@@ -167,7 +167,7 @@
       }
 
       &:focus {
-        outline: 2px solid rgba(0, 0, 0, 0.5);
+        outline: 2px solid rgba(217, 119, 87, 0.45);
         outline-offset: 4px;
         border-radius: 4px;
       }
@@ -211,21 +211,22 @@
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    box-shadow:
-      0 10px 15px -3px rgba(0, 0, 0, 0.1),
-      0 4px 6px -4px rgba(0, 0, 0, 0.1);
-    color: #2b2a27;
-    font-size: 14px;
-    font-weight: 500;
+    border-radius: 999px;
+    background-color: rgba(250, 249, 245, 0.9);
+    backdrop-filter: blur(16px);
+    border: 1px solid globals.$border-color;
+    box-shadow: 0 4px 16px rgba(48, 45, 38, 0.14);
+    color: globals.$muted-color;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.2);
+      background-color: rgba(250, 249, 245, 0.98);
+      border-color: globals.$border-strong;
     }
   }
 
@@ -254,7 +255,7 @@
   &__progress-status {
     font-size: 13px;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.9);
+    color: globals.$muted-color;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -262,7 +263,7 @@
   &__progress-percentage {
     font-size: 14px;
     font-weight: 700;
-    color: #2b2a27;
+    color: globals.$muted-color;
     align-self: flex-end;
     display: inline-block;
     overflow: hidden;
@@ -279,13 +280,13 @@
     gap: calc(globals.$spacing-unit);
     font-size: 13px;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.9);
+    color: globals.$muted-color;
   }
 
   &__progress-status {
     font-size: 13px;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.9);
+    color: globals.$muted-color;
   }
 
   &__progress-time {
@@ -300,10 +301,10 @@
     display: flex;
     gap: calc(globals.$spacing-unit * 4);
     padding: calc(globals.$spacing-unit * 2);
-    border-radius: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    background: rgba(250, 249, 245, 0.75);
-    backdrop-filter: blur(8px);
+    border-radius: globals.$radius-md;
+    border: 1px solid globals.$border-color;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
     margin-top: calc(globals.$spacing-unit * 2);
   }
 
@@ -313,7 +314,7 @@
     gap: calc(globals.$spacing-unit * 2);
     min-width: 200px;
     padding-right: calc(globals.$spacing-unit * 2);
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    border-right: 1px solid globals.$border-color;
     align-self: flex-start;
   }
 
@@ -354,11 +355,11 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 10px;
-    color: rgba(0, 0, 0, 0.6);
+    color: globals.$text-muted;
   }
 
   &__stat-value {
-    color: #2b2a27;
+    color: globals.$muted-color;
     font-weight: 700;
     font-size: 11px;
     line-height: 1.2;
@@ -387,7 +388,7 @@
     border-radius: 6px;
     overflow: hidden;
     flex-shrink: 0;
-    background-color: rgba(0, 0, 0, 0.06);
+    background-color: globals.$surface-2;
     border: 1px solid globals.$border-color;
     padding: 0;
     cursor: pointer;
@@ -401,7 +402,7 @@
 
     &:focus,
     &:focus-visible {
-      outline: 2px solid rgba(0, 0, 0, 0.5);
+      outline: 2px solid rgba(217, 119, 87, 0.45);
       outline-offset: 2px;
     }
 
@@ -438,7 +439,7 @@
   &__simple-title {
     font-size: 16px;
     font-weight: 600;
-    color: #2b2a27;
+    color: globals.$muted-color;
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -493,7 +494,7 @@
   &__simple-progress-text {
     font-size: 12px;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.8);
+    color: globals.$body-color;
     text-align: right;
   }
 
@@ -529,7 +530,7 @@
   &__progress-bar {
     width: 100%;
     height: 8px;
-    background-color: rgba(0, 0, 0, 0.08);
+    background-color: rgba(140, 132, 115, 0.3);
     border-radius: 4px;
     overflow: hidden;
     margin-top: calc(globals.$spacing-unit / 2);
@@ -541,12 +542,12 @@
 
   &__progress-fill {
     height: 100%;
-    background-color: #2b2a27;
+    background-color: globals.$brand-teal;
     transition: width 0.3s ease;
     border-radius: 4px;
 
     &--extraction {
-      background-color: #2b2a27;
+      background-color: globals.$brand-blue;
     }
   }
 }

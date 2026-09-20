@@ -1,17 +1,26 @@
 @use "../../scss/globals.scss";
 
 .game-item {
-  background-color: globals.$dark-background-color;
+  background-color: globals.$surface-0;
   width: 100%;
-  color: #3d3d3a;
+  color: globals.$body-color;
   overflow: hidden;
   position: relative;
-  border-radius: 4px;
+  border-radius: globals.$radius-md;
   border: 1px solid globals.$border-color;
   min-height: 103px;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    transform 0.15s;
+
+  &:hover {
+    border-color: rgba(217, 119, 87, 0.22);
+    transform: translateY(-1px);
+  }
 
   &:hover .game-item__content-link {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: globals.$overlay-hover;
   }
 
   &:hover,
@@ -96,9 +105,9 @@
     height: 103px;
     background: linear-gradient(
       90deg,
-      rgba(0, 0, 0, 0.1) 0%,
-      rgba(0, 0, 0, 0.05) 50%,
-      rgba(0, 0, 0, 0.1) 100%
+      globals.$skeleton-base 0%,
+      globals.$skeleton-highlight 50%,
+      globals.$skeleton-base 100%
     );
   }
 
@@ -175,7 +184,7 @@
     margin-bottom: 4px;
 
     &--empty {
-      color: rgba(0, 0, 0, 0.35);
+      color: globals.$text-dim;
       font-style: italic;
     }
   }

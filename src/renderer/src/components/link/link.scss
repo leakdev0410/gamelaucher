@@ -1,6 +1,8 @@
+@use "../../scss/globals.scss";
+
 .link {
   text-decoration: none;
-  color: #c0c1c7;
+  color: globals.$brand-teal;
   &:hover {
     text-decoration: underline;
   }

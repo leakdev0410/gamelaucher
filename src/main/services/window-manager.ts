@@ -42,47 +42,32 @@ export class WindowManager {
       height: 860,
       minWidth: 1024,
       minHeight: 860,
-      backgroundColor: "#faf9f5",
+      backgroundColor: "#f5f4ee",
       titleBarStyle: process.platform === "linux" ? "default" : "hidden",
       icon,
       trafficLightPosition: { x: 16, y: 16 },
       titleBarOverlay: {
-        symbolColor: "#3d3d3a",
-        color: "#00000000",
+        // Match Claude Cream chrome — fully opaque overlay avoids black
+        // corners on some Windows builds.
+        symbolColor: "#30302a",
+        color: "#ffffff",
         height: 34,
       },
       webPreferences: {
         preload: path.join(__dirname, "../preload/index.mjs"),
-        sandbox: false,
+        sandbox: true,
+        contextIsolation: true,
+        nodeIntegration: false,
+        webviewTag: false,
       },
       show: false,
     };
-
-  private static formatVersionNumber(version: string) {
-    return version.replaceAll(".", "-");
-  }
 
   private static async loadWindowURL(window: BrowserWindow, hash: string = "") {
     // HMR for renderer base on electron-vite cli.
     // Load the remote URL for development or the local html file for production.
     if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
       window.loadURL(`${process.env["ELECTRON_RENDERER_URL"]}#/${hash}`);
-    } else if (appConfig.launcherSubdomain) {
-      // Try to load from remote URL in production
-      try {
-        await window.loadURL(
-          `https://release-v${this.formatVersionNumber(app.getVersion())}.${appConfig.launcherSubdomain}#/${hash}`
-        );
-      } catch (error) {
-        // Fall back to local file if remote URL fails
-        logger.error(
-          "Failed to load from launcher subdomain, falling back to local file:",
-          error
-        );
-        window.loadFile(path.join(__dirname, "../renderer/index.html"), {
-          hash,
-        });
-      }
     } else {
       window.loadFile(path.join(__dirname, "../renderer/index.html"), {
         hash,
@@ -150,7 +135,7 @@ export class WindowManager {
       frame: false,
       resizable: false,
       center: true,
-      backgroundColor: "#faf9f5",
+      backgroundColor: "#f5f4ee",
       title: "Game Launcher",
       icon,
       webPreferences: { sandbox: true },
@@ -160,14 +145,14 @@ export class WindowManager {
     const html = `<!doctype html><html><head><meta charset="utf-8"><style>
       html,body{margin:0;height:100%;}
       body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
-        background:#faf9f5;font-family:'Segoe UI',Roboto,sans-serif;color:#3d3d3a;
+        background:#f5f4ee;font-family:'Segoe UI',Roboto,sans-serif;color:#6b6558;
         -webkit-app-region:drag;user-select:none;overflow:hidden;}
-      .logo{width:96px;height:96px;border-radius:22px;box-shadow:0 4px 16px rgba(0,0,0,.12);}
-      .name{font-size:21px;font-weight:700;color:#2b2a27;letter-spacing:.3px;}
-      .author{font-size:12px;color:#9a978f;margin-top:-14px;}
-      .spinner{width:26px;height:26px;border:3px solid rgba(0,0,0,.12);
-        border-top-color:#cc785c;border-radius:50%;animation:spin .8s linear infinite;}
-      .status{font-size:13px;color:#6b6b66;}
+      .logo{width:96px;height:96px;border-radius:22px;box-shadow:0 4px 24px rgba(48,45,38,.16);}
+      .name{font-size:21px;font-weight:700;color:#30302a;letter-spacing:.3px;}
+      .author{font-size:12px;color:#948c7c;margin-top:-14px;}
+      .spinner{width:26px;height:26px;border:3px solid rgba(48,45,38,.12);
+        border-top-color:#d97757;border-radius:50%;animation:spin .8s linear infinite;}
+      .status{font-size:13px;color:#948c7c;}
       @keyframes spin{to{transform:rotate(360deg);}}
     </style></head><body>
       ${logoBase64 ? `<img class="logo" src="data:image/png;base64,${logoBase64}"/>` : ""}
@@ -237,40 +222,24 @@ export class WindowManager {
 
     this.mainWindow.webContents.session.webRequest.onHeadersReceived(
       (details, callback) => {
-        if (
-          details.webContentsId !== this.mainWindow?.webContents.id ||
-          details.url.includes("featurebase") ||
-          details.url.includes("chatwoot")
-        ) {
+        if (details.webContentsId !== this.mainWindow?.webContents.id) {
           return callback(details);
         }
 
-        const headers = {
-          "access-control-allow-origin": ["*"],
-          "access-control-allow-methods": ["GET, POST, PUT, DELETE, OPTIONS"],
-          "access-control-expose-headers": ["ETag"],
-          "access-control-allow-headers": [
-            "Content-Type, Authorization, X-Requested-With, If-None-Match",
-          ],
-        };
-
-        if (details.method === "OPTIONS") {
+        // A local renderer needs no permissive CORS policy.  CSP limits the
+        // blast radius if a future rendering bug slips through.
+        if (details.url.startsWith("file://")) {
           return callback({
-            cancel: false,
             responseHeaders: {
               ...details.responseHeaders,
-              ...headers,
+              "content-security-policy": [
+                "default-src 'self'; base-uri 'none'; object-src 'none'; frame-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: local: gradient:; media-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self' data:;",
+              ],
             },
-            statusLine: "HTTP/1.1 200 OK",
           });
         }
 
-        return callback({
-          responseHeaders: {
-            ...details.responseHeaders,
-            ...headers,
-          },
-        });
+        return callback(details);
       }
     );
 
@@ -278,6 +247,9 @@ export class WindowManager {
 
     void this.loadMainWindowURL(initialHash);
     this.mainWindow.removeMenu();
+    this.mainWindow.webContents.on("will-navigate", (event) => {
+      event.preventDefault();
+    });
 
     let handedOffFromSplash = false;
     const handOffFromSplash = () => {
@@ -334,7 +306,14 @@ export class WindowManager {
     });
 
     this.mainWindow.webContents.setWindowOpenHandler((handler) => {
-      shell.openExternal(handler.url);
+      try {
+        const target = new URL(handler.url);
+        if (target.protocol === "https:") {
+          void shell.openExternal(target.toString());
+        }
+      } catch {
+        // Invalid and non-web URLs must never be delegated to the OS.
+      }
       return { action: "deny" };
     });
   }
@@ -344,7 +323,7 @@ export class WindowManager {
       const authWindow = new BrowserWindow({
         width: 600,
         height: 640,
-        backgroundColor: "#faf9f5",
+        backgroundColor: "#f5f4ee",
         parent: this.mainWindow,
         modal: true,
         show: false,
@@ -352,8 +331,11 @@ export class WindowManager {
         resizable: false,
         minimizable: false,
         webPreferences: {
-          sandbox: false,
-          nodeIntegrationInSubFrames: true,
+          sandbox: true,
+          contextIsolation: true,
+          nodeIntegration: false,
+          nodeIntegrationInSubFrames: false,
+          webviewTag: false,
         },
       });
 
@@ -369,15 +351,19 @@ export class WindowManager {
         authWindow.show();
       });
 
-      authWindow.webContents.on("will-navigate", (_event, url) => {
+      authWindow.webContents.on("will-navigate", (event, url) => {
         if (url.startsWith("hydralauncher://auth")) {
+          event.preventDefault();
           authWindow.close();
 
-          ApiClient.handleExternalAuth(url);
+          void ApiClient.handleExternalAuth(url).catch((error) => {
+            logger.error("Rejected authentication callback", error);
+          });
           return;
         }
 
         if (url.startsWith("hydralauncher://update-account")) {
+          event.preventDefault();
           authWindow.close();
 
           WindowManager.mainWindow?.webContents.send("on-account-updated");
@@ -478,27 +464,43 @@ export class WindowManager {
       maximizable: false,
       autoHideMenuBar: true,
       minimizable: false,
+      // Fully transparent host; any solid paint shows as a black corner panel.
       backgroundColor: "#00000000",
       focusable: false,
       skipTaskbar: true,
       frame: false,
+      hasShadow: false,
+      thickFrame: false,
+      resizable: false,
       width: this.NOTIFICATION_WINDOW_WIDTH,
       height: this.NOTIFICATION_WINDOW_HEIGHT,
       x,
       y,
+      show: false,
       webPreferences: {
         preload: path.join(__dirname, "../preload/index.mjs"),
-        sandbox: false,
+        sandbox: true,
+        contextIsolation: true,
+        nodeIntegration: false,
+        webviewTag: false,
       },
     });
     this.notificationWindow.setIgnoreMouseEvents(true);
-
     this.notificationWindow.setAlwaysOnTop(true, "screen-saver", 1);
-    this.loadWindowURL(this.notificationWindow, "achievement-notification");
+    this.notificationWindow.webContents.on("will-navigate", (event) => {
+      event.preventDefault();
+    });
 
-    if (!app.isPackaged || isStaging) {
-      this.notificationWindow.webContents.openDevTools();
-    }
+    this.notificationWindow.once("ready-to-show", () => {
+      // Only surface the window after the transparent page is ready to avoid
+      // a black flash/rect on Windows DWM.
+      if (this.notificationWindow && !this.notificationWindow.isDestroyed()) {
+        this.notificationWindow.showInactive();
+      }
+    });
+
+    this.loadWindowURL(this.notificationWindow, "achievement-notification");
+    // Never open DevTools here — it paints an opaque panel at the screen corner.
   }
 
   public static async closeNotificationWindow() {
@@ -524,18 +526,21 @@ export class WindowManager {
         height: 720,
         minWidth: 600,
         minHeight: 540,
-        backgroundColor: "#faf9f5",
+        backgroundColor: "#f5f4ee",
         titleBarStyle: process.platform === "linux" ? "default" : "hidden",
         icon,
         trafficLightPosition: { x: 16, y: 16 },
         titleBarOverlay: {
-          symbolColor: "#3d3d3a",
-          color: "#f0eee6",
+          symbolColor: "#30302a",
+          color: "#ffffff",
           height: 34,
         },
         webPreferences: {
           preload: path.join(__dirname, "../preload/index.mjs"),
-          sandbox: false,
+          sandbox: true,
+          contextIsolation: true,
+          nodeIntegration: false,
+          webviewTag: false,
         },
         show: false,
       });
@@ -543,12 +548,14 @@ export class WindowManager {
       this.editorWindows.set(themeId, editorWindow);
 
       editorWindow.removeMenu();
+      editorWindow.webContents.on("will-navigate", (event) => {
+        event.preventDefault();
+      });
 
       this.loadWindowURL(editorWindow, `theme-editor?themeId=${themeId}`);
 
       editorWindow.once("ready-to-show", () => {
         editorWindow.show();
-        this.mainWindow?.webContents.openDevTools();
         if (!app.isPackaged || isStaging) {
           editorWindow.webContents.openDevTools();
         }
@@ -607,17 +614,23 @@ export class WindowManager {
       minimizable: false,
       fullscreenable: false,
       frame: false,
-      backgroundColor: "#faf9f5",
+      backgroundColor: "#f5f4ee",
       icon,
       skipTaskbar: false,
       webPreferences: {
         preload: path.join(__dirname, "../preload/index.mjs"),
-        sandbox: false,
+        sandbox: true,
+        contextIsolation: true,
+        nodeIntegration: false,
+        webviewTag: false,
       },
       show: false,
     });
 
     this.gameLauncherWindow.removeMenu();
+    this.gameLauncherWindow.webContents.on("will-navigate", (event) => {
+      event.preventDefault();
+    });
 
     this.loadWindowURL(
       this.gameLauncherWindow,

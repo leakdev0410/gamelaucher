@@ -405,10 +405,8 @@ export default function Library() {
         }
 
         case "installed_first": {
-          const aIsInstalled =
-            Boolean(a.executablePath) || a.installedSizeInBytes != null;
-          const bIsInstalled =
-            Boolean(b.executablePath) || b.installedSizeInBytes != null;
+          const aIsInstalled = Boolean(a.executablePath);
+          const bIsInstalled = Boolean(b.executablePath);
 
           if (aIsInstalled !== bIsInstalled) {
             return aIsInstalled ? -1 : 1;

@@ -4,37 +4,48 @@ import fs from "node:fs";
 import { registerEvent } from "../register-event";
 import { logger } from "@main/services/logger";
 import { downloadsSublevel, gamesSublevel, levelKeys } from "@main/level";
+import { resolvePathWithinRoot } from "@main/helpers/path-within-root";
 
 export const deleteArchiveFile = async (filePath: string) => {
   try {
-    if (fs.existsSync(filePath)) {
-      await fs.promises.unlink(filePath);
-      logger.info(`Deleted archive: ${filePath}`);
-    }
-
-    // Find the game that has this archive and clear installer size
-    const normalizedPath = path.normalize(filePath);
+    const normalizedPath = path.resolve(filePath);
     const downloads = await downloadsSublevel.values().all();
+    let matchingDownload: (typeof downloads)[number] | undefined;
 
     for (const download of downloads) {
       if (!download.folderName) continue;
 
-      const downloadPath = path.normalize(
+      const downloadPath = path.resolve(
         path.join(download.downloadPath, download.folderName)
       );
 
-      if (downloadPath === normalizedPath) {
-        const gameKey = levelKeys.game(download.shop, download.objectId);
-        const game = await gamesSublevel.get(gameKey);
-
-        if (game) {
-          await gamesSublevel.put(gameKey, {
-            ...game,
-            installerSizeInBytes: null,
-          });
-        }
+      if (resolvePathWithinRoot(downloadPath, normalizedPath)) {
+        matchingDownload = download;
         break;
       }
+    }
+
+    if (!matchingDownload) {
+      throw new Error(
+        "Refusing to delete a file that is not a tracked archive"
+      );
+    }
+
+    if (fs.existsSync(normalizedPath) && fs.statSync(normalizedPath).isFile()) {
+      await fs.promises.unlink(normalizedPath);
+      logger.info(`Deleted archive: ${normalizedPath}`);
+    }
+
+    const gameKey = levelKeys.game(
+      matchingDownload.shop,
+      matchingDownload.objectId
+    );
+    const game = await gamesSublevel.get(gameKey);
+    if (game) {
+      await gamesSublevel.put(gameKey, {
+        ...game,
+        installerSizeInBytes: null,
+      });
     }
 
     return true;

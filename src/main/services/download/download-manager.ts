@@ -156,13 +156,28 @@ export class DownloadManager {
     originalUrl: string,
     downloadUrl: string
   ): string | undefined {
-    if (resumingFilename) return resumingFilename;
-
     const extracted =
       this.extractFilename(originalUrl, downloadUrl) ||
       this.extractFilename(downloadUrl);
 
-    return extracted ? this.sanitizeFilename(extracted) : undefined;
+    if (extracted) {
+      const sanitized = this.sanitizeFilename(extracted);
+
+      if (
+        resumingFilename &&
+        resumingFilename !== sanitized &&
+        !resumingFilename.endsWith(sanitized) &&
+        !sanitized.endsWith(resumingFilename)
+      ) {
+        logger.warn(
+          `[DownloadManager] Resolved filename changed: was "${resumingFilename}", now "${sanitized}"`
+        );
+      }
+
+      return sanitized;
+    }
+
+    return resumingFilename;
   }
 
   private static buildDownloadOptions(
@@ -984,15 +999,6 @@ export class DownloadManager {
       );
       throw error;
     }
-
-    if (gameId === this.downloadingGameId) {
-      WindowManager.mainWindow?.setProgressBar(-1);
-      WindowManager.sendToAppWindows("on-download-progress", null);
-      this.downloadingGameId = null;
-      this.isPreparingDownload = false;
-      this.usingJsDownloader = false;
-      this.allDebridBatch = null;
-    }
   }
 
   private static async getJsDownloadOptions(download: Download): Promise<{
@@ -1530,8 +1536,10 @@ export class DownloadManager {
             if (this.downloadingGameId !== downloadId) {
               return;
             }
+            this.handlingJsErrorGameId = downloadId;
             await this.persistDownloadError(downloadId, download, err);
             this.clearRuntimeDownloadState();
+            this.handlingJsErrorGameId = null;
             void this.processNextQueuedDownload();
           });
         } else {
@@ -1562,8 +1570,10 @@ export class DownloadManager {
             if (this.downloadingGameId !== downloadId) {
               return;
             }
+            this.handlingJsErrorGameId = downloadId;
             await this.persistDownloadError(downloadId, download, err);
             this.clearRuntimeDownloadState();
+            this.handlingJsErrorGameId = null;
             void this.processNextQueuedDownload();
           });
         }

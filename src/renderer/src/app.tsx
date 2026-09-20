@@ -1,4 +1,4 @@
-import { BottomPanel, Header, Sidebar, Toast } from "@renderer/components";
+import { BottomPanel, Toast, TopNav } from "@renderer/components";
 import {
   useAppDispatch,
   useAppSelector,
@@ -257,10 +257,10 @@ export function App() {
   }, [dispatch, draggingDisabled]);
 
   const loadAndApplyTheme = useCallback(async () => {
-    const allThemes = (await levelDBService.values("themes")) as {
+    const allThemes = (await levelDBService.values("themes")) as Array<{
       isActive?: boolean;
       code?: string;
-    }[];
+    }>;
     const activeTheme = allThemes.find((theme) => theme.isActive);
     if (activeTheme?.code) {
       injectCustomCss(activeTheme.code);
@@ -308,7 +308,8 @@ export function App() {
       {window.electron.platform === "win32" && (
         <div className="title-bar">
           <h4>
-            Game Launcher{" "}
+            <span className="title-bar__dot" />
+            Game Launcher
             <span style={{ opacity: 0.55, fontWeight: 400, fontSize: "12px" }}>
               by Lê Quân
             </span>
@@ -331,12 +332,10 @@ export function App() {
         onClose={() => setShowArchiveDeletionModal(false)}
       />
 
+      <TopNav />
+
       <main>
-        <Sidebar />
-
         <article className="container">
-          <Header />
-
           <section
             ref={contentRef}
             id="scrollableDiv"

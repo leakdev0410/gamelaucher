@@ -1,7 +1,9 @@
 import { LibraryGame } from "@types";
 import { useGameCard } from "@renderer/hooks";
-import { memo, useEffect, useState } from "react";
-import { TrophyIcon, ImageIcon } from "@primer/octicons-react";
+import { memo, useCallback, useEffect, useState } from "react";
+import { TrophyIcon, ImageIcon, PlayIcon } from "@primer/octicons-react";
+import { useTranslation } from "react-i18next";
+import cn from "classnames";
 import "./library-game-card.scss";
 import { logger } from "@renderer/logger";
 
@@ -23,10 +25,13 @@ export const LibraryGameCard = memo(function LibraryGameCard({
   onMouseLeave,
   onContextMenu,
 }: Readonly<LibraryGameCardProps>) {
+  const { t } = useTranslation("library");
   const { handleCardClick, handleContextMenuClick } = useGameCard(
     game,
     onContextMenu
   );
+
+  const isInstalled = Boolean(game.executablePath);
 
   const sources = [
     game.customIconUrl, // Level 0
@@ -88,14 +93,50 @@ export const LibraryGameCard = memo(function LibraryGameCard({
     setImageError(false);
   }, [game.id]);
 
+  const handlePlayClick = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!game.executablePath) return;
+
+      void window.electron
+        .openGame(
+          game.shop,
+          game.objectId,
+          game.executablePath,
+          game.launchOptions
+        )
+        .catch((error) => {
+          logger.error("Failed to start game from library card", error);
+        });
+    },
+    [game.executablePath, game.launchOptions, game.objectId, game.shop]
+  );
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleCardClick();
+      }
+    },
+    [handleCardClick]
+  );
+
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      className="library-game-card__wrapper"
+      className={cn("library-game-card__wrapper", {
+        "library-game-card__wrapper--installed": isInstalled,
+        "library-game-card__wrapper--not-installed": !isInstalled,
+      })}
       title={game.title}
       onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
       onContextMenu={handleContextMenuClick}
     >
       <div className="library-game-card__overlay">
@@ -133,6 +174,18 @@ export const LibraryGameCard = memo(function LibraryGameCard({
         )}
       </div>
 
+      {isInstalled && (
+        <button
+          type="button"
+          className="library-game-card__action-button"
+          onClick={handlePlayClick}
+          title={t("play")}
+          aria-label={t("play")}
+        >
+          <PlayIcon size={18} />
+        </button>
+      )}
+
       {imageError || !activeImageSource ? (
         <div className="library-game-card__cover-placeholder">
           <ImageIcon size={48} />
@@ -146,6 +199,6 @@ export const LibraryGameCard = memo(function LibraryGameCard({
           onError={handleImageError}
         />
       )}
-    </button>
+    </div>
   );
 });

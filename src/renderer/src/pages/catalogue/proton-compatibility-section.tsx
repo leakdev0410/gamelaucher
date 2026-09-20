@@ -10,7 +10,7 @@ interface ProtonCompatibilitySectionProps {
   title: string;
   protonSliderLabel: string;
   deckSliderLabel: string;
-  protonOptions: { value: string; label: string; color?: string }[];
+  protonOptions: Array<{ value: string; label: string; color?: string }>;
   protonValue: string;
   deckChecked: boolean;
   deckLabel: string;

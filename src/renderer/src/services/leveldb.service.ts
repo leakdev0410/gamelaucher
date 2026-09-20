@@ -28,7 +28,7 @@ class LevelDBService {
     return window.electron.leveldb.values(sublevelName);
   }
 
-  iterator(sublevelName: string): Promise<[string, unknown][]> {
+  iterator(sublevelName: string): Promise<Array<[string, unknown]>> {
     return window.electron.leveldb.iterator(sublevelName);
   }
 }

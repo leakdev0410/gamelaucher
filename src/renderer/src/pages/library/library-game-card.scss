@@ -3,46 +3,90 @@
 .library-game-card {
   &__wrapper {
     cursor: pointer;
-    transition: all ease 0.2s;
-    box-shadow: 0 8px 10px -2px rgba(0, 0, 0, 0.5);
+    transition:
+      transform 0.2s globals.$ease,
+      border-color 0.2s ease,
+      filter 0.2s ease,
+      opacity 0.2s ease;
+    box-shadow: 0 8px 10px -2px rgba(0, 0, 0, 0.18);
     width: 100%;
     aspect-ratio: 3 / 4;
     position: relative;
-    border: none;
-    background: none;
+    border: 1px solid globals.$border-color;
+    background: globals.$surface-0;
     padding: 0;
-    border-radius: 4px;
+    border-radius: globals.$radius-sm;
     overflow: hidden;
     display: block;
     container-type: inline-size;
+    color: inherit;
+    text-align: left;
 
-    &:before {
-      content: "";
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 172%;
-      position: absolute;
-      background: linear-gradient(
-        35deg,
-        rgba(0, 0, 0, 0.1) 0%,
-        rgba(0, 0, 0, 0.07) 51.5%,
-        rgba(255, 255, 255, 0.15) 64%,
-        rgba(255, 255, 255, 0.1) 100%
-      );
-      transition: all ease 0.3s;
-      transform: translateY(-36%);
-      opacity: 0.5;
-      z-index: 1;
-    }
-
+    /* Hover: scale only — no shine / mirror sweep */
     &:hover {
       transform: scale(1.02);
     }
 
-    &:hover::before {
-      opacity: 1;
-      transform: translateY(-20%);
+    &:focus-visible {
+      outline: 2px solid rgba(217, 119, 87, 0.45);
+      outline-offset: 2px;
+    }
+
+    /* Installed: clearly brighter */
+    &--installed {
+      border-color: globals.$border-strong;
+      box-shadow:
+        0 10px 18px -4px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(48, 45, 38, 0.05);
+
+      .library-game-card__game-image {
+        filter: brightness(1.16) saturate(1.08) contrast(1.04);
+      }
+
+      .library-game-card__cover-placeholder {
+        opacity: 1;
+        filter: brightness(1.1);
+      }
+
+      &:hover {
+        border-color: rgba(48, 45, 38, 0.32);
+      }
+    }
+
+    /* Not installed: dimmer so ready-to-play games pop harder */
+    &--not-installed {
+      opacity: 0.82;
+      border-color: rgba(48, 45, 38, 0.04);
+      box-shadow: 0 6px 10px -4px rgba(0, 0, 0, 0.16);
+
+      .library-game-card__game-image {
+        filter: brightness(0.38) saturate(0.55) contrast(0.95);
+      }
+
+      .library-game-card__cover-placeholder {
+        opacity: 0.42;
+        filter: brightness(0.55);
+      }
+
+      .library-game-card__overlay {
+        background: linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.88) 18%,
+          rgba(0, 0, 0, 0.4) 100%
+        );
+      }
+
+      .library-game-card__achievements {
+        opacity: 0.6;
+      }
+
+      &:hover {
+        opacity: 0.9;
+
+        .library-game-card__game-image {
+          filter: brightness(0.48) saturate(0.62) contrast(0.96);
+        }
+      }
     }
   }
 
@@ -57,6 +101,7 @@
     background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 20%, transparent 100%);
     padding: 8px;
     z-index: 2;
+    pointer-events: none;
   }
 
   &__top-section {
@@ -112,7 +157,7 @@
     opacity: 1;
     transform: translateY(0);
     transition: all ease 0.2s;
-    pointer-events: auto;
+    pointer-events: none;
     width: 100%;
   }
 
@@ -120,7 +165,7 @@
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
-    color: globals.$muted-color;
+    color: #ffffff;
     overflow: hidden;
     height: 18px;
   }
@@ -150,14 +195,14 @@
     }
 
     &::-webkit-progress-value {
-      background-color: globals.$muted-color;
+      background-color: #ffffff;
       border-radius: 4px;
     }
   }
 
   &__achievement-bar {
     height: 100%;
-    background-color: globals.$muted-color;
+    background-color: #ffffff;
     border-radius: 4px;
     transition: width 0.3s ease;
     position: relative;
@@ -171,47 +216,70 @@
     white-space: nowrap;
   }
 
+  /* Play only on installed cards — Claude Cream pill */
   &__action-button {
     position: absolute;
-    bottom: 8px;
-    right: 8px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: solid 1px rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
+    bottom: 10px;
+    right: 10px;
+    z-index: 3;
+    background: globals.$brand-teal;
+    color: globals.$brand-ink;
+    border: 1px solid transparent;
+    border-radius: globals.$radius-pill;
     width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all ease 0.2s;
-    color: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition:
+      transform 0.15s globals.$ease,
+      background 0.15s ease,
+      box-shadow 0.15s ease,
+      opacity 0.15s ease;
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.2),
+      0 0 16px rgba(217, 119, 87, 0.3);
     opacity: 0;
     transform: scale(0.9);
+    pointer-events: none;
+
+    svg {
+      fill: currentColor;
+      margin-left: 1px; /* optical center for play triangle */
+    }
 
     &:hover {
-      background: rgba(0, 0, 0, 0.8);
-      border-color: rgba(255, 255, 255, 0.4);
-      transform: scale(1.1);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+      background: globals.$brand-hover;
+      transform: scale(1.08);
+      box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.24),
+        0 0 20px rgba(217, 119, 87, 0.4);
     }
 
     &:active {
-      transform: scale(0.95);
+      transform: scale(0.96);
+    }
+
+    &:focus-visible {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+      outline: 2px solid rgba(217, 119, 87, 0.55);
+      outline-offset: 2px;
     }
   }
 
-  &__wrapper:hover &__action-button {
+  &__wrapper--installed:hover &__action-button,
+  &__wrapper--installed:focus-within &__action-button {
     opacity: 1;
     transform: scale(1);
+    pointer-events: auto;
   }
 
   &__game-image {
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: globals.$radius-sm;
     width: 100%;
     height: 100%;
     min-width: 100%;
@@ -220,6 +288,7 @@
     top: 0;
     left: 0;
     z-index: 0;
+    transition: filter 0.25s globals.$ease;
   }
 
   &__cover-placeholder {
@@ -230,16 +299,19 @@
     min-height: 100%;
     background: linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.08) 0%,
-      rgba(255, 255, 255, 0.04) 50%,
-      rgba(255, 255, 255, 0.08) 100%
+      globals.$skeleton-base 0%,
+      globals.$skeleton-highlight 50%,
+      globals.$skeleton-base 100%
     );
-    border-radius: 4px;
-    color: rgba(255, 255, 255, 0.3);
+    border-radius: globals.$radius-sm;
+    color: globals.$text-dim;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 0;
+    transition:
+      opacity 0.2s ease,
+      filter 0.2s ease;
   }
 }
 

@@ -1,30 +1,66 @@
-$background-color: #faf9f5;
-$dark-background-color: #f0eee6;
+// Claude Cream design system — warm cream surfaces + terracotta accent, matching claude.ai's light theme.
+// SCSS tokens map to CSS variables for runtime theming consistency.
 
-$muted-color: #2b2a27;
-$body-color: #3d3d3a;
+$background-color: #f5f4ee;
+$dark-background-color: #ffffff;
+$surface-0: #ffffff;
+$surface-1: #faf9f5;
+$surface-2: #f0ede1;
+$surface-3: #e4dfd0;
 
-$border-color: rgba(0, 0, 0, 0.1);
-$success-color: #1c9749;
-$danger-color: #b3261e;
-$error-color: #e11d48;
-$warning-color: #b8860b;
+$muted-color: #30302a;
+$body-color: #6b6558;
+$text-muted: #948c7c;
+$text-dim: #b8b2a3;
 
-$brand-teal: #cc785c;
-$brand-blue: #b3624a;
+$border-color: rgba(48, 45, 38, 0.1);
+$border-mid: rgba(48, 45, 38, 0.14);
+$border-strong: rgba(48, 45, 38, 0.24);
+
+$success-color: #5f8767;
+$danger-color: #c0453a;
+$error-color: #c0453a;
+$warning-color: #b8862e;
+
+$brand-teal: #d97757;
+$brand-blue: #a69c87;
+$brand-ink: #ffffff;
+$brand-hover: #c35f3d;
+
+$overlay-hover: rgba(48, 45, 38, 0.04);
+$overlay-active: rgba(48, 45, 38, 0.07);
+$overlay-strong: rgba(48, 45, 38, 0.12);
+
+$skeleton-base: #f0ede1;
+$skeleton-highlight: #e4dfd0;
 
 $disabled-opacity: 0.5;
 $active-opacity: 0.7;
 
 $spacing-unit: 8px;
 
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-pill: 999px;
+
+$font-display: "Sora", "Noto Sans", system-ui, sans-serif;
+$font-body: "Manrope", "Noto Sans", system-ui, sans-serif;
+
 $toast-z-index: 150;
 $bottom-panel-z-index: 3;
 $title-bar-z-index: 4;
 $backdrop-z-index: 4;
 $modal-z-index: 5;
+$topnav-z-index: 20;
 
-$body-font-size: 14px;
+$body-font-size: 13.5px;
 $small-font-size: 12px;
 
+$titlebar-h: 36px;
+$nav-h: 56px;
+$status-h: 32px;
+
 $app-container: app-container;
+
+$ease: cubic-bezier(0.22, 1, 0.36, 1);

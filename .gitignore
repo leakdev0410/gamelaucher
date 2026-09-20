@@ -35,3 +35,10 @@ terminals/
 err-*.txt
 out-*.txt
 *.mp4.part
+
+# Runtime artifacts (portable mode)
+save/
+img/
+
+# Design exploration (not source)
+designs/

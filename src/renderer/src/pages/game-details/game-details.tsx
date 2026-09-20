@@ -170,7 +170,7 @@ export default function GameDetails() {
                 )}
               </CloudSyncContextConsumer>
 
-              <SkeletonTheme baseColor="#e6e3da" highlightColor="#f3f1ea">
+              <SkeletonTheme baseColor="#f0ede1" highlightColor="#e4dfd0">
                 {isLoading ? <GameDetailsSkeleton /> : <GameDetailsContent />}
 
                 <RepacksModal

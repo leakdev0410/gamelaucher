@@ -3,6 +3,8 @@ import { ApiClient, logger } from "@main/services";
 import { gamesSublevel, gamesShopAssetsSublevel, levelKeys } from "@main/level";
 import type { GameShop, Game } from "@types";
 import fs from "node:fs";
+import { ASSETS_PATH } from "@main/constants";
+import { resolvePathWithinRoot } from "@main/helpers/path-within-root";
 
 const collectAssetPathsToDelete = (game: Game): string[] => {
   const assetPathsToDelete: string[] = [];
@@ -57,8 +59,9 @@ const deleteAssetFiles = async (
 
   for (const assetPath of assetPathsToDelete) {
     try {
-      if (fs.existsSync(assetPath)) {
-        await fs.promises.unlink(assetPath);
+      const safeAssetPath = resolvePathWithinRoot(ASSETS_PATH, assetPath);
+      if (safeAssetPath && fs.existsSync(safeAssetPath)) {
+        await fs.promises.unlink(safeAssetPath);
       }
     } catch (error) {
       logger.warn(`Failed to delete asset ${assetPath}:`, error);

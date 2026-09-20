@@ -1,3 +1,5 @@
+import "./add-defender-exclusion";
+import "./get-defender-exclusion-path";
 import "./can-install-common-redist";
 import "./close-game-launcher-window";
 import "./delete-temp-file";

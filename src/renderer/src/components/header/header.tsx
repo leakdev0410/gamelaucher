@@ -99,7 +99,7 @@ export function Header() {
   const [showScanModal, setShowScanModal] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<{
-    foundGames: { title: string; executablePath: string }[];
+    foundGames: Array<{ title: string; executablePath: string }>;
     total: number;
   } | null>(null);
 

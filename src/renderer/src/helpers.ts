@@ -57,6 +57,12 @@ export const buildGameAchievementPath = (
 export const darkenColor = (color: string, amount: number, alpha: number = 1) =>
   new Color(color).darken(amount).alpha(alpha).toString();
 
+export const lightenColor = (
+  color: string,
+  amount: number,
+  alpha: number = 1
+) => new Color(color).lighten(amount).alpha(alpha).toString();
+
 export const injectCustomCss = (
   css: string,
   target: HTMLElement = document.head
@@ -122,11 +128,11 @@ export const getAchievementSoundUrl = async (): Promise<string> => {
     .default;
 
   try {
-    const allThemes = (await levelDBService.values("themes")) as {
+    const allThemes = (await levelDBService.values("themes")) as Array<{
       id: string;
       isActive?: boolean;
       hasCustomSound?: boolean;
-    }[];
+    }>;
     const activeTheme = allThemes.find((theme) => theme.isActive);
 
     if (activeTheme?.hasCustomSound) {

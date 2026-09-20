@@ -1,11 +1,11 @@
 @use "../../scss/globals.scss";
 
 .review-prompt-banner {
-  background: rgba(0, 0, 0, 0.02);
+  background: globals.$surface-1;
   border-radius: 8px;
   padding: calc(globals.$spacing-unit * 2);
   margin-bottom: calc(globals.$spacing-unit * 1.5);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid globals.$border-color;
 
   &__content {
     display: flex;

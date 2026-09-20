@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from "node:fs/promises";
 import { registerEvent } from "../register-event";
+import { logger } from "@main/services";
 
 interface DriveInfo {
   root: string;
@@ -114,24 +115,24 @@ async function queryLinuxDrives(): Promise<DriveInfo[]> {
 }
 
 const getAvailableDrives = async (): Promise<DriveInfo[]> => {
-  console.log("getAvailableDrives called, platform:", process.platform);
+  logger.log("getAvailableDrives called, platform:", process.platform);
 
   try {
     if (process.platform === "win32") {
       const drives = await queryWindowsDrives();
-      console.log("Parsed drives:", drives.length, "drives found");
+      logger.log("Parsed drives:", drives.length, "drives found");
       return drives;
     }
 
     if (process.platform === "linux") {
       const drives = await queryLinuxDrives();
-      console.log("Parsed drives:", drives.length, "drives found");
+      logger.log("Parsed drives:", drives.length, "drives found");
       return drives;
     }
 
     return [];
   } catch (error) {
-    console.error("Failed to fetch drives:", error);
+    logger.error("Failed to fetch drives:", error);
     return [];
   }
 };

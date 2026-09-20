@@ -4,44 +4,81 @@
   width: 100%;
   height: 300px;
   position: relative;
-  border-radius: 8px;
+  border-radius: globals.$radius-sm;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all ease 0.2s;
+  border: 1px solid globals.$border-color;
+  transition:
+    transform 0.2s globals.$ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease;
   cursor: pointer;
   display: flex;
   align-items: center;
   text-align: left;
+  background: globals.$surface-0;
+  color: inherit;
+  padding: 0;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 
-  &:before {
-    content: "";
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 172%;
-    position: absolute;
-    background: linear-gradient(
-      35deg,
-      rgba(0, 0, 0, 0.1) 0%,
-      rgba(0, 0, 0, 0.07) 51.5%,
-      rgba(255, 255, 255, 0.15) 64%,
-      rgba(255, 255, 255, 0.1) 100%
-    );
-    transition: all ease 0.3s;
-    transform: translateY(-36%);
-    opacity: 0.5;
-    z-index: 1;
-  }
-
-  &:hover::before {
-    opacity: 1;
-    transform: translateY(-20%);
-  }
-
+  /* Hover: scale only — no shine / mirror sweep */
   &:hover {
     transform: scale(1.01);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: globals.$border-strong;
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(217, 119, 87, 0.45);
+    outline-offset: 2px;
+  }
+
+  &--installed {
+    border-color: globals.$border-strong;
+    box-shadow:
+      0 10px 20px -4px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(48, 45, 38, 0.05);
+
+    .library-game-card-large__background {
+      filter: brightness(1.16) saturate(1.08) contrast(1.04);
+    }
+
+    &:hover {
+      border-color: rgba(48, 45, 38, 0.32);
+    }
+  }
+
+  &--not-installed {
+    opacity: 0.82;
+
+    .library-game-card-large__background {
+      filter: brightness(0.38) saturate(0.55) contrast(0.95);
+    }
+
+    .library-game-card-large__gradient {
+      background: linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.88) 18%,
+        rgba(0, 0, 0, 0.4) 100%
+      );
+    }
+
+    .library-game-card-large__logo,
+    .library-game-card-large__title {
+      opacity: 0.7;
+      filter: brightness(0.85);
+    }
+
+    .library-game-card-large__size-badges,
+    .library-game-card-large__achievements {
+      opacity: 0.62;
+    }
+
+    &:hover {
+      opacity: 0.9;
+
+      .library-game-card-large__background {
+        filter: brightness(0.48) saturate(0.62) contrast(0.96);
+      }
+    }
   }
 
   &__background {
@@ -54,6 +91,7 @@
     background-position: center;
     background-repeat: no-repeat;
     z-index: 0;
+    transition: filter 0.25s globals.$ease;
   }
 
   &__gradient {
@@ -64,6 +102,7 @@
     bottom: 0;
     background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 20%, transparent 100%);
     z-index: 1;
+    pointer-events: none;
   }
 
   &__overlay {
@@ -82,6 +121,67 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: calc(globals.$spacing-unit);
+  }
+
+  &__play-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 14px 0 12px;
+    border-radius: globals.$radius-pill;
+    border: 1px solid transparent;
+    background: globals.$brand-teal;
+    color: globals.$brand-ink;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-left: auto;
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.18),
+      0 0 16px rgba(217, 119, 87, 0.3);
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+    pointer-events: none;
+    transition:
+      opacity 0.15s ease,
+      transform 0.15s globals.$ease,
+      background 0.15s ease,
+      box-shadow 0.15s ease;
+
+    svg {
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background: globals.$brand-hover;
+      box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.22),
+        0 0 20px rgba(217, 119, 87, 0.4);
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+
+    &:focus-visible {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+      outline: 2px solid rgba(217, 119, 87, 0.55);
+      outline-offset: 2px;
+    }
+  }
+
+  &--installed:hover &__play-button,
+  &--installed:focus-within &__play-button {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
   }
 
   &__size-badges {
@@ -221,14 +321,14 @@
     }
 
     &::-webkit-progress-value {
-      background-color: globals.$muted-color;
+      background-color: #ffffff;
       border-radius: 4px;
     }
   }
 
   &__achievement-bar {
     height: 100%;
-    background-color: globals.$muted-color;
+    background-color: #ffffff;
     border-radius: 4px;
     transition: width 0.3s ease;
   }

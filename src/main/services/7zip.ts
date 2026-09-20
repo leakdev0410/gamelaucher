@@ -6,6 +6,7 @@ import path from "node:path";
 import { logger } from "./logger";
 
 const EXTRACTION_ATTEMPT_TIMEOUT_MS = 30 * 60 * 1000;
+const MAX_EXTRACTED_FILES = 25_000;
 
 export const binaryName: Partial<Record<NodeJS.Platform, string>> = {
   linux: "7zzs",
@@ -200,6 +201,7 @@ export class SevenZip {
 
         const extractedFiles: string[] = [];
         let fileCount = 0;
+        const extractionRoot = path.resolve(outputPath || cwd || ".");
 
         const options: CommandLineSwitches = {
           $bin: this.binaryPath,
@@ -246,8 +248,25 @@ export class SevenZip {
 
         stream.on("data", (data) => {
           if (data.file) {
+            const extractedPath = path.resolve(extractionRoot, data.file);
+            if (!extractedPath.startsWith(`${extractionRoot}${path.sep}`)) {
+              clearAttemptTimeout();
+              settled = true;
+              if (typeof stream.destroy === "function") stream.destroy();
+              reject(
+                new Error("Archive entry escapes the extraction directory")
+              );
+              return;
+            }
+
             extractedFiles.push(data.file);
             fileCount++;
+            if (fileCount > MAX_EXTRACTED_FILES) {
+              clearAttemptTimeout();
+              settled = true;
+              if (typeof stream.destroy === "function") stream.destroy();
+              reject(new Error("Archive contains too many files"));
+            }
           }
         });
 

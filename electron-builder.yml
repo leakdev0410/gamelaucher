@@ -1,6 +1,6 @@
 appId: com.lequan.gamelaucher
 productName: gamelaucher
-forceCodeSigning: false
+forceCodeSigning: true
 afterPack: scripts/set-win-icon.cjs
 directories:
   buildResources: build
@@ -24,7 +24,7 @@ asarUnpack:
 win:
   icon: build/icon.ico
   executableName: gamelaucher
-  verifyUpdateCodeSignature: false
+  verifyUpdateCodeSignature: true
   signAndEditExecutable: false
   extraResources:
     - from: binaries/7z.exe
@@ -43,7 +43,9 @@ nsis:
   createDesktopShortcut: always
   oneClick: false
   allowToChangeInstallationDirectory: true
+  # installer.nsh preserves $INSTDIR\game + $INSTDIR\save across upgrade/reinstall
   include: installer.nsh
+  deleteAppDataOnUninstall: false
 portable:
   artifactName: ${name}-${version}-portable.${ext}
   splashImage: build/splash.bmp

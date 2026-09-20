@@ -2,14 +2,15 @@
 
 .library {
   &__content {
-    padding: calc(globals.$spacing-unit * 2);
+    padding: 20px 24px 32px;
     height: 100%;
     width: 100%;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: calc(globals.$spacing-unit * 3);
+    gap: 20px;
     align-items: flex-start;
+    color: globals.$muted-color;
   }
 
   &__header {
@@ -28,9 +29,11 @@
 
   &__page-title {
     margin: 0;
-    font-size: 20px;
+    font-family: globals.$font-display;
+    font-size: 26px;
     font-weight: 700;
-    color: rgba(0, 0, 0, 0.95);
+    letter-spacing: -0.03em;
+    color: globals.$muted-color;
   }
 
   &__controls-row {
@@ -72,14 +75,14 @@
   &__filter-label {
     font-size: 14px;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.8);
+    color: globals.$body-color;
     white-space: nowrap;
   }
 
   &__separator {
     width: 100%;
     height: 1px;
-    background: rgba(0, 0, 0, 0.1);
+    background: globals.$border-color;
     border: none;
     margin: 0;
   }
@@ -88,19 +91,20 @@
     display: flex;
     align-items: center;
     gap: calc(globals.$spacing-unit);
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
+    background: globals.$surface-0;
+    border: 1px solid globals.$border-color;
+    border-radius: 999px;
     padding: 8px 16px;
   }
 
   &__count-label {
-    color: rgba(0, 0, 0, 0.6);
+    color: globals.$text-muted;
     font-size: 13px;
     font-weight: 500;
   }
 
   &__count-number {
-    color: rgba(0, 0, 0, 0.9);
+    color: globals.$muted-color;
     font-size: 13px;
     font-weight: 600;
   }
@@ -120,7 +124,7 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background-color: rgba(0, 0, 0, 0.06);
+    background-color: globals.$surface-2;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -141,7 +145,7 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background-color: rgba(0, 0, 0, 0.06);
+    background-color: globals.$surface-2;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -168,22 +172,40 @@
     display: flex;
     align-items: center;
     gap: calc(globals.$spacing-unit);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    background: rgba(0, 0, 0, 0.03);
-    color: rgba(0, 0, 0, 0.8);
-    border-radius: 8px;
+    border: 1px solid globals.$border-color;
+    background: globals.$surface-1;
+    color: globals.$body-color;
+    border-radius: globals.$radius-sm;
     padding: 8px 12px;
     cursor: pointer;
     min-width: 0;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease,
+      box-shadow 0.15s ease;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.08);
+      background: globals.$overlay-hover;
+      border-color: globals.$border-mid;
+      color: globals.$muted-color;
+    }
+
+    &:focus-visible {
+      outline: 2px solid rgba(217, 119, 87, 0.45);
+      outline-offset: 2px;
     }
 
     &--active {
-      border-color: rgba(0, 0, 0, 0.24);
-      background: rgba(0, 0, 0, 0.12);
-      color: rgba(0, 0, 0, 0.95);
+      border-color: rgba(217, 119, 87, 0.35);
+      background: rgba(217, 119, 87, 0.1);
+      color: globals.$brand-teal;
+      box-shadow: 0 0 0 1px rgba(217, 119, 87, 0.15);
+
+      &:hover {
+        background: rgba(217, 119, 87, 0.16);
+        color: globals.$brand-hover;
+      }
     }
 
     span:first-of-type {
@@ -195,8 +217,8 @@
 
   &__collection-count {
     margin-left: auto;
-    background-color: #cc785c;
-    color: globals.$background-color;
+    background-color: globals.$brand-teal;
+    color: globals.$brand-ink;
     font-size: 10px;
     font-weight: 700;
     border-radius: 999px;

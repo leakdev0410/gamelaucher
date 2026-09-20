@@ -6,19 +6,19 @@
   gap: 2px;
 
   &__star {
-    color: globals.$muted-color;
+    color: globals.$border-strong;
     transition: color ease 0.2s;
 
     &--filled {
-      color: #ffffff;
+      color: globals.$brand-teal;
     }
 
     &--empty {
-      color: globals.$muted-color;
+      color: globals.$border-strong;
     }
 
     &--half {
-      color: #ffffff;
+      color: globals.$brand-teal;
       position: absolute;
       top: 0;
       left: 0;
@@ -34,7 +34,7 @@
   &__value {
     margin-left: 4px;
     font-size: 12px;
-    color: globals.$muted-color;
+    color: inherit;
     font-weight: 500;
   }
 
@@ -42,13 +42,13 @@
   &__no-rating-text {
     margin-left: 4px;
     font-size: 12px;
-    color: globals.$muted-color;
+    color: inherit;
   }
 
   &--calculating,
   &--no-rating {
     .star-rating__star {
-      color: globals.$muted-color;
+      color: globals.$border-strong;
     }
   }
 }

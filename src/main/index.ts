@@ -19,18 +19,35 @@ import { GoRPC } from "./services/go-rpc";
 import { db, gamesSublevel, levelKeys } from "./level";
 import { GameShop, UserPreferences } from "@types";
 import { loadState, loadStateDeferred } from "./main";
+import { ASSETS_PATH } from "./constants";
 
+const PROTOCOL = "hydralauncher";
+
+/**
+ * Single-instance guard.
+ *
+ * Game desktop shortcuts launch: gamelaucher.exe hydralauncher://run?...
+ * Electron hands those args to the existing process via "second-instance".
+ * The losing process must exit quietly for deep-link handoffs — showing an
+ * error box here is what users saw when the launcher was already open.
+ * A plain second launch (no protocol arg) still shows the "already running" dialog.
+ */
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
-  dialog.showErrorBox(
-    "Game Launcher is already running",
-    "Ứng dụng đang được mở. Vui lòng kiểm tra khay hệ thống (system tray) hoặc các cửa sổ đang mở."
+  const isDeepLinkHandoff = process.argv.some((arg) =>
+    arg.startsWith(`${PROTOCOL}://`)
   );
-  app.quit();
-}
 
-if (process.platform !== "linux") {
-  app.commandLine.appendSwitch("--no-sandbox");
+  if (!isDeepLinkHandoff) {
+    dialog.showErrorBox(
+      "Game Launcher is already running",
+      "Ứng dụng đang được mở. Vui lòng kiểm tra khay hệ thống (system tray) hoặc các cửa sổ đang mở."
+    );
+  }
+
+  // Hard-stop this process so it never bootstraps (splash, LevelDB, RPC…).
+  // The primary instance already received "second-instance" with our argv.
+  process.exit(0);
 }
 
 i18n.init({
@@ -41,8 +58,6 @@ i18n.init({
     escapeValue: false,
   },
 });
-
-const PROTOCOL = "hydralauncher";
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -68,8 +83,15 @@ app.whenReady().then(async () => {
   WindowManager.openSplashWindow();
 
   protocol.handle("local", (request) => {
-    const filePath = request.url.slice("local:".length);
-    return net.fetch(url.pathToFileURL(decodeURI(filePath)).toString());
+    const requestedPath = decodeURI(request.url.slice("local:".length));
+    const assetsRoot = path.resolve(ASSETS_PATH);
+    const filePath = path.resolve(requestedPath);
+
+    if (!filePath.startsWith(`${assetsRoot}${path.sep}`)) {
+      return new Response("Forbidden", { status: 403 });
+    }
+
+    return net.fetch(url.pathToFileURL(filePath).toString());
   });
 
   protocol.handle("gradient", (request) => {

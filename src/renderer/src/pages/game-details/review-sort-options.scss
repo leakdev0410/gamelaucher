@@ -10,7 +10,7 @@
   }
 
   &__label {
-    color: rgba(0, 0, 0, 0.6);
+    color: globals.$text-muted;
     font-size: 14px;
     font-weight: 400;
   }
@@ -30,7 +30,7 @@
   &__option {
     background: none;
     border: none;
-    color: rgba(0, 0, 0, 0.4);
+    color: globals.$text-dim;
     cursor: pointer;
     padding: 4px 0;
     font-size: 14px;
@@ -41,11 +41,11 @@
     gap: 4px;
 
     &:hover:not(:disabled) {
-      color: rgba(0, 0, 0, 0.6);
+      color: globals.$body-color;
     }
 
     &.active {
-      color: rgba(0, 0, 0, 0.9);
+      color: globals.$muted-color;
       font-weight: 500;
     }
 
@@ -63,7 +63,7 @@
   }
 
   &__separator {
-    color: rgba(0, 0, 0, 0.3);
+    color: globals.$text-dim;
     font-size: 14px;
 
     @media (max-width: 480px) {

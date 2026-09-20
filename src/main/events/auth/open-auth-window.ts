@@ -7,6 +7,10 @@ const openAuthWindow = async (
   _event: Electron.IpcMainInvokeEvent,
   page: AuthPage
 ) => {
+  if (!Object.values(AuthPage).includes(page)) {
+    throw new Error("Invalid authentication page");
+  }
+
   const searchParams = new URLSearchParams({
     lng: i18next.language,
   });

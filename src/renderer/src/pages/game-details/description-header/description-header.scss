@@ -6,11 +6,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: globals.$background-color;
+  background-color: globals.$surface-0;
   height: 72px;
   border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid globals.$border-color;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  color: globals.$muted-color;
 
   &__info {
     display: flex;
@@ -19,11 +20,12 @@
 
     p {
       font-size: globals.$small-font-size;
-      color: globals.$muted-color;
+      color: globals.$body-color;
       font-weight: 400;
 
       &:first-child {
         font-weight: 600;
+        color: globals.$muted-color;
       }
     }
   }

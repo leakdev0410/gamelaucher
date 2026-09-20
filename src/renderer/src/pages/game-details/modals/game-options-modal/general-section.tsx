@@ -5,6 +5,7 @@ import SteamLogo from "@renderer/assets/steam-logo.svg?react";
 import type { LibraryGame, ShortcutLocation } from "@types";
 import { FileIcon } from "@primer/octicons-react";
 import { HardDrive, X, FolderOpen } from "lucide-react";
+import { logger } from "@renderer/logger";
 
 interface DriveInfo {
   root: string;
@@ -129,7 +130,7 @@ export function GeneralSettingsSection({
 
   useEffect(() => {
     if (!isTransferring) return;
-    console.log(
+    logger.log(
       "Transfer progress update:",
       `${Math.round(transferProgress * 100)}%`
     );

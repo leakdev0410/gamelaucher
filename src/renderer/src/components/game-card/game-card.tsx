@@ -61,19 +61,14 @@ export function GameCard({ game, ...props }: GameCardProps) {
 
           {game.downloadSources.length > 0 ? (
             <ul className="game-card__download-options">
-              {game.downloadSources.slice(0, 3).map((sourceName) => (
+              {game.downloadSources.slice(0, 2).map((sourceName) => (
                 <li key={sourceName}>
                   <Badge>{sourceName}</Badge>
                 </li>
               ))}
-              {game.downloadSources.length > 3 && (
+              {game.downloadSources.length > 2 && (
                 <li>
-                  <Badge>
-                    +{game.downloadSources.length - 3}{" "}
-                    {t("game_card:available", {
-                      count: game.downloadSources.length - 3,
-                    })}
-                  </Badge>
+                  <Badge>+{game.downloadSources.length - 2}</Badge>
                 </li>
               )}
             </ul>

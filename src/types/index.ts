@@ -139,11 +139,11 @@ export interface StartGameDownloadPayload {
 
 export interface UserBlocks {
   totalBlocks: number;
-  blocks: {
+  blocks: Array<{
     id: string;
     displayName: string;
     profileImageUrl: string | null;
-  }[];
+  }>;
 }
 
 export interface NotificationSync {
@@ -371,7 +371,7 @@ export interface ComparedAchievements {
     unlockedAchievementCount: number;
     achievementsPointsEarnedSum: number;
   };
-  achievements: {
+  achievements: Array<{
     hidden: boolean;
     icon: string;
     displayName: string;
@@ -384,7 +384,7 @@ export interface ComparedAchievements {
       unlocked: boolean;
       unlockTime: number;
     };
-  }[];
+  }>;
 }
 
 export interface CatalogueSearchPayload {
@@ -401,14 +401,10 @@ export interface CatalogueSearchPayload {
   publishers: string[];
   genres: string[];
   developers: string[];
-  protondbSupportBadges: (
-    | "borked"
-    | "bronze"
-    | "silver"
-    | "gold"
-    | "platinum"
-  )[];
-  deckCompatibility: ("verified" | "playable" | "unsupported" | "unknown")[];
+  protondbSupportBadges: Array<
+    "borked" | "bronze" | "silver" | "gold" | "platinum"
+  >;
+  deckCompatibility: Array<"verified" | "playable" | "unsupported" | "unknown">;
   releaseYear?: { gte?: number; lte?: number };
 }
 

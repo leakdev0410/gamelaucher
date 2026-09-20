@@ -1,7 +1,7 @@
-import { ipcMain } from "electron";
 import fs from "fs";
 import path from "path";
 import { ASSETS_PATH } from "@main/constants";
+import { registerEvent } from "../register-event";
 
 const getCustomGamesAssetsPath = () => {
   return path.join(ASSETS_PATH, "custom-games");
@@ -71,4 +71,4 @@ export const cleanupUnusedAssets = async (): Promise<{
   }
 };
 
-ipcMain.handle("cleanupUnusedAssets", cleanupUnusedAssets);
+registerEvent("cleanupUnusedAssets", cleanupUnusedAssets);

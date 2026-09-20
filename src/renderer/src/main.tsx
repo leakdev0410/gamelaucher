@@ -86,6 +86,15 @@ if (userPreferences?.language) {
 syncDocumentLanguage(i18n.language);
 i18n.on("languageChanged", syncDocumentLanguage);
 
+// Achievement toast host is a transparent always-on-top window. Force a clear
+// document before React paints so Windows DWM never shows a black corner panel.
+if (window.location.hash.includes("achievement-notification")) {
+  document.documentElement.style.background = "transparent";
+  document.body.style.background = "transparent";
+  const rootEl = document.getElementById("root");
+  if (rootEl) rootEl.style.background = "transparent";
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Provider store={store}>

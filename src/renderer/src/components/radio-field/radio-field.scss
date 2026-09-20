@@ -28,7 +28,7 @@
   &--selected .radio-field__dot {
     opacity: 1;
     transform: scale(1);
-    background: #cc785c;
+    background: globals.$brand-teal;
   }
 
   &__input {
@@ -73,5 +73,7 @@
   &__label {
     line-height: 1.2;
     min-width: 0;
+    color: globals.$muted-color;
+    font-size: 13.5px;
   }
 }

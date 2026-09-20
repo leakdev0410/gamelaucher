@@ -153,7 +153,7 @@ async function resolveDoh(
 async function resolveAddresses(
   hostname: string,
   preferFamily: number
-): Promise<{ address: string; family: number }[]> {
+): Promise<Array<{ address: string; family: number }>> {
   const tryOrder: Array<"A" | "AAAA"> =
     preferFamily === 6
       ? ["AAAA", "A"]
@@ -161,7 +161,7 @@ async function resolveAddresses(
         ? ["A"]
         : ["A", "AAAA"];
 
-  const results: { address: string; family: number }[] = [];
+  const results: Array<{ address: string; family: number }> = [];
 
   for (const rrtype of tryOrder) {
     const family = rrtype === "A" ? 4 : 6;

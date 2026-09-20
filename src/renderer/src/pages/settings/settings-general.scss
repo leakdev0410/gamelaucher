@@ -63,7 +63,7 @@
     flex: 1;
     height: 6px;
     border-radius: 3px;
-    background: globals.$dark-background-color;
+    background: globals.$surface-3;
     outline: none;
     -webkit-appearance: none;
     appearance: none;
@@ -79,13 +79,13 @@
       background: globals.$muted-color;
       cursor: pointer;
       border: 2px solid globals.$background-color;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
       transition: all 0.2s;
       margin-top: -6px;
 
       &:hover {
         transform: scale(1.1);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
       }
 
       &:active {
@@ -100,13 +100,13 @@
       background: globals.$muted-color;
       cursor: pointer;
       border: 2px solid globals.$background-color;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
       transition: all 0.2s;
       margin-top: -6px;
 
       &:hover {
         transform: scale(1.1);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
       }
 
       &:active {
@@ -122,8 +122,8 @@
         to right,
         globals.$muted-color 0%,
         globals.$muted-color var(--volume-percent),
-        globals.$dark-background-color var(--volume-percent),
-        globals.$dark-background-color 100%
+        globals.$surface-3 var(--volume-percent),
+        globals.$surface-3 100%
       );
     }
 
@@ -131,7 +131,7 @@
       width: 100%;
       height: 6px;
       border-radius: 3px;
-      background: globals.$dark-background-color;
+      background: globals.$surface-3;
     }
 
     &::-moz-range-progress {
@@ -144,11 +144,11 @@
       outline: none;
 
       &::-webkit-slider-thumb {
-        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.3);
       }
 
       &::-moz-range-thumb {
-        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.3);
       }
     }
 
@@ -175,7 +175,7 @@
     }
 
     &::-ms-fill-upper {
-      background: globals.$dark-background-color;
+      background: globals.$surface-3;
       border-radius: 3px;
     }
   }

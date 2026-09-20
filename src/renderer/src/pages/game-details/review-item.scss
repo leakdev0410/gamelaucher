@@ -4,11 +4,11 @@
   &__review-item {
     overflow: hidden;
     word-wrap: break-word;
-    background: rgba(0, 0, 0, 0.035);
-    border: 1px solid rgba(0, 0, 0, 0.09);
+    background: globals.$surface-1;
+    border: 1px solid globals.$border-color;
     border-radius: 12px;
     padding: calc(globals.$spacing-unit * 1.75);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px globals.$border-color;
   }
 
   &__review-header {
@@ -56,7 +56,7 @@
   }
 
   &__review-display-name {
-    color: rgba(0, 0, 0, 0.9);
+    color: globals.$muted-color;
     font-size: globals.$small-font-size;
     font-weight: 600;
     display: inline-flex;
@@ -74,7 +74,7 @@
   &__review-actions {
     margin-top: 12px;
     padding-top: 8px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid globals.$border-color;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -89,31 +89,31 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    background: rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: globals.$surface-2;
+    border: 1px solid globals.$border-color;
     border-radius: 6px;
     padding: 6px 12px;
-    color: #ccc;
+    color: globals.$body-color;
     font-size: 14px;
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.1);
-      border-color: rgba(0, 0, 0, 0.2);
-      color: #ffffff;
+      background: globals.$overlay-active;
+      border-color: globals.$border-strong;
+      color: globals.$muted-color;
     }
 
     &--active {
       &.game-details__vote-button--upvote {
         svg {
-          fill: white;
+          fill: globals.$brand-teal;
         }
       }
 
       &.game-details__vote-button--downvote {
         svg {
-          fill: white;
+          fill: globals.$brand-teal;
         }
       }
     }
@@ -147,7 +147,7 @@
   }
 
   &__blocked-review-simple {
-    color: rgba(0, 0, 0, 0.6);
+    color: globals.$text-muted;
     font-size: globals.$small-font-size;
     display: flex;
     align-items: center;
@@ -165,14 +165,14 @@
     transition: color 0.2s ease;
 
     &:hover {
-      color: #ffeb3b;
+      color: #b8860b;
     }
   }
 
   &__blocked-review-hide-link {
     background: none;
     border: none;
-    color: rgba(0, 0, 0, 0.5);
+    color: globals.$text-muted;
     font-size: globals.$small-font-size;
     cursor: pointer;
     text-decoration: underline;
@@ -180,7 +180,7 @@
     transition: color 0.2s ease;
 
     &:hover {
-      color: rgba(0, 0, 0, 0.8);
+      color: globals.$muted-color;
     }
   }
 
@@ -190,10 +190,10 @@
     gap: 4px;
     height: 22px;
     box-sizing: border-box;
-    background: rgba(0, 0, 0, 0.05);
+    background: globals.$surface-2;
     border-radius: 8px;
     padding: 2px 6px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid globals.$border-color;
     font-size: 11px;
     font-weight: 500;
   }
@@ -205,16 +205,16 @@
   }
 
   &__review-star {
-    color: rgba(0, 0, 0, 0.7);
+    color: globals.$warning-color;
     transition: color 0.2s ease;
     cursor: default;
 
     &--filled {
-      color: rgba(0, 0, 0, 0.7);
+      color: globals.$warning-color;
     }
 
     &--empty {
-      color: #666666;
+      color: globals.$text-dim;
     }
 
     svg {
@@ -229,7 +229,7 @@
     white-space: nowrap;
     height: 22px;
     line-height: 1;
-    color: rgba(0, 0, 0, 0.6);
+    color: globals.$text-muted;
     font-size: globals.$small-font-size;
   }
 
@@ -239,17 +239,17 @@
     gap: 4px;
     height: 22px;
     box-sizing: border-box;
-    color: rgba(0, 0, 0, 0.7);
+    color: globals.$body-color;
     font-size: 11px;
     font-weight: 500;
-    background: rgba(0, 0, 0, 0.05);
+    background: globals.$surface-2;
     border-radius: 8px;
     padding: 2px 6px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid globals.$border-color;
     margin-top: 0;
 
     svg {
-      color: rgba(0, 0, 0, 0.6);
+      color: globals.$text-muted;
     }
   }
 
@@ -271,7 +271,7 @@
     padding: 0;
     background: none;
     border: none;
-    color: rgba(0, 0, 0, 0.6);
+    color: globals.$text-muted;
     font-size: 0.875rem;
     cursor: pointer;
     text-decoration: none;
@@ -279,7 +279,7 @@
 
     &:hover {
       text-decoration: underline;
-      color: rgba(0, 0, 0, 0.9);
+      color: globals.$muted-color;
     }
   }
 }

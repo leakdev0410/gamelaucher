@@ -16,6 +16,7 @@
     "library": "Thư viện",
     "downloads": "Tải xuống",
     "settings": "Cài đặt",
+    "achievements": "Thành tựu",
     "my_library": "Thư viện của tôi",
     "collections": "Bộ sưu tập",
     "games": "Game",
@@ -112,6 +113,7 @@
     "cancel": "Hủy"
   },
   "header": {
+    "back": "Quay lại",
     "search": "Tìm game",
     "search_library": "Tìm trong thư viện",
     "recent_searches": "Tìm kiếm gần đây",
@@ -852,7 +854,23 @@
     "downloads": "Tải xuống",
     "create_shortcuts_on_download": "Tạo lối tắt trên màn hình và Start Menu khi game tải xong",
     "default_proton_version": "Phiên bản Proton mặc định",
-    "default_proton_version_description": "Chọn phiên bản Proton dùng cho chế độ Tự động khi game không có cấu hình riêng"
+    "default_proton_version_description": "Chọn phiên bản Proton dùng cho chế độ Tự động khi game không có cấu hình riêng",
+    "windows_defender_exclusion": "Ngoại lệ Windows Defender",
+    "windows_defender_exclusion_description": "Windows Defender đôi khi gắn cờ hoặc xóa file game đã tải (thường gặp với các bản repack) do không nhận diện được. Thêm thư mục Game Launcher vào danh sách ngoại lệ sẽ ngăn việc này xảy ra.",
+    "windows_defender_exclusion_warning": "Các file trong thư mục ngoại lệ sẽ không còn được quét virus. Chỉ nên thực hiện nếu bạn tin tưởng nguồn tải của mình.",
+    "add_windows_defender_exclusion": "Thêm ngoại lệ",
+    "windows_defender_exclusion_confirm_title": "Thêm thư mục vào ngoại lệ Windows Defender?",
+    "windows_defender_exclusion_confirm_description": "Thao tác này sẽ loại trừ \"{{path}}\" khỏi việc quét của Windows Defender. Bạn sẽ được yêu cầu cấp quyền quản trị viên (UAC). Các file trong thư mục này sẽ không còn được quét virus.",
+    "windows_defender_exclusion_added": "Đã thêm ngoại lệ",
+    "windows_defender_exclusion_added_description": "Thư mục Game Launcher đã được thêm vào danh sách ngoại lệ của Windows Defender.",
+    "windows_defender_exclusion_cancelled": "Đã hủy",
+    "windows_defender_exclusion_cancelled_description": "Yêu cầu cấp quyền quản trị viên đã bị hủy. Không có thay đổi nào được thực hiện.",
+    "windows_defender_exclusion_failed": "Thêm ngoại lệ thất bại",
+    "replace_download_directory_title": "Thay thế thư mục tải xuống",
+    "replace_download_directory_description": "Danh sách thư mục tải xuống Big Picture đã đầy. Chọn thư mục đã lưu để thay thế bằng đường dẫn mặc định mới.",
+    "new_default_path_label": "Đường dẫn mặc định mới",
+    "replace_this_saved_directory_label": "Thay thế thư mục Big Picture đã lưu này",
+    "replace_and_use_new_path": "Thay thế và dùng đường dẫn mới"
   },
   "notifications": {
     "download_complete": "Tải xuống hoàn tất",

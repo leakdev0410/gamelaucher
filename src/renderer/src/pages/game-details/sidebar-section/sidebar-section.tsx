@@ -1,5 +1,4 @@
-import { ChevronDownIcon } from "@primer/octicons-react";
-import { LinkExternalIcon } from "@primer/octicons-react";
+import { ChevronDownIcon, LinkExternalIcon } from "@primer/octicons-react";
 import { useEffect, useRef, useState } from "react";
 import "./sidebar-section.scss";
 

@@ -9,11 +9,11 @@ import { useTranslation } from "react-i18next";
 
 export interface FilterSectionProps {
   title: string;
-  items: {
+  items: Array<{
     label: string;
     value: string | number;
     checked: boolean;
-  }[];
+  }>;
   onSelect: (value: string | number) => void;
   color: string;
   onClear: () => void;
@@ -130,10 +130,10 @@ export function FilterSection({
             itemKey="value"
             styles={{
               verticalScrollBar: {
-                backgroundColor: "rgba(255, 255, 255, 0.03)",
+                backgroundColor: "transparent",
               },
               verticalScrollBarThumb: {
-                backgroundColor: "rgba(255, 255, 255, 0.08)",
+                backgroundColor: "rgba(48, 45, 38, 0.16)",
                 borderRadius: "24px",
               },
             }}

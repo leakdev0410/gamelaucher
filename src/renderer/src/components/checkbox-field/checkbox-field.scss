@@ -31,13 +31,13 @@
     color: globals.$body-color;
 
     &:hover:not(:has(input:disabled)) {
-      border-color: rgba(0, 0, 0, 0.5);
+      border-color: rgba(48, 45, 38, 0.4);
     }
 
     &.checked {
-      background-color: #cc785c;
-      border-color: #cc785c;
-      color: globals.$dark-background-color;
+      background-color: globals.$brand-teal;
+      border-color: globals.$brand-teal;
+      color: globals.$brand-ink;
     }
 
     &:has(.checkbox-field__input:focus-visible) {
@@ -82,9 +82,13 @@
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+    color: globals.$muted-color;
+    font-size: 13.5px;
+    line-height: 1.35;
 
     &:has(+ input:disabled) {
       cursor: not-allowed;
+      color: globals.$text-muted;
     }
   }
 }

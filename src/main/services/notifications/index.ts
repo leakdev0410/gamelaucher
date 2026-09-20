@@ -157,7 +157,7 @@ export const publishExtractionCompleteNotification = async (game: Game) => {
 };
 
 export const publishNewAchievementNotification = async (info: {
-  achievements: { title: string; iconUrl: string }[];
+  achievements: Array<{ title: string; iconUrl: string }>;
   unlockedAchievementCount: number;
   totalAchievementCount: number;
   gameTitle: string;

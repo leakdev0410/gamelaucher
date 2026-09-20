@@ -364,7 +364,7 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("checkSteamShortcut", shop, objectId),
   onGamesRunning: (
     cb: (
-      gamesRunning: Pick<GameRunning, "id" | "sessionDurationInMillis">[]
+      gamesRunning: Array<Pick<GameRunning, "id" | "sessionDurationInMillis">>
     ) => void
   ) => {
     const listener = (_event: Electron.IpcRendererEvent, gamesRunning) =>
@@ -650,7 +650,6 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("getUnlockedAchievements", objectId, shop),
 
   /* Auth */
-  getAuth: () => ipcRenderer.invoke("getAuth"),
   signOut: () => ipcRenderer.invoke("signOut"),
   openAuthWindow: (page: AuthPage) =>
     ipcRenderer.invoke("openAuthWindow", page),
@@ -761,11 +760,11 @@ contextBridge.exposeInMainWorld("electron", {
       ipcRenderer.removeListener("on-custom-theme-updated", listener);
   },
   onNewDownloadOptions: (
-    cb: (gamesWithNewOptions: { gameId: string; count: number }[]) => void
+    cb: (gamesWithNewOptions: Array<{ gameId: string; count: number }>) => void
   ) => {
     const listener = (
       _event: Electron.IpcRendererEvent,
-      gamesWithNewOptions: { gameId: string; count: number }[]
+      gamesWithNewOptions: Array<{ gameId: string; count: number }>
     ) => cb(gamesWithNewOptions);
     ipcRenderer.on("on-new-download-options", listener);
     return () =>
@@ -817,4 +816,7 @@ contextBridge.exposeInMainWorld("electron", {
   getAvailableDrives: () => ipcRenderer.invoke("getAvailableDrives"),
   transferGameFiles: (shop: GameShop, objectId: string, destParent: string) =>
     ipcRenderer.invoke("transferGameFiles", shop, objectId, destParent),
+  addDefenderExclusion: () => ipcRenderer.invoke("addDefenderExclusion"),
+  getDefenderExclusionPath: () =>
+    ipcRenderer.invoke("getDefenderExclusionPath"),
 });

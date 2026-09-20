@@ -3,6 +3,8 @@ import { gamesSublevel, gamesShopAssetsSublevel, levelKeys } from "@main/level";
 import type { GameShop, Game } from "@types";
 import fs from "node:fs";
 import { logger } from "@main/services";
+import { ASSETS_PATH } from "@main/constants";
+import { resolvePathWithinRoot } from "@main/helpers/path-within-root";
 
 const collectOldAssetPaths = (
   existingGame: Game,
@@ -90,8 +92,9 @@ const deleteOldAssetFiles = async (oldAssetPaths: string[]): Promise<void> => {
 
   for (const assetPath of oldAssetPaths) {
     try {
-      if (fs.existsSync(assetPath)) {
-        await fs.promises.unlink(assetPath);
+      const safeAssetPath = resolvePathWithinRoot(ASSETS_PATH, assetPath);
+      if (safeAssetPath && fs.existsSync(safeAssetPath)) {
+        await fs.promises.unlink(safeAssetPath);
       }
     } catch (error) {
       logger.warn(`Failed to delete old custom asset ${assetPath}:`, error);

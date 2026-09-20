@@ -2,7 +2,8 @@
 
 .hero-panel-actions {
   &__action {
-    border: solid 1px globals.$muted-color;
+    flex-shrink: 0;
+    white-space: nowrap;
 
     &--disabled {
       opacity: 0.5;
@@ -11,12 +12,20 @@
 
   &__container {
     display: flex;
-    gap: calc(globals.$spacing-unit * 2);
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    min-width: 0;
+    max-width: 100%;
   }
 
   &__separator {
     width: 1px;
-    background-color: globals.$muted-color;
-    opacity: 0.2;
+    align-self: stretch;
+    min-height: 24px;
+    background-color: globals.$border-mid;
+    opacity: 1;
+    flex-shrink: 0;
   }
 }

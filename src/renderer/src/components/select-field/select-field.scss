@@ -15,40 +15,50 @@
   }
 
   &:hover {
-    border-color: rgba(0, 0, 0, 0.5);
+    border-color: rgba(48, 45, 38, 0.24);
   }
 
   &--focused {
-    border-color: #2b2a27;
+    border-color: rgba(217, 119, 87, 0.45);
+    box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.12);
   }
 
   &--primary {
-    background-color: globals.$dark-background-color;
+    background-color: globals.$surface-0;
   }
 
   &--dark {
-    background-color: globals.$background-color;
+    background-color: globals.$surface-1;
   }
 
   &__option {
-    background-color: globals.$dark-background-color;
+    background-color: globals.$surface-0;
     border-right: 4px solid;
     border-color: transparent;
     border-radius: 8px;
-    width: fit-content;
+    width: 100%;
+    min-width: 120px;
     height: 100%;
     outline: none;
-    color: #2b2a27;
+    color: globals.$muted-color;
+    -webkit-text-fill-color: globals.$muted-color;
     cursor: default;
     font-family: inherit;
     font-size: globals.$body-font-size;
     text-overflow: ellipsis;
     padding: globals.$spacing-unit;
+
+    option {
+      color: globals.$muted-color;
+      background-color: globals.$surface-0;
+    }
   }
 
   &__label {
     margin-bottom: globals.$spacing-unit;
     display: block;
     color: globals.$body-color;
+    font-size: 13px;
+    font-weight: 600;
   }
 }

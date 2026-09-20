@@ -105,12 +105,12 @@ export function useSearchSuggestions(
 
       try {
         const response = await window.electron.api.get<
-          {
+          Array<{
             title: string;
             objectId: string;
             shop: GameShop;
             iconUrl: string | null;
-          }[]
+          }>
         >("/catalogue/search/suggestions", {
           params: {
             query: searchQuery,

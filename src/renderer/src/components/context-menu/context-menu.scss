@@ -5,13 +5,13 @@ $context-menu-danger-color: globals.$error-color;
 .context-menu {
   position: fixed;
   z-index: 1000;
-  background-color: globals.$background-color;
-  border: 1px solid globals.$border-color;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  background-color: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(48, 45, 38, 0.14);
+  border-radius: globals.$radius-md;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
   padding: 4px 0;
   min-width: 180px;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(16px);
 
   &__list {
     list-style: none;
@@ -31,22 +31,23 @@ $context-menu-danger-color: globals.$error-color;
     padding: 8px 12px;
     background: transparent;
     border: none;
-    color: globals.$body-color;
+    color: globals.$muted-color;
     cursor: pointer;
     font-size: globals.$body-font-size;
     text-align: left;
     transition: background-color 0.15s ease;
 
     &:hover:not(&--disabled) {
-      background-color: rgba(0, 0, 0, 0.1);
+      background-color: globals.$overlay-active;
+      color: globals.$muted-color;
     }
 
     &:active:not(&--disabled) {
-      background-color: rgba(0, 0, 0, 0.15);
+      background-color: globals.$overlay-strong;
     }
 
     &--disabled {
-      color: globals.$muted-color;
+      color: globals.$text-muted;
       cursor: not-allowed;
       opacity: 0.6;
     }
@@ -55,11 +56,11 @@ $context-menu-danger-color: globals.$error-color;
       color: $context-menu-danger-color;
 
       &:hover:not(.context-menu__item--disabled) {
-        background-color: rgba(225, 29, 72, 0.18);
+        background-color: rgba(192, 69, 58, 0.14);
       }
 
       &:active:not(.context-menu__item--disabled) {
-        background-color: rgba(225, 29, 72, 0.28);
+        background-color: rgba(192, 69, 58, 0.22);
       }
 
       .context-menu__item-icon {
@@ -71,12 +72,12 @@ $context-menu-danger-color: globals.$error-color;
       position: relative;
 
       &:hover {
-        background-color: rgba(0, 0, 0, 0.1);
+        background-color: globals.$overlay-active;
       }
     }
 
     &--active {
-      background-color: rgba(0, 0, 0, 0.1);
+      background-color: globals.$overlay-active;
     }
   }
 
@@ -126,7 +127,7 @@ $context-menu-danger-color: globals.$error-color;
     background-color: globals.$background-color;
     border: 1px solid globals.$border-color;
     border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
     padding: 4px 0;
     min-width: 160px;
     backdrop-filter: blur(8px);

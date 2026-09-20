@@ -65,7 +65,7 @@ function isTooCloseRGB(a: string, b: string, threshold: number): boolean {
 
 const CHART_BACKGROUND_COLOR = "#1a1a1a";
 const COLOR_DISTANCE_THRESHOLD = 28;
-const FALLBACK_CHART_COLOR = "#fff";
+const FALLBACK_CHART_COLOR = "#e8e8ea";
 
 function pickChartColor(dominant?: string): string {
   if (!dominant || typeof dominant !== "string" || !dominant.startsWith("#")) {
@@ -1097,7 +1097,7 @@ export function DownloadGroup({
                         className="download-group__progress-fill"
                         style={{
                           width: `${progress * 100}%`,
-                          backgroundColor: "#fff",
+                          backgroundColor: "#e8e8ea",
                         }}
                       />
                     </div>

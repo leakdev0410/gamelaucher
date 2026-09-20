@@ -22,13 +22,13 @@ interface DownloadSourcesChangeResponse {
 export class DownloadSourcesChecker {
   private static async clearStaleBadges(
     nonCustomGames: Game[]
-  ): Promise<{ gameId: string; count: number }[]> {
+  ): Promise<Array<{ gameId: string; count: number }>> {
     const previouslyFlaggedGames = nonCustomGames.filter(
       (game: Game) =>
         game.newDownloadOptionsCount && game.newDownloadOptionsCount > 0
     );
 
-    const clearedPayload: { gameId: string; count: number }[] = [];
+    const clearedPayload: Array<{ gameId: string; count: number }> = [];
     if (previouslyFlaggedGames.length > 0) {
       logger.info(
         `Clearing stale newDownloadOptionsCount for ${previouslyFlaggedGames.length} games`
@@ -51,12 +51,12 @@ export class DownloadSourcesChecker {
   private static async processApiResponse(
     response: unknown,
     nonCustomGames: Game[]
-  ): Promise<{ gameId: string; count: number }[]> {
+  ): Promise<Array<{ gameId: string; count: number }>> {
     if (!response || !Array.isArray(response)) {
       return [];
     }
 
-    const gamesWithNewOptions: { gameId: string; count: number }[] = [];
+    const gamesWithNewOptions: Array<{ gameId: string; count: number }> = [];
 
     for (const gameUpdate of response as DownloadSourcesChangeResponse[]) {
       if (gameUpdate.newDownloadOptionsCount > 0) {
@@ -83,8 +83,8 @@ export class DownloadSourcesChecker {
   }
 
   private static sendNewDownloadOptionsEvent(
-    clearedPayload: { gameId: string; count: number }[],
-    gamesWithNewOptions: { gameId: string; count: number }[]
+    clearedPayload: Array<{ gameId: string; count: number }>,
+    gamesWithNewOptions: Array<{ gameId: string; count: number }>
   ): void {
     const eventPayload = [...clearedPayload, ...gamesWithNewOptions];
     if (eventPayload.length > 0 && WindowManager.mainWindow) {

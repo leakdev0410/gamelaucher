@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosError, AxiosInstance } from "axios";
 import { WindowManager } from "./window-manager";
-import url from "url";
 import { uploadGamesBatch } from "./library-sync";
 import { clearGamesRemoteIds } from "./library-sync/clear-games-remote-id";
 import { networkLogger as logger } from "./logger";
@@ -58,12 +57,50 @@ export class ApiClient {
   }
 
   static async handleExternalAuth(uri: string) {
-    const { payload } = url.parse(uri, true).query;
+    const callback = new URL(uri);
+    if (
+      callback.protocol !== "hydralauncher:" ||
+      callback.hostname !== "auth"
+    ) {
+      throw new Error("Invalid authentication callback");
+    }
 
-    const decodedBase64 = atob(payload as string);
-    const jsonData = JSON.parse(decodedBase64);
+    const payload = callback.searchParams.get("payload");
+    if (!payload || payload.length > 16_384) {
+      throw new Error("Invalid authentication payload");
+    }
 
-    const { accessToken, expiresIn, refreshToken } = jsonData;
+    let jsonData: unknown;
+    try {
+      jsonData = JSON.parse(atob(payload));
+    } catch {
+      throw new Error("Invalid authentication payload encoding");
+    }
+
+    if (
+      typeof jsonData !== "object" ||
+      jsonData === null ||
+      typeof (jsonData as Record<string, unknown>).accessToken !== "string" ||
+      typeof (jsonData as Record<string, unknown>).refreshToken !== "string" ||
+      typeof (jsonData as Record<string, unknown>).expiresIn !== "number" ||
+      !Number.isFinite((jsonData as Record<string, unknown>).expiresIn)
+    ) {
+      throw new Error("Invalid authentication payload shape");
+    }
+
+    const { accessToken, refreshToken, expiresIn } = jsonData as {
+      accessToken: string;
+      refreshToken: string;
+      expiresIn: number;
+    };
+    if (
+      !accessToken ||
+      !refreshToken ||
+      expiresIn <= 0 ||
+      expiresIn > 31_536_000
+    ) {
+      throw new Error("Invalid authentication token data");
+    }
 
     const now = new Date();
 
@@ -302,11 +339,7 @@ export class ApiClient {
 
   private static readonly handleUnauthorizedError = (err) => {
     if (err instanceof AxiosError && err.response?.status === 401) {
-      logger.error(
-        "401 - Current credentials:",
-        this.userAuth,
-        err.response?.data
-      );
+      logger.error("401 - clearing current credentials", err.response?.data);
 
       this.userAuth = {
         authToken: "",

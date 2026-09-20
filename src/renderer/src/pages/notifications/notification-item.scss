@@ -10,18 +10,23 @@
   border-radius: 8px;
   transition: all ease 0.2s;
   position: relative;
-  opacity: 0.4;
+  opacity: 1;
   width: 100%;
   text-align: left;
+  color: globals.$muted-color;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.03);
-    opacity: 0.6;
+    background-color: globals.$overlay-hover;
   }
 
   &--unread {
     border-left: 3px solid globals.$brand-teal;
     opacity: 1;
+    background: linear-gradient(
+      90deg,
+      rgba(217, 119, 87, 0.08),
+      transparent 40%
+    );
 
     &:hover {
       opacity: 1;
@@ -30,6 +35,11 @@
     .notification-item__title {
       color: globals.$muted-color;
     }
+  }
+
+  /* Read items slightly quieter, still legible */
+  &:not(&--unread) {
+    opacity: 0.78;
   }
 
   &__picture {
@@ -76,6 +86,24 @@
     display: flex;
     flex-direction: column;
     gap: calc(globals.$spacing-unit / 2);
+    color: globals.$muted-color;
+  }
+
+  &__title {
+    color: globals.$muted-color;
+    font-weight: 600;
+    font-size: 13.5px;
+  }
+
+  &__body,
+  &__description {
+    color: globals.$body-color;
+    font-size: 12.5px;
+  }
+
+  &__time {
+    color: globals.$text-muted;
+    font-size: 11px;
   }
 
   &__title {
@@ -97,7 +125,7 @@
     align-items: center;
     gap: calc(globals.$spacing-unit / 2);
     font-size: globals.$small-font-size;
-    color: rgba(0, 0, 0, 0.5);
+    color: globals.$text-muted;
   }
 
   &__actions {
@@ -121,7 +149,7 @@
 
     &:hover {
       opacity: 1;
-      background-color: rgba(0, 0, 0, 0.1);
+      background-color: globals.$overlay-active;
     }
   }
 }

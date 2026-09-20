@@ -149,12 +149,12 @@ export interface RealDebridTorrentInfo {
     | "uploading"
     | "dead";
   added: string;
-  files: {
+  files: Array<{
     id: number;
     path: string;
     bytes: number;
     selected: number;
-  }[];
+  }>;
   links: string[];
   ended: string;
   speed: number;

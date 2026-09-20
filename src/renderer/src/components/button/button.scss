@@ -1,31 +1,44 @@
 @use "../../scss/globals.scss";
 
 .button {
-  padding: globals.$spacing-unit globals.$spacing-unit * 2;
+  padding: 0 16px;
+  min-height: 36px;
   background-color: globals.$brand-teal;
-  color: #faf9f5;
-  border-radius: 8px;
+  color: globals.$brand-ink;
+  border-radius: globals.$radius-pill;
   border: solid 1px transparent;
-  transition: all ease 0.2s;
+  transition:
+    transform 0.12s globals.$ease,
+    background 0.15s,
+    box-shadow 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    opacity 0.15s;
   cursor: pointer;
-  min-height: 40px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: globals.$spacing-unit;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  box-shadow: 0 0 20px rgba(217, 119, 87, 0.14);
 
   &:active {
-    opacity: globals.$active-opacity;
+    transform: scale(0.97);
   }
 
   &:disabled {
     opacity: globals.$disabled-opacity;
     cursor: not-allowed;
+    box-shadow: none;
   }
 
   &--primary {
-    &:hover {
-      background-color: #d98a6f;
+    &:hover:not(:disabled) {
+      background-color: globals.$brand-hover;
     }
 
     &:disabled {
@@ -37,9 +50,11 @@
     background-color: transparent;
     border: solid 1px globals.$border-color;
     color: globals.$muted-color;
+    box-shadow: none;
 
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.06);
+    &:hover:not(:disabled) {
+      background-color: globals.$overlay-hover;
+      border-color: globals.$border-strong;
     }
 
     &:disabled {
@@ -48,17 +63,25 @@
   }
 
   &--dark {
-    background-color: globals.$dark-background-color;
+    background-color: globals.$surface-2;
+    border: solid 1px globals.$border-mid;
     color: globals.$muted-color;
+    box-shadow: none;
+
+    &:hover:not(:disabled) {
+      background-color: globals.$surface-3;
+      border-color: globals.$border-strong;
+    }
   }
 
   &--danger {
     border-color: transparent;
     background-color: globals.$danger-color;
-    color: #faf9f5;
+    color: #ffffff;
+    box-shadow: none;
 
-    &:hover {
-      background-color: #b3203f;
+    &:hover:not(:disabled) {
+      background-color: #a83a30;
     }
   }
 }

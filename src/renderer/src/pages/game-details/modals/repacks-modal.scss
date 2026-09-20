@@ -1,8 +1,11 @@
 @use "../../../scss/globals.scss";
 
 .repacks-modal {
+  color: globals.$muted-color;
+
   &__filter-container {
     transition: all 0.3s ease;
+    color: globals.$muted-color;
   }
 
   &__filter-top {
@@ -19,7 +22,7 @@
     gap: calc(globals.$spacing-unit * 1);
     font-size: globals.$small-font-size;
     font-weight: 600;
-    color: var(--color-text-secondary);
+    color: globals.$body-color;
     padding: calc(globals.$spacing-unit * 1) calc(globals.$spacing-unit * 1.5);
     border-radius: 6px;
     transition: background-color 0.2s ease;
@@ -76,10 +79,12 @@
     display: flex;
     align-items: center;
     gap: calc(globals.$spacing-unit * 1);
+    font-weight: 600;
   }
 
   &__repack-info {
     font-size: globals.$small-font-size;
+    color: globals.$body-color;
   }
 
   &__new-badge {
@@ -127,7 +132,7 @@
 
   &__download-sources {
     padding: 0;
-    background-color: var(--color-background-light);
+    background-color: globals.$surface-0;
     border-radius: 8px;
     margin-bottom: calc(globals.$spacing-unit * 2);
     margin-top: calc(globals.$spacing-unit * 1);
@@ -138,7 +143,11 @@
       padding 0.3s ease;
 
     &--open {
-      max-height: 280px;
+      max-height: min(320px, 45vh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: calc(globals.$spacing-unit * 1);
+      border: 1px solid globals.$border-color;
     }
   }
 
@@ -147,7 +156,7 @@
     font-size: globals.$small-font-size;
     font-weight: 600;
     margin-bottom: 0.75rem;
-    color: var(--color-text-secondary);
+    color: globals.$body-color;
     width: 100%;
   }
 
@@ -165,8 +174,8 @@
 
   &__source-item {
     padding: calc(globals.$spacing-unit * 0.75) calc(globals.$spacing-unit * 1);
-    background: var(--color-surface, rgba(0, 0, 0, 0.03));
-    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: var(--color-surface, #{globals.$surface-1});
+    border: 1px solid globals.$border-mid;
     border-radius: 6px;
     display: flex;
     align-items: center;
@@ -176,7 +185,7 @@
     transition: border-color 0.2s ease;
 
     &:hover {
-      border-color: rgba(0, 0, 0, 0.2);
+      border-color: globals.$border-strong;
     }
   }
 

@@ -2,32 +2,38 @@
 
 .settings {
   &__container {
-    padding: 24px;
+    padding: 20px 24px 32px;
     width: 100%;
+    height: 100%;
     display: flex;
+    box-sizing: border-box;
+    color: globals.$muted-color;
   }
 
   &__content {
-    background-color: globals.$background-color;
+    background-color: globals.$surface-0;
     width: 100%;
-    height: 100%;
+    min-height: 0;
+    flex: 1;
     border: solid 1px globals.$border-color;
-    box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.7);
-    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    border-radius: globals.$radius-md;
     display: flex;
     overflow: hidden;
+    color: globals.$muted-color;
   }
 
   &__sidebar {
     width: max-content;
-    min-width: 220px;
-    max-width: 320px;
+    min-width: 200px;
+    max-width: 280px;
     display: flex;
     flex-direction: column;
-    gap: globals.$spacing-unit;
-    padding: calc(globals.$spacing-unit * 2) calc(globals.$spacing-unit * 1.75);
+    gap: 2px;
+    padding: 14px;
     border-right: 1px solid globals.$border-color;
-    background: globals.$dark-background-color;
+    background: globals.$surface-1;
+    color: globals.$muted-color;
   }
 
   &__sidebar-button {
@@ -41,29 +47,40 @@
     text-align: left;
     padding: calc(globals.$spacing-unit * 1.25)
       calc(globals.$spacing-unit * 1.5);
-    border-radius: 4px;
+    border-radius: globals.$radius-sm;
     cursor: pointer;
     font-size: globals.$body-font-size;
+    font-weight: 600;
     line-height: 1.2;
     white-space: nowrap;
     transition:
       color 0.2s ease,
       background-color 0.1s ease;
 
+    span {
+      color: inherit;
+    }
+
     &:hover {
-      background: rgba(0, 0, 0, 0.15);
+      background: globals.$overlay-hover;
+      color: globals.$muted-color;
     }
 
     &--active {
-      background: rgba(0, 0, 0, 0.1);
-      color: globals.$muted-color;
+      background: globals.$brand-teal;
+      color: globals.$brand-ink;
     }
 
     &-icon {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      opacity: 0.9;
+      color: inherit;
+      opacity: 1;
+
+      svg {
+        fill: currentColor;
+      }
     }
   }
 
@@ -73,8 +90,66 @@
     flex-direction: column;
     gap: calc(globals.$spacing-unit * 2.5);
     min-width: 0;
+    min-height: 0;
     padding: calc(globals.$spacing-unit * 2.5);
     overflow: auto;
+    color: globals.$muted-color;
+    background: globals.$surface-0;
+
+    h2,
+    h3 {
+      color: globals.$muted-color;
+      font-family: globals.$font-display;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0;
+      color: globals.$body-color;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    p,
+    label,
+    small,
+    span {
+      color: inherit;
+    }
+
+    label {
+      color: globals.$body-color;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .checkbox-field {
+      color: globals.$muted-color;
+    }
+
+    .checkbox-field__label {
+      color: globals.$muted-color;
+      white-space: normal;
+      overflow: visible;
+    }
+
+    .select-field__label,
+    .text-field-container label {
+      color: globals.$body-color;
+    }
+
+    .select-field__option,
+    .text-field-container__text-field-input {
+      color: globals.$muted-color;
+    }
   }
 
   @media (max-width: 860px) {
@@ -103,11 +178,13 @@
   display: flex;
   flex-direction: column;
   gap: calc(globals.$spacing-unit * 2);
+  color: globals.$muted-color;
 
   &__group {
     display: flex;
     flex-direction: column;
     gap: calc(globals.$spacing-unit * 1.5);
     padding-top: calc(globals.$spacing-unit * 1.5);
+    color: globals.$muted-color;
   }
 }

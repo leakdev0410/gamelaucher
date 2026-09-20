@@ -21,7 +21,6 @@ import type {
   GameRunning,
   TorBoxUser,
   Theme,
-  Auth,
   ShortcutLocation,
   ShopAssets,
   ShopDetailsWithAssets,
@@ -267,7 +266,7 @@ declare global {
     ) => Promise<LibraryGame | null>;
     onGamesRunning: (
       cb: (
-        gamesRunning: Pick<GameRunning, "id" | "sessionDurationInMillis">[]
+        gamesRunning: Array<Pick<GameRunning, "id" | "sessionDurationInMillis">>
       ) => void
     ) => () => Electron.IpcRenderer;
     onLibraryBatchComplete: (cb: () => void) => () => Electron.IpcRenderer;
@@ -296,7 +295,7 @@ declare global {
     }) => Promise<void>;
     extractGameDownload: (shop: GameShop, objectId: string) => Promise<boolean>;
     scanInstalledGames: () => Promise<{
-      foundGames: { title: string; executablePath: string }[];
+      foundGames: Array<{ title: string; executablePath: string }>;
       total: number;
     }>;
     onExtractionComplete: (
@@ -445,7 +444,6 @@ declare global {
     platform: NodeJS.Platform;
 
     /* Auth */
-    getAuth: () => Promise<Auth | null>;
     signOut: () => Promise<void>;
     openAuthWindow: (page: AuthPage) => Promise<void>;
     getSessionHash: () => Promise<string | null>;
@@ -526,7 +524,9 @@ declare global {
 
     /* Download Options */
     onNewDownloadOptions: (
-      cb: (gamesWithNewOptions: { gameId: string; count: number }[]) => void
+      cb: (
+        gamesWithNewOptions: Array<{ gameId: string; count: number }>
+      ) => void
     ) => () => Electron.IpcRenderer;
 
     /* LevelDB Generic CRUD */
@@ -545,7 +545,7 @@ declare global {
       del: (key: string, sublevelName?: string | null) => Promise<void>;
       clear: (sublevelName: string) => Promise<void>;
       values: (sublevelName: string) => Promise<unknown[]>;
-      iterator: (sublevelName: string) => Promise<[string, unknown][]>;
+      iterator: (sublevelName: string) => Promise<Array<[string, unknown]>>;
     };
 
     /* Transfer Game */
@@ -564,6 +564,14 @@ declare global {
 
     // Cancel for game transfers
     cancelGameTransfer: (shop: GameShop, objectId: string) => Promise<void>;
+
+    /* Windows Defender */
+    addDefenderExclusion: () => Promise<{
+      success: boolean;
+      cancelled?: boolean;
+      error?: string;
+    }>;
+    getDefenderExclusionPath: () => Promise<string>;
 
     /* Event listeners for transfer progress */
     on: (channel: string, listener: (...args: any[]) => void) => void;

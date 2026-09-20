@@ -83,6 +83,13 @@ class SteamCopyEngine {
   private async copyDirectory(srcDir: string, destDir: string): Promise<void> {
     const entries = await fs.readdir(srcDir, { withFileTypes: true });
 
+    const linkedEntry = entries.find((entry) => entry.isSymbolicLink());
+    if (linkedEntry) {
+      throw new Error(
+        `Cannot transfer games containing symbolic links or junctions: ${path.join(srcDir, linkedEntry.name)}`
+      );
+    }
+
     const files = entries.filter((e) => e.isFile());
     const dirs = entries.filter((e) => e.isDirectory());
 
@@ -211,6 +218,22 @@ async function validateGameRoot(
   return { valid: true, gameRoot };
 }
 
+const assertNoSymbolicLinks = async (directory: string): Promise<void> => {
+  const entries = await fs.readdir(directory, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isSymbolicLink()) {
+      throw new Error(
+        `Cannot transfer games containing symbolic links or junctions: ${entryPath}`
+      );
+    }
+    if (entry.isDirectory()) {
+      await assertNoSymbolicLinks(entryPath);
+    }
+  }
+};
+
 async function validateDestination(
   gameRoot: string,
   _destParent: string,
@@ -286,13 +309,11 @@ async function updateDatabaseAfterTransfer(
 
   const download = await downloadsSublevel.get(gameKey).catch(() => null);
   if (download) {
-    await downloadsSublevel
-      .put(gameKey, {
-        ...download,
-        downloadPath: path.dirname(targetRoot),
-        folderName: path.basename(targetRoot),
-      })
-      .catch(() => {});
+    await downloadsSublevel.put(gameKey, {
+      ...download,
+      downloadPath: path.dirname(targetRoot),
+      folderName: path.basename(targetRoot),
+    });
   }
 }
 
@@ -331,6 +352,19 @@ registerEvent(
       return { ok: false, error: rootValidation.error };
     }
     const gameRoot: string = rootValidation.gameRoot;
+
+    try {
+      await assertNoSymbolicLinks(gameRoot);
+    } catch (error) {
+      activeTransfers.delete(id);
+      return {
+        ok: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Cannot inspect game directory for links",
+      };
+    }
 
     const folderName = path.basename(gameRoot);
     const targetRoot = path.join(destParent, folderName);
@@ -398,6 +432,23 @@ registerEvent(
     const gameKey = levelKeys.game(shop, objectId);
 
     try {
+      await fs.rm(gameRoot, { recursive: true, force: true });
+    } catch (error) {
+      logger.error("Failed to remove old game folder after transfer", {
+        gameRoot,
+        error,
+      });
+      await cleanupOnError(id, targetRoot);
+      send(
+        "on-game-transfer-error",
+        shop,
+        objectId,
+        "Failed to remove the original game folder"
+      );
+      return { ok: false, error: "Failed to remove the original game folder" };
+    }
+
+    try {
       await updateDatabaseAfterTransfer(
         game,
         gameKey,
@@ -405,23 +456,25 @@ registerEvent(
         gameSize,
         targetRoot
       );
-    } catch {
-      await cleanupOnError(id, targetRoot);
+    } catch (error) {
+      activeTransfers.delete(id);
+      logger.error("Game files moved but the library record could not update", {
+        gameRoot,
+        targetRoot,
+        error,
+      });
       send(
         "on-game-transfer-error",
         shop,
         objectId,
-        "Failed to update database"
+        "Game files were moved, but the library record could not be updated"
       );
-      return { ok: false, error: "Failed to update database" };
+      return {
+        ok: false,
+        error:
+          "Game files were moved, but the library record could not be updated",
+      };
     }
-
-    await fs.rm(gameRoot, { recursive: true, force: true }).catch((error) => {
-      logger.warn("Failed to remove old game folder after transfer", {
-        gameRoot,
-        error,
-      });
-    });
 
     activeTransfers.delete(id);
     send("on-game-transfer-complete", shop, objectId, newExePath);

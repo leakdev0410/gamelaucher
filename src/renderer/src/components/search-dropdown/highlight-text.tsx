@@ -19,7 +19,7 @@ export function HighlightText({ text, query }: Readonly<HighlightTextProps>) {
     return <>{text}</>;
   }
 
-  const matches: { start: number; end: number }[] = [];
+  const matches: Array<{ start: number; end: number }> = [];
   const textLower = text.toLowerCase();
 
   queryWords.forEach((queryWord) => {
@@ -46,7 +46,7 @@ export function HighlightText({ text, query }: Readonly<HighlightTextProps>) {
 
   matches.sort((a, b) => a.start - b.start);
 
-  const mergedMatches: { start: number; end: number }[] = [];
+  const mergedMatches: Array<{ start: number; end: number }> = [];
   let current = matches[0];
 
   for (let i = 1; i < matches.length; i++) {
@@ -62,7 +62,7 @@ export function HighlightText({ text, query }: Readonly<HighlightTextProps>) {
   }
   mergedMatches.push(current);
 
-  const parts: { text: string; highlight: boolean; key: string }[] = [];
+  const parts: Array<{ text: string; highlight: boolean; key: string }> = [];
   let lastIndex = 0;
 
   mergedMatches.forEach((match) => {

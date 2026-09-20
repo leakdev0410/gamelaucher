@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: globals.$body-color;
+  color: globals.$muted-color;
   background-color: color-mix(
     in srgb,
     globals.$dark-background-color 84%,
@@ -75,17 +75,17 @@
 }
 
 .filter-section {
-  background-color: globals.$background-color;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: globals.$surface-0;
+  border-radius: globals.$radius-md;
+  border: 1px solid globals.$border-color;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   overflow: hidden;
 
   &__button {
     padding: calc(globals.$spacing-unit * 2.5) calc(globals.$spacing-unit * 2);
     display: flex;
     align-items: center;
-    background-color: globals.$background-color;
+    background-color: globals.$surface-0;
     color: globals.$muted-color;
     width: 100%;
     cursor: pointer;
@@ -98,7 +98,7 @@
     border: none;
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.1);
+      background-color: globals.$overlay-active;
     }
 
     &:active {
@@ -124,8 +124,8 @@
   }
 
   &__header-count {
-    background-color: rgba(0, 0, 0, 0.1);
-    color: rgba(0, 0, 0, 0.7);
+    background-color: globals.$surface-2;
+    color: globals.$body-color;
     padding: 4px 8px;
     border-radius: 6px;
     font-size: 12px;
@@ -154,16 +154,19 @@
     transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
     background-color: globals.$dark-background-color;
     position: relative;
+    color: globals.$muted-color;
   }
 
   &__content-inner {
     padding: calc(globals.$spacing-unit * 2);
+    color: globals.$muted-color;
   }
 
   &__count {
     font-size: 12px;
     margin-bottom: 12px;
     display: block;
+    color: globals.$body-color;
   }
 
   &__clear-button {

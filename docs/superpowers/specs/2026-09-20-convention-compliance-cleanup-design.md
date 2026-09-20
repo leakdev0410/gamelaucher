@@ -38,12 +38,13 @@ End state: ESLint auto-enforces conventions for future code; full `yarn typechec
 
 ### 3.1 Logger (`console.*` → `logger.*`)
 
-| Where | Import | Replace |
-|---|---|---|
-| `src/main/**/*.ts` | `import { logger } from "@main/services"` | `console.log/info/debug` → `logger.log/info/debug` |
-| `src/renderer/src/**/*.{ts,tsx}` | `import { logger } from "@renderer/logger"` | same |
+| Where                            | Import                                      | Replace                                            |
+| -------------------------------- | ------------------------------------------- | -------------------------------------------------- |
+| `src/main/**/*.ts`               | `import { logger } from "@main/services"`   | `console.log/info/debug` → `logger.log/info/debug` |
+| `src/renderer/src/**/*.{ts,tsx}` | `import { logger } from "@renderer/logger"` | same                                               |
 
 **Exceptions:**
+
 - `src/renderer/src/main.tsx:39` — `console.log = logger.log` (intentional override). ESLint `no-console: off` for this file.
 - `console.warn` / `console.error` — permitted globally as fallback when logger not initialized.
 
@@ -53,10 +54,10 @@ Replace all `Array<T>` with `T[]`. Auto-fixed by ESLint rule `@typescript-eslint
 
 ### 3.3 Named exports (no defaults for utils/services)
 
-| Keep default | Convert to named |
-|---|---|
-| React components (`*.tsx` in `pages/`, `components/`) | `src/main/services/**`, `src/main/helpers/**`, `src/main/events/**` |
-| | `src/renderer/src/helpers.ts`, `src/renderer/src/hooks/**`, `src/renderer/src/features/**` |
+| Keep default                                          | Convert to named                                                                           |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| React components (`*.tsx` in `pages/`, `components/`) | `src/main/services/**`, `src/main/helpers/**`, `src/main/events/**`                        |
+|                                                       | `src/renderer/src/helpers.ts`, `src/renderer/src/hooks/**`, `src/renderer/src/features/**` |
 
 Convert `export default foo` → `export { foo }` (or `export const foo`). Update all import sites.
 
@@ -91,15 +92,15 @@ Resolve or remove all bare `// TODO` / `// FIXME` markers. Permitted: `// TODO(2
 
 ## 4. Dead code + leftover cleanup
 
-| Item | Action |
-|---|---|
-| `src/main/events/library/transfer-game-files.ts:320-332` `restoreDatabaseAfterFailedTransfer` | Delete entire function (unused; also has type error `{}` not assignable to `Download`) |
-| `src/renderer/src/declaration.d.ts:24` `Auth` import | Delete (unused after `getAuth` IPC removal) |
-| `AGENTS.md` (root) | Delete (297 lines, identical to `CLAUDE.md` except H1) |
-| `scripts/fix-light-theme-leftovers.cjs` | Delete (one-shot, not wired into any yarn script) |
-| `save/`, `img/`, `designs/` | Add to `.gitignore` (runtime + design exploration artifacts) |
-| `console.log` x4 in `src/main/events/library/get-available-drives.ts` | Delete (debug prints) |
-| `console.log` x1 in `src/renderer/src/pages/game-details/modals/game-options-modal/general-section.tsx:132` | Delete |
+| Item                                                                                                        | Action                                                                                 |
+| ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `src/main/events/library/transfer-game-files.ts:320-332` `restoreDatabaseAfterFailedTransfer`               | Delete entire function (unused; also has type error `{}` not assignable to `Download`) |
+| `src/renderer/src/declaration.d.ts:24` `Auth` import                                                        | Delete (unused after `getAuth` IPC removal)                                            |
+| `AGENTS.md` (root)                                                                                          | Delete (297 lines, identical to `CLAUDE.md` except H1)                                 |
+| `scripts/fix-light-theme-leftovers.cjs`                                                                     | Delete (one-shot, not wired into any yarn script)                                      |
+| `save/`, `img/`, `designs/`                                                                                 | Add to `.gitignore` (runtime + design exploration artifacts)                           |
+| `console.log` x4 in `src/main/events/library/get-available-drives.ts`                                       | Delete (debug prints)                                                                  |
+| `console.log` x1 in `src/renderer/src/pages/game-details/modals/game-options-modal/general-section.tsx:132` | Delete                                                                                 |
 
 ## 5. ESLint config additions
 
@@ -167,37 +168,37 @@ If 2 consecutive failures on same gate: STOP, surface to user.
 
 ## 8. Checkpoints
 
-| Checkpoint | After | User asked |
-|---|---|---|
-| **CP1** | Phase 4 (manual fixes) | "Diff đến giờ OK không? Tiếp tục Phase 5–8?" |
-| **CP2** | Phase 7 (verify pass) | "yarn build pass. Diff cuối như dưới. Commit?" |
+| Checkpoint | After                  | User asked                                     |
+| ---------- | ---------------------- | ---------------------------------------------- |
+| **CP1**    | Phase 4 (manual fixes) | "Diff đến giờ OK không? Tiếp tục Phase 5–8?"   |
+| **CP2**    | Phase 7 (verify pass)  | "yarn build pass. Diff cuối như dưới. Commit?" |
 
 If user aborts at CP1 or CP2: `git checkout .` to restore working tree.
 
 ## 9. Risk + mitigation
 
-| Risk | Mitigation |
-|---|---|
-| i18n scan misses hardcoded strings | Manual scan of large pages (game-details, library, settings) |
-| Default export conversion breaks consumer | Grep all consumers before convert; update import sites atomically |
-| Logger replacement breaks in files using different import paths | Verify `@main/services` vs `@main/utils/logger` paths first |
-| ESLint rule too strict, blocks future PRs | Per-file overrides where justified; rule config documented |
-| `vi` locale falls behind on new keys | Acceptable; i18next fallback to `en` configured |
-| Single-commit rollback impossible if mid-flight failure | Suggest `git checkout -b backup-pre-convention-cleanup` before starting |
+| Risk                                                            | Mitigation                                                              |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| i18n scan misses hardcoded strings                              | Manual scan of large pages (game-details, library, settings)            |
+| Default export conversion breaks consumer                       | Grep all consumers before convert; update import sites atomically       |
+| Logger replacement breaks in files using different import paths | Verify `@main/services` vs `@main/utils/logger` paths first             |
+| ESLint rule too strict, blocks future PRs                       | Per-file overrides where justified; rule config documented              |
+| `vi` locale falls behind on new keys                            | Acceptable; i18next fallback to `en` configured                         |
+| Single-commit rollback impossible if mid-flight failure         | Suggest `git checkout -b backup-pre-convention-cleanup` before starting |
 
 ## 10. Effort estimate
 
-| Phase | Time |
-|---|---|
-| 1. Audit | 15–30 min |
-| 2. Install dep | 1 min |
-| 3. ESLint --fix | 1–2 min |
-| 4. Manual fixes | 6–9 hours |
-| 5. Dead code | 15–30 min |
-| 6. ESLint rules | 30 min |
-| 7. Verify + fix | 30–60 min |
-| 8. Commit | 1 min |
-| **Total** | **~8 hours focused work** |
+| Phase           | Time                      |
+| --------------- | ------------------------- |
+| 1. Audit        | 15–30 min                 |
+| 2. Install dep  | 1 min                     |
+| 3. ESLint --fix | 1–2 min                   |
+| 4. Manual fixes | 6–9 hours                 |
+| 5. Dead code    | 15–30 min                 |
+| 6. ESLint rules | 30 min                    |
+| 7. Verify + fix | 30–60 min                 |
+| 8. Commit       | 1 min                     |
+| **Total**       | **~8 hours focused work** |
 
 ## 11. Final deliverable
 

@@ -1,9 +1,16 @@
 import { LibraryGame } from "@types";
 import { useGameCard } from "@renderer/hooks";
 import { formatBytes } from "@shared";
-import { TrophyIcon, DatabaseIcon, FileZipIcon } from "@primer/octicons-react";
-import { memo, useEffect, useMemo, useState } from "react";
+import {
+  TrophyIcon,
+  DatabaseIcon,
+  FileZipIcon,
+  PlayIcon,
+} from "@primer/octicons-react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import cn from "classnames";
+import { logger } from "@renderer/logger";
 import "./library-game-card-large.scss";
 
 interface LibraryGameCardLargeProps {
@@ -30,13 +37,13 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
   );
 
   const sizeBars = useMemo(() => {
-    const items: {
+    const items: Array<{
       type: "installer" | "installed";
       bytes: number;
       formatted: string;
       icon: typeof FileZipIcon;
       tooltipKey: string;
-    }[] = [];
+    }> = [];
 
     if (game.installerSizeInBytes) {
       items.push({
@@ -130,12 +137,49 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
   );
 
   const logoImage = game.customLogoImageUrl ?? game.logoImageUrl;
+  const isInstalled = Boolean(game.executablePath);
+
+  const handlePlayClick = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!game.executablePath) return;
+
+      void window.electron
+        .openGame(
+          game.shop,
+          game.objectId,
+          game.executablePath,
+          game.launchOptions
+        )
+        .catch((error) => {
+          logger.error("Failed to start game from library large card", error);
+        });
+    },
+    [game.executablePath, game.launchOptions, game.objectId, game.shop]
+  );
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleCardClick();
+      }
+    },
+    [handleCardClick]
+  );
 
   return (
-    <button
-      type="button"
-      className="library-game-card-large"
+    <div
+      role="button"
+      tabIndex={0}
+      className={cn("library-game-card-large", {
+        "library-game-card-large--installed": isInstalled,
+        "library-game-card-large--not-installed": !isInstalled,
+      })}
       onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
       onContextMenu={handleContextMenuClick}
     >
       <div
@@ -165,6 +209,19 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
                 </div>
               ))}
             </div>
+          )}
+
+          {isInstalled && (
+            <button
+              type="button"
+              className="library-game-card-large__play-button"
+              onClick={handlePlayClick}
+              title={t("play")}
+              aria-label={t("play")}
+            >
+              <PlayIcon size={16} />
+              <span>{t("play")}</span>
+            </button>
           )}
         </div>
 
@@ -212,6 +269,6 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
           )}
         </div>
       </div>
-    </button>
+    </div>
   );
 });

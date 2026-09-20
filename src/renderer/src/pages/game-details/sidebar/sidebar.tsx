@@ -15,6 +15,7 @@ import { DownloadIcon, PeopleIcon, StarIcon } from "@primer/octicons-react";
 import { HowLongToBeatSection } from "./how-long-to-beat-section";
 import { SidebarSection } from "../sidebar-section/sidebar-section";
 import { buildGameAchievementPath } from "@renderer/helpers";
+import { sanitizeHtml } from "@shared";
 import "./sidebar.scss";
 import { GameLanguageSection } from "./game-language-section";
 
@@ -243,11 +244,12 @@ export function Sidebar() {
         <div
           className="requirement__details"
           dangerouslySetInnerHTML={{
-            __html:
+            __html: sanitizeHtml(
               shopDetails?.pc_requirements?.[activeRequirement] ??
-              t(`no_${activeRequirement}_requirements`, {
-                gameTitle,
-              }),
+                t(`no_${activeRequirement}_requirements`, {
+                  gameTitle,
+                })
+            ),
           }}
         />
       </SidebarSection>

@@ -84,9 +84,11 @@ const sortValues = [
 
 type CatalogueSortValue = (typeof sortValues)[number];
 
-const protonCompatibilityThresholds: CompatibilityThreshold<
-  CatalogueSearchPayload["protondbSupportBadges"][number]
->[] = [
+const protonCompatibilityThresholds: Array<
+  CompatibilityThreshold<
+    CatalogueSearchPayload["protondbSupportBadges"][number]
+  >
+> = [
   {
     value: "silver_plus",
     labelKey: "protondb_silver_plus",
@@ -557,7 +559,7 @@ export default function Catalogue() {
       <div className="catalogue__content">
         <div className="catalogue__games-container">
           {isLoading ? (
-            <SkeletonTheme baseColor="#e6e3da" highlightColor="#f3f1ea">
+            <SkeletonTheme baseColor="#f0ede1" highlightColor="#e4dfd0">
               {Array.from({ length: PAGE_SIZE }).map((_, i) => (
                 <Skeleton key={i} className="catalogue__skeleton" />
               ))}

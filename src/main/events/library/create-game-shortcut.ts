@@ -30,7 +30,7 @@ const isIcoUrl = (url: string): boolean => {
 const downloadIcon = async (
   shop: GameShop,
   objectId: string,
-  iconUrls: (string | null | undefined)[]
+  iconUrls: Array<string | null | undefined>
 ): Promise<string | null> => {
   const validUrls = iconUrls.filter(isValidUrl);
 

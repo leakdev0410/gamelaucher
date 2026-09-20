@@ -61,8 +61,8 @@
   &__backups-count {
     font-size: globals.$small-font-size;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.7);
-    background-color: rgba(0, 0, 0, 0.1);
+    color: globals.$body-color;
+    background-color: globals.$overlay-hover;
     padding: 4px 8px;
     border-radius: 6px;
     min-width: 24px;

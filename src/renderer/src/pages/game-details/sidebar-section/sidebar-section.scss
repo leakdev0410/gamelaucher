@@ -1,22 +1,24 @@
 @use "../../../scss/globals.scss";
 
 .sidebar-section {
-  background-color: globals.$background-color;
+  background-color: globals.$surface-0;
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid globals.$border-color;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  color: globals.$muted-color;
 
   &__header {
     display: flex;
     flex-direction: column;
     padding: calc(globals.$spacing-unit * 2.5) calc(globals.$spacing-unit * 2);
     gap: calc(globals.$spacing-unit / 2);
-    background-color: globals.$background-color;
+    background-color: globals.$surface-0;
     transition: background-color 0.2s ease;
+    color: globals.$muted-color;
 
     &:has(.sidebar-section__button:hover) {
-      background-color: rgba(0, 0, 0, 0.1);
+      background-color: globals.$overlay-hover;
     }
   }
 
@@ -39,7 +41,7 @@
   }
 
   &__subtitle {
-    color: globals.$muted-color;
+    color: globals.$body-color;
     font-size: globals.$small-font-size;
     display: inline-flex;
     align-items: center;
@@ -64,7 +66,8 @@
   &__content {
     overflow: hidden;
     transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
-    background-color: globals.$dark-background-color;
+    background-color: globals.$surface-1;
     position: relative;
+    color: globals.$muted-color;
   }
 }

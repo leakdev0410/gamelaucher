@@ -29,10 +29,10 @@ export const ThemeCard = ({ theme, onListUpdated }: ThemeCardProps) => {
 
       if (!currentTheme) return;
 
-      const allThemes = (await levelDBService.values("themes")) as {
+      const allThemes = (await levelDBService.values("themes")) as Array<{
         id: string;
         isActive?: boolean;
-      }[];
+      }>;
       const activeTheme = allThemes.find((t) => t.isActive);
 
       if (activeTheme) {

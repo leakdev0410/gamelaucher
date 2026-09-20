@@ -16,6 +16,7 @@
     "library": "Library",
     "downloads": "Downloads",
     "settings": "Settings",
+    "achievements": "Achievements",
     "my_library": "My library",
     "collections": "Collections",
     "games": "Games",
@@ -112,6 +113,7 @@
     "cancel": "Cancel"
   },
   "header": {
+    "back": "Back",
     "search": "Search games",
     "search_library": "Search library",
     "recent_searches": "Recent Searches",
@@ -852,7 +854,23 @@
     "downloads": "Downloads",
     "create_shortcuts_on_download": "Create desktop and Start Menu shortcuts when a game finishes downloading",
     "default_proton_version": "Default Proton version",
-    "default_proton_version_description": "Select the Proton version used by Auto mode when a game has no custom override"
+    "default_proton_version_description": "Select the Proton version used by Auto mode when a game has no custom override",
+    "windows_defender_exclusion": "Windows Defender exclusion",
+    "windows_defender_exclusion_description": "Windows Defender sometimes flags or deletes downloaded game files (common with repacks) because it doesn't recognize them. Adding the Game Launcher folder to the exclusion list stops this from happening.",
+    "windows_defender_exclusion_warning": "Files placed in an excluded folder are no longer scanned for threats. Only do this if you trust the sources you download from.",
+    "add_windows_defender_exclusion": "Add exclusion",
+    "windows_defender_exclusion_confirm_title": "Add folder to Windows Defender exclusions?",
+    "windows_defender_exclusion_confirm_description": "This excludes \"{{path}}\" from Windows Defender scanning. You'll be asked for administrator permission (UAC). Files in this folder will no longer be scanned for threats.",
+    "windows_defender_exclusion_added": "Exclusion added",
+    "windows_defender_exclusion_added_description": "The Game Launcher folder was added to the Windows Defender exclusion list.",
+    "windows_defender_exclusion_cancelled": "Cancelled",
+    "windows_defender_exclusion_cancelled_description": "The administrator prompt was cancelled. No changes were made.",
+    "windows_defender_exclusion_failed": "Failed to add exclusion",
+    "replace_download_directory_title": "Replace Download Directory",
+    "replace_download_directory_description": "Your Big Picture download directory list is full. Choose which saved directory to replace with the new default path.",
+    "new_default_path_label": "New default path",
+    "replace_this_saved_directory_label": "Replace this saved Big Picture directory",
+    "replace_and_use_new_path": "Replace and Use New Path"
   },
   "notifications": {
     "download_complete": "Download complete",

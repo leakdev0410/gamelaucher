@@ -5,7 +5,12 @@
   flex-direction: column;
   height: 100vh;
   width: 100vw;
-  background: linear-gradient(135deg, #faf9f5 0%, #f0eee6 50%, #ece9e0 100%);
+  background: linear-gradient(
+    135deg,
+    globals.$surface-1 0%,
+    globals.$background-color 50%,
+    globals.$surface-3 100%
+  );
   -webkit-app-region: drag;
   padding: calc(globals.$spacing-unit * 3);
   box-sizing: border-box;
@@ -34,9 +39,9 @@
     bottom: 0;
     background: linear-gradient(
       135deg,
-      rgba(250, 249, 245, 0.82) 0%,
-      rgba(250, 249, 245, 0.88) 50%,
-      rgba(250, 249, 245, 0.92) 100%
+      rgba(250, 249, 245, 0.86) 0%,
+      rgba(250, 249, 245, 0.9) 50%,
+      rgba(250, 249, 245, 0.94) 100%
     );
     pointer-events: none;
     z-index: 1;
@@ -50,7 +55,7 @@
     bottom: 0;
     background: radial-gradient(
       ellipse at top right,
-      rgba(204, 120, 92, 0.15) 0%,
+      rgba(217, 119, 87, 0.14) 0%,
       transparent 50%
     );
     pointer-events: none;
@@ -66,8 +71,8 @@
     svg {
       width: 28px;
       height: 28px;
-      fill: globals.$body-color;
-      opacity: 0.6;
+      fill: globals.$muted-color;
+      opacity: 0.45;
     }
   }
 
@@ -88,19 +93,19 @@
     border-radius: 8px;
     object-fit: contain;
     flex-shrink: 0;
-    background-color: globals.$dark-background-color;
+    background-color: globals.$surface-2;
   }
 
   &__cover-placeholder {
     height: 100%;
     width: 180px;
     border-radius: 8px;
-    background-color: globals.$dark-background-color;
+    background-color: globals.$surface-2;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: globals.$muted-color;
+    color: globals.$text-muted;
   }
 
   &__info {
@@ -121,7 +126,7 @@
   &__title {
     font-size: 22px;
     font-weight: 700;
-    color: globals.$body-color;
+    color: globals.$muted-color;
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -132,7 +137,7 @@
 
   &__status {
     font-size: 14px;
-    color: globals.$muted-color;
+    color: globals.$body-color;
     margin: 0;
     display: flex;
     align-items: center;
@@ -143,8 +148,8 @@
     width: 14px;
     height: 14px;
     border: 2px solid transparent;
-    border-top-color: globals.$muted-color;
-    border-right-color: globals.$muted-color;
+    border-top-color: globals.$brand-teal;
+    border-right-color: globals.$brand-teal;
     border-radius: 50%;
     animation: spinner-rotate 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     flex-shrink: 0;
@@ -199,14 +204,14 @@
     align-items: center;
     gap: calc(globals.$spacing-unit / 2);
     font-size: 13px;
-    color: rgba(0, 0, 0, 0.5);
+    color: globals.$text-muted;
   }
 
   &__button {
     width: 100%;
     background-color: globals.$brand-teal;
     border: solid 1px transparent;
-    color: #faf9f5;
+    color: globals.$brand-ink;
     border-radius: 8px;
     padding: globals.$spacing-unit calc(globals.$spacing-unit * 2);
     min-height: 40px;
@@ -221,7 +226,7 @@
     margin-top: calc(globals.$spacing-unit * 2);
 
     &:hover {
-      background-color: #d98a6f;
+      background-color: globals.$brand-hover;
     }
 
     &:active {

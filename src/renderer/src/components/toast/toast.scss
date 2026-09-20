@@ -36,10 +36,16 @@
     display: flex;
     gap: globals.$spacing-unit;
     flex-direction: column;
+    color: globals.$muted-color;
   }
 
   &__message {
     font-weight: bold;
+    color: globals.$muted-color;
+  }
+
+  &__description {
+    color: globals.$body-color;
   }
 
   &__progress {

@@ -1,10 +1,11 @@
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { CheckboxField, TextField } from "@renderer/components";
+import { Button, CheckboxField, TextField } from "@renderer/components";
 import { settingsContext } from "@renderer/context";
 import { useAppSelector } from "@renderer/hooks";
 import { SettingsDownloadSources } from "./settings-download-sources";
+import { DefenderExclusionModal } from "./defender-exclusion-modal";
 
 import "./settings-general.scss";
 
@@ -108,6 +109,8 @@ export function SettingsContextDownloads() {
     });
   };
 
+  const [defenderModalVisible, setDefenderModalVisible] = useState(false);
+
   const handleSpeedUnitChange = () => {
     const nextUseMegabytes = !form.showDownloadSpeedInMegabytes;
     const parsedBytesPerSecond = parseLimitInputToBytesPerSecond(
@@ -208,6 +211,25 @@ export function SettingsContextDownloads() {
           />
         )}
       </div>
+
+      {window.electron.platform === "win32" && (
+        <div className="settings-context-panel__group">
+          <h3>{t("windows_defender_exclusion")}</h3>
+          <p>{t("windows_defender_exclusion_description")}</p>
+          <p>
+            <strong>{t("windows_defender_exclusion_warning")}</strong>
+          </p>
+
+          <Button theme="outline" onClick={() => setDefenderModalVisible(true)}>
+            {t("add_windows_defender_exclusion")}
+          </Button>
+
+          <DefenderExclusionModal
+            visible={defenderModalVisible}
+            onClose={() => setDefenderModalVisible(false)}
+          />
+        </div>
+      )}
 
       <div className="settings-context-panel__group">
         <h3>{t("download_sources")}</h3>

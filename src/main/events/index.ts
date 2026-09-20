@@ -1,5 +1,5 @@
 import { appVersion, defaultDownloadsPath, isStaging } from "@main/constants";
-import { ipcMain } from "electron";
+import { registerEvent } from "./register-event";
 
 import "./auth";
 import "./catalogue";
@@ -20,11 +20,11 @@ import "./library/transfer-game-files";
 import { isPortableVersion } from "@main/helpers";
 import { ensureDefaultGameFolder } from "@main/helpers/ensure-downloads-path";
 
-ipcMain.handle("ping", () => "pong");
-ipcMain.handle("getVersion", () => appVersion);
-ipcMain.handle("isStaging", () => isStaging);
-ipcMain.handle("isPortableVersion", () => isPortableVersion());
-ipcMain.handle("getDefaultDownloadsPath", () => {
+registerEvent("ping", () => "pong");
+registerEvent("getVersion", () => appVersion);
+registerEvent("isStaging", () => isStaging);
+registerEvent("isPortableVersion", () => isPortableVersion());
+registerEvent("getDefaultDownloadsPath", () => {
   // Ensure portable `<exe>/game` exists before the UI reads the path.
   return ensureDefaultGameFolder() || defaultDownloadsPath;
 });

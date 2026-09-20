@@ -178,7 +178,7 @@ index.ts
 | Cloud save       | `getGameArtifacts`, `getGameBackupPreview`, `downloadGameArtifact`, `deleteGameArtifact`, `uploadSaveGame`, `selectGameBackupPath`                                                                                                                                                                      |
 | Misc             | `apiCall`, `openExternal`, `showOpenDialog`, `showItemInFolder`, `installCommonRedist`, `getDefaultDownloadsPath`, `ping`, `getVersion`, …                                                                                                                                                              |
 | Profile          | `getMe`, `updateProfile`, `processProfileImage`                                                                                                                                                                                                                                                         |
-| User             | `getAuth`, `getUnlockedAchievements`, `getComparedUnlockedAchievements`                                                                                                                                                                                                                                 |
+| User             | `getUnlockedAchievements`, `getComparedUnlockedAchievements`                                                                                                                                                                                                                                            |
 | Auth             | `openAuthWindow`, `signOut`, `getSessionHash`                                                                                                                                                                                                                                                           |
 | Notifications    | `getLocalNotifications`, `markLocalNotificationRead`, `publishNewRepacksNotification`, …                                                                                                                                                                                                                |
 | Themes           | `getAllCustomThemes`, `addCustomTheme`, `toggleCustomTheme`, `openEditorWindow`, …                                                                                                                                                                                                                      |
@@ -374,7 +374,7 @@ Shell: `App` = Sidebar + Header + `<Outlet>` + BottomPanel.
 | `useDownloadLayout`          | `getDownloadLayoutState`, queue move |
 | `useLibrary`                 | `getLibrary`, library mutations      |
 | `useCatalogue`               | `api` + catalogue IPC                |
-| `useUserDetails`             | `getMe`, `getAuth`                   |
+| `useUserDetails`             | `getMe`                              |
 | `useGameCollections`         | leveldb collections                  |
 | `useFeature`                 | subscription gates                   |
 | `useDownloadOptionsListener` | repack notifications                 |

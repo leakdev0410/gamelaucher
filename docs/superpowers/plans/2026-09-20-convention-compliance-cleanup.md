@@ -44,6 +44,7 @@ Failure modes the spec implies but no task explicitly tests:
 ### Task 0.1: Create backup branch
 
 **Files:**
+
 - Create: branch `backup-pre-convention-cleanup` (no file changes)
 
 - [ ] **Step 1:** Verify working tree status
@@ -54,6 +55,7 @@ Expected: list of modified/untracked files matching the snapshot before plan exe
 - [ ] **Step 2:** Create backup branch from current HEAD
 
 Run:
+
 ```bash
 git checkout -b backup-pre-convention-cleanup
 git checkout main  # or the branch you'll commit to
@@ -67,6 +69,7 @@ Expected: one line matching `backup-pre-convention-cleanup`
 ### Task 0.2: Read spec + conventions
 
 **Files:**
+
 - Read: `.cursorrules`, `docs/superpowers/specs/2026-09-20-convention-compliance-cleanup-design.md`
 
 - [ ] **Step 1:** Read `.cursorrules` fully
@@ -96,7 +99,7 @@ This phase produces a written checklist used by Phases 4–5. No code changes.
 Run: `grep -rnE "console\.(log|info|debug)" src/main/ --include="*.ts" | wc -l`
 Expected: a number N1. Record in checklist: `console.main: N1 files`.
 
-- [ ] **Step 2:** List files with console.* in main
+- [ ] **Step 2:** List files with console.\* in main
 
 Run: `grep -rlE "console\.(log|info|debug)" src/main/ --include="*.ts" | sort -u`
 Expected: a sorted list of file paths. Save output to `docs/superpowers/plans/audit-console-main.txt`.
@@ -223,6 +226,7 @@ Largest phase. Six task categories; each applies the pattern from a representati
 ### Task 4.1: Replace `console.*` in main process with `logger.*`
 
 **Files (representative):**
+
 - Read first to confirm: `src/main/events/library/get-available-drives.ts` (line 117–128 have 3 debug prints)
 - Apply to all files in `docs/superpowers/plans/audit-console-main.txt`
 
@@ -234,10 +238,12 @@ Locate lines 117, 122, 128. Confirm they're debug `console.log` calls.
 - [ ] **Step 2:** Apply pattern to representative file
 
 Use `Edit` to:
+
 - Add `import { logger } from "@main/services";` if missing (check if already imported)
 - Replace `console.log("...")` → `logger.log("...")`
 
 Example for line 117:
+
 ```
 // BEFORE
 console.log("getAvailableDrives called, platform:", process.platform);
@@ -253,12 +259,13 @@ Expected: same count as before (or fewer if logger import was already there). If
 - [ ] **Step 4:** Apply same pattern to every file in `audit-console-main.txt`
 
 For each file:
+
 - `Read` it
 - Check if `import { logger } from "@main/services"` exists; add if missing
 - Use `Edit` (or `Edit` with `replace_all: true` for files with multiple identical `console.log` calls) to replace `console.X(` with `logger.X(`
 - After each batch (~10 files), run `yarn typecheck 2>&1 | grep "error TS" | head -5` to spot regressions
 
-- [ ] **Step 5:** Verify all main console.* replaced (except allow=warn/error)
+- [ ] **Step 5:** Verify all main console.\* replaced (except allow=warn/error)
 
 Run: `grep -rnE "console\.(log|info|debug)" src/main/ --include="*.ts"`
 Expected: empty output (no remaining `console.log/info/debug`).
@@ -281,7 +288,7 @@ Locate line 132 with `console.log(`. Confirm it's a debug print.
 
 Loop through files. Same pattern as Task 4.1 step 4.
 
-- [ ] **Step 4:** Verify all renderer console.* replaced (except main.tsx)
+- [ ] **Step 4:** Verify all renderer console.\* replaced (except main.tsx)
 
 Run: `grep -rnE "console\.(log|info|debug)" src/renderer/src/ --include="*.ts" --include="*.tsx" | grep -v "main.tsx"`
 Expected: empty output.
@@ -298,10 +305,12 @@ Expected: line 39 (or wherever it is) with the override intact.
 - [ ] **Step 1:** Apply ESLint auto-fix (rule NOT yet enabled — use manual sed)
 
 Run:
+
 ```bash
 # This regex handles common cases. Review output.
 grep -rlE "Array<[A-Za-z]" src/ --include="*.ts" --include="*.tsx" | xargs sed -i -E 's/Array<([A-Za-z][A-Za-z0-9_]*)>/\1[]/g'
 ```
+
 Expected: files modified in place.
 
 - [ ] **Step 2:** Verify replacement
@@ -329,6 +338,7 @@ Read first file in the list. Find its default export.
 - [ ] **Step 2:** Convert and update imports
 
 Pattern:
+
 ```
 // BEFORE (in exporting file)
 export default function myHelper() { ... }
@@ -338,6 +348,7 @@ export function myHelper() { ... }
 ```
 
 Then update every consumer:
+
 ```
 // BEFORE
 import myHelper from "./myHelper";
@@ -391,20 +402,25 @@ Read `src/renderer/src/pages/game-details/modals/game-options-modal.tsx` (or a r
 
 a. Generate a snake_case key: `"save_settings"`, `"delete_confirmation"`, etc.
 b. Add to `src/locales/en/translation.json` (preserve alphabetical or grouped order):
+
 ```json
 "save_settings": "Save settings",
 ```
+
 c. Mirror to `src/locales/vi/translation.json` with Vietnamese:
+
 ```json
 "save_settings": "Lưu cài đặt",
 ```
+
 d. Update component:
+
 ```tsx
 // BEFORE
-<button>Save settings</button>
+<button>Save settings</button>;
 // AFTER
 const { t } = useTranslation("namespace");
-<button>{t("save_settings")}</button>
+<button>{t("save_settings")}</button>;
 ```
 
 - [ ] **Step 5:** Verify vi rendering works
@@ -414,6 +430,7 @@ After adding a key, check `src/locales/vi/translation.json` has matching key. i1
 - [ ] **Step 6:** Repeat for other pages
 
 Loop through `audit-hardcoded-strings.txt` plus manual scan of:
+
 - `src/renderer/src/pages/library/`
 - `src/renderer/src/pages/settings/`
 - `src/renderer/src/pages/downloads/`
@@ -433,14 +450,17 @@ Subjective — apply spec section 3.5 rules.
 - [ ] **Step 1:** Scan for obvious redundant comments
 
 Run:
+
 ```bash
 grep -rnE "// (Increment|Decrement|Loop|Get|Set|Return|Check|Validate) " src/ --include="*.ts" --include="*.tsx" | head -20
 ```
+
 Expected: list of comments that just restate code. Remove these.
 
 - [ ] **Step 2:** Scan for stale/verbose comment blocks
 
 Manually read each file you modified in Phases 4.1–4.6. Look for:
+
 - Comments explaining obvious code → remove
 - Docblocks with obvious content (e.g., on a `getName()` function: `/** Gets the name */`) → remove or tighten
 - Section dividers (`// ====== Helpers ======`) → keep, they help navigation in large files
@@ -527,6 +547,7 @@ Expected: existing ignores for `node_modules`, `dist`, `out`, etc.
 - [ ] **Step 2:** Append new ignores
 
 Use `Edit` to append (preserve existing content):
+
 ```
 # Runtime artifacts (portable mode)
 save/
@@ -563,6 +584,7 @@ Run: `Read .eslintrc.cjs`
 - [ ] **Step 2:** Add new rules
 
 Use `Edit` to modify the `rules` block. Add (preserve existing):
+
 ```js
 "no-console": ["error", { allow: ["warn", "error"] }],
 "@typescript-eslint/array-type": ["error", { default: "array-simple" }],
@@ -576,6 +598,7 @@ Use `Edit` to modify the `rules` block. Add (preserve existing):
 - [ ] **Step 3:** Add overrides block
 
 Append to the config object (before closing `};`):
+
 ```js
 overrides: [
   {
@@ -605,6 +628,7 @@ Expected: a count of errors.
 - [ ] **Step 2:** For each error, fix or annotate
 
 For each error:
+
 - If it's a real violation → fix the code
 - If it's an intentional exception → add `// eslint-disable-next-line <rule>` with comment explaining why
 - If it's a false positive → refine the rule config in `.eslintrc.cjs`
@@ -710,6 +734,7 @@ Expected: same list as before, but without the `??` prefix (now staged).
 - [ ] **Step 3:** Commit with structured message
 
 Run:
+
 ```bash
 git commit -m "chore: align codebase to .cursorrules conventions
 
@@ -748,6 +773,7 @@ Expected: latest commit at top with the message above. Previous two commits are 
 - [ ] **Step 1:** Report to user
 
 Provide to user:
+
 1. Diff stats from `git show --stat HEAD | tail -5`
 2. List of verification commands that passed (paste output excerpts)
 3. Manual smoke test recommendation:
@@ -773,32 +799,33 @@ These are scaffolding, not source.
 
 **Spec coverage check (spec sections → tasks):**
 
-| Spec section | Covered by |
-|---|---|
-| 1 Goal (6 conventions + cleanup) | Phase 4 (4.1–4.7), Phase 5 (5.1–5.6) |
-| 2 Out of scope (5 items) | Documented, not implemented |
-| 3.1 Logger | Tasks 4.1, 4.2 |
-| 3.2 T[] | Task 4.3 |
-| 3.3 Named exports | Tasks 4.4, 4.5 |
-| 3.4 i18n | Task 4.6 |
-| 3.5 Comments | Task 4.7 |
-| 3.6 TODO markers | Task 5.6 + Task 6.1 (rule) |
-| 3.7 Code style | Implicit in Phase 4 manual fixes |
-| 4 Dead code | Phase 5 (5.1–5.6) |
-| 5 ESLint config | Phase 6 (6.1, 6.2) |
-| 6 Execution order | This document |
-| 7 Verification | Phase 7 (7.1–7.5) |
-| 8 Checkpoints | Task 7.5 (CP2; CP1 implicit at end of Phase 4) |
-| 9 Risk | Phase 0 (backup branch) mitigates |
-| 10 Effort | ~8h estimate, plan length suggests similar |
-| 11 Final deliverable | Task 8.2 |
-| 12 Follow-up | Documented, not implemented |
+| Spec section                     | Covered by                                     |
+| -------------------------------- | ---------------------------------------------- |
+| 1 Goal (6 conventions + cleanup) | Phase 4 (4.1–4.7), Phase 5 (5.1–5.6)           |
+| 2 Out of scope (5 items)         | Documented, not implemented                    |
+| 3.1 Logger                       | Tasks 4.1, 4.2                                 |
+| 3.2 T[]                          | Task 4.3                                       |
+| 3.3 Named exports                | Tasks 4.4, 4.5                                 |
+| 3.4 i18n                         | Task 4.6                                       |
+| 3.5 Comments                     | Task 4.7                                       |
+| 3.6 TODO markers                 | Task 5.6 + Task 6.1 (rule)                     |
+| 3.7 Code style                   | Implicit in Phase 4 manual fixes               |
+| 4 Dead code                      | Phase 5 (5.1–5.6)                              |
+| 5 ESLint config                  | Phase 6 (6.1, 6.2)                             |
+| 6 Execution order                | This document                                  |
+| 7 Verification                   | Phase 7 (7.1–7.5)                              |
+| 8 Checkpoints                    | Task 7.5 (CP2; CP1 implicit at end of Phase 4) |
+| 9 Risk                           | Phase 0 (backup branch) mitigates              |
+| 10 Effort                        | ~8h estimate, plan length suggests similar     |
+| 11 Final deliverable             | Task 8.2                                       |
+| 12 Follow-up                     | Documented, not implemented                    |
 
 **Placeholder scan:** No "TBD" or "implement later" found. Every step has concrete commands.
 
 **Type consistency:** Method signatures not changed (spec section 2 protects IPC contract). New functions: none added.
 
 **Review Focus coverage:**
+
 1. Logger in `main.tsx:39` — Task 4.2 step 5 verifies override preserved.
 2. `import/no-default-export` for React — Task 6.1 step 3 sets override.
 3. IPC contract — verified by `yarn typecheck` (Phase 7.1).

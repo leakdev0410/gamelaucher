@@ -15,6 +15,7 @@ import { levelDBService } from "@renderer/services/leveldb.service";
 import app from "../../../app.scss?inline";
 import styles from "../../../components/achievements/notification/achievement-notification.scss?inline";
 import root from "react-shadow";
+import "./achievement-notification-window.scss";
 
 const NOTIFICATION_TIMEOUT = 4000;
 
@@ -145,10 +146,10 @@ export function AchievementNotification() {
 
   const loadAndApplyTheme = useCallback(async () => {
     if (!shadowRootRef) return;
-    const allThemes = (await levelDBService.values("themes")) as {
+    const allThemes = (await levelDBService.values("themes")) as Array<{
       isActive?: boolean;
       code?: string;
-    }[];
+    }>;
     const activeTheme = allThemes.find((theme) => theme.isActive);
     if (activeTheme?.code) {
       injectCustomCss(activeTheme.code, shadowRootRef);

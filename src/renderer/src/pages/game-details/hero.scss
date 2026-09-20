@@ -59,9 +59,9 @@ $hero-height: 350px;
 
   &__edit-custom-game-button {
     padding: calc(globals.$spacing-unit * 1.5);
-    background-color: rgba(250, 249, 245, 0.85);
-    backdrop-filter: blur(20px);
-    border-radius: 8px;
+    background-color: rgba(250, 249, 245, 0.9);
+    backdrop-filter: blur(16px);
+    border-radius: 999px;
     transition: all ease 0.2s;
     cursor: pointer;
     min-height: 40px;
@@ -71,7 +71,7 @@ $hero-height: 350px;
     justify-content: center;
     color: globals.$muted-color;
     border: solid 1px globals.$border-color;
-    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 16px rgba(48, 45, 38, 0.14);
     animation: slide-in 0.3s cubic-bezier(0.33, 1, 0.68, 1);
 
     &:active {
@@ -79,8 +79,9 @@ $hero-height: 350px;
     }
 
     &:hover {
-      background-color: rgba(250, 249, 245, 0.95);
-      color: globals.$body-color;
+      background-color: rgba(250, 249, 245, 0.98);
+      color: globals.$muted-color;
+      border-color: globals.$border-strong;
     }
   }
 
@@ -181,7 +182,7 @@ $hero-height: 350px;
 
   &__cloud-sync-button {
     padding: calc(globals.$spacing-unit * 1.5) calc(globals.$spacing-unit * 2);
-    background-color: rgba(250, 249, 245, 0.85);
+    background-color: rgba(250, 249, 245, 0.9);
     backdrop-filter: blur(20px);
     border-radius: 8px;
     transition: all ease 0.2s;
@@ -194,7 +195,7 @@ $hero-height: 350px;
     color: globals.$muted-color;
     font-size: globals.$small-font-size;
     border: solid 1px globals.$border-color;
-    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 1px 8px rgba(48, 45, 38, 0.1);
     animation: slide-in 0.3s cubic-bezier(0.33, 1, 0.68, 1);
 
     &:active {
@@ -207,7 +208,7 @@ $hero-height: 350px;
     }
 
     &:hover {
-      background-color: rgba(250, 249, 245, 0.95);
+      background-color: rgba(250, 249, 245, 0.98);
     }
   }
 
@@ -224,9 +225,8 @@ $hero-height: 350px;
     width: 26px;
     position: absolute;
     top: -3px;
-    // The cloud gif is white (made for the old dark theme); darken it so it is
-    // visible on the cream button.
-    filter: brightness(0.35) saturate(0.6);
+    // White cloud gif on Claude Cream glass buttons.
+    filter: brightness(1.05) saturate(0.9);
   }
 
   &__randomizer-button {
@@ -235,7 +235,7 @@ $hero-height: 350px;
     right: calc(globals.$spacing-unit * 2);
     z-index: 100;
     padding: calc(globals.$spacing-unit * 1.5) calc(globals.$spacing-unit * 2);
-    background-color: rgba(250, 249, 245, 0.85);
+    background-color: rgba(250, 249, 245, 0.9);
     backdrop-filter: blur(20px);
     border-radius: 8px;
     transition: all ease 0.2s;
@@ -247,7 +247,7 @@ $hero-height: 350px;
     gap: globals.$spacing-unit;
     color: globals.$muted-color;
     border: solid 1px globals.$border-color;
-    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 1px 8px rgba(48, 45, 38, 0.1);
     animation: slide-in 0.3s cubic-bezier(0.33, 1, 0.68, 1);
     overflow: visible;
 
@@ -257,8 +257,8 @@ $hero-height: 350px;
     }
 
     &:hover {
-      background-color: rgba(250, 249, 245, 0.95);
-      color: globals.$body-color;
+      background-color: rgba(250, 249, 245, 0.98);
+      color: globals.$muted-color;
     }
   }
 

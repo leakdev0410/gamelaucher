@@ -29,16 +29,16 @@ export interface LudusaviBackup {
 export interface LudusaviConfig {
   manifest: {
     enable: boolean;
-    secondary: {
+    secondary: Array<{
       url: string;
       enable: boolean;
-    }[];
+    }>;
   };
-  customGames: {
+  customGames: Array<{
     name: string;
     files: string[];
     registry: [];
-  }[];
+  }>;
 }
 
 export interface LudusaviBackupMapping {

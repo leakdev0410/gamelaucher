@@ -11,6 +11,7 @@ import { GameReviews } from "./game-reviews";
 import { GameLogo } from "./game-logo";
 
 import { cloudSyncContext, gameDetailsContext } from "@renderer/context";
+import { sanitizeHtml } from "@shared";
 
 import cloudIconAnimated from "@renderer/assets/icons/cloud-animated.gif";
 import { useUserDetails, useLibrary } from "@renderer/hooks";
@@ -81,7 +82,7 @@ export function GameDetailsContent() {
 
       processMediaElements(document);
 
-      return document.body.outerHTML;
+      return sanitizeHtml(document.body.innerHTML);
     }
 
     if (game?.shop === "custom") {

@@ -9,7 +9,7 @@ export interface SelectProps
   > {
   theme?: "primary" | "dark";
   label?: string;
-  options?: { key: string; value: string; label: string }[];
+  options?: Array<{ key: string; value: string; label: string }>;
 }
 
 export function SelectField({
