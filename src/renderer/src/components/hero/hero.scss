@@ -130,7 +130,8 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    flex-shrink: 0;
+    flex-shrink: 1;
+    min-height: 0;
   }
 
   &__actions {
@@ -209,6 +210,17 @@
     &__cta {
       padding: 10px 18px;
       font-size: 15px;
+    }
+  }
+
+  @media (max-height: 620px) {
+    &__logo {
+      max-height: 72px;
+    }
+
+    &__description {
+      font-size: 15px;
+      -webkit-line-clamp: 2;
     }
   }
 }

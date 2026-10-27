@@ -49,19 +49,7 @@ export function Hero() {
     const goToGame = () => navigate(game.uri);
 
     return (
-      <div
-        className="hero"
-        key={game.uri}
-        role="button"
-        tabIndex={0}
-        onClick={goToGame}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            goToGame();
-          }
-        }}
-      >
+      <div className="hero" key={game.uri}>
         <img
           src={game.libraryHeroImageUrl ?? undefined}
           alt={game.description ?? ""}
