@@ -26,19 +26,19 @@
     display: flex;
     align-items: center;
     gap: calc(globals.$spacing-unit);
-    padding: 10px;
-    border-radius: globals.$radius-sm;
-    background: globals.$surface-1;
-    border: 1px solid transparent;
-    color: globals.$body-color;
+    padding: 9px 14px;
+    border-radius: 999px;
+    background: var(--surface-0);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
     transition:
-      background-color 0.15s ease,
-      border-color 0.15s ease,
-      color 0.15s ease,
-      box-shadow 0.15s ease;
+      background-color 0.25s var(--ease),
+      border-color 0.25s var(--ease),
+      color 0.25s var(--ease),
+      box-shadow 0.25s var(--ease);
     white-space: nowrap;
 
     &:hover:not(.active) {
@@ -48,19 +48,19 @@
     }
 
     &:focus-visible {
-      outline: 2px solid rgba(217, 119, 87, 0.45);
+      outline: 2px solid rgba(0, 113, 227, 0.45);
       outline-offset: 2px;
     }
 
     &.active {
-      color: globals.$brand-ink;
-      background: globals.$brand-teal;
+      color: #ffffff;
+      background: var(--blue);
       border-color: transparent;
-      box-shadow: 0 0 16px rgba(217, 119, 87, 0.3);
+      box-shadow: none;
 
       &:hover {
-        background: globals.$brand-hover;
-        color: globals.$brand-ink;
+        background: var(--blue-hover);
+        color: #ffffff;
       }
 
       svg,

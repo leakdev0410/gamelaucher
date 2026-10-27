@@ -82,7 +82,7 @@
 
     &--selected {
       border-color: globals.$brand-teal;
-      background-color: rgba(217, 119, 87, 0.08);
+      background-color: rgba(0, 113, 227, 0.08);
     }
   }
 
@@ -128,7 +128,7 @@
     }
 
     &--selected {
-      background-color: rgba(217, 119, 87, 0.08);
+      background-color: rgba(0, 113, 227, 0.08);
     }
 
     &--last {
@@ -349,20 +349,20 @@
 
     &::-webkit-scrollbar {
       width: 9px;
-      background-color: rgba(48, 45, 38, 0.03);
+      background-color: rgba(0, 0, 0, 0.03);
     }
 
     &::-webkit-scrollbar-track {
-      background-color: rgba(48, 45, 38, 0.04);
+      background-color: rgba(0, 0, 0, 0.04);
     }
 
     &::-webkit-scrollbar-thumb {
-      background-color: rgba(48, 45, 38, 0.16);
+      background-color: rgba(0, 0, 0, 0.16);
       border-radius: 24px;
     }
 
     &::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(48, 45, 38, 0.26);
+      background-color: rgba(0, 0, 0, 0.26);
     }
   }
 
@@ -385,7 +385,7 @@
     }
 
     &--selected {
-      background-color: rgba(217, 119, 87, 0.08);
+      background-color: rgba(0, 113, 227, 0.08);
     }
 
     &--select-all {

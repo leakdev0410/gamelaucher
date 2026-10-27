@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { TrendingGame } from "@types";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
+import { ArrowRightIcon } from "@primer/octicons-react";
 import "./hero.scss";
 
 export function Hero() {
@@ -11,7 +12,7 @@ export function Hero() {
   >(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation("home");
 
   const navigate = useNavigate();
 
@@ -40,35 +41,79 @@ export function Hero() {
     return <Skeleton className="hero" />;
   }
 
-  if (featuredGameDetails?.length) {
-    return featuredGameDetails.map((game) => (
-      <button
-        type="button"
-        onClick={() => navigate(game.uri)}
+  if (!featuredGameDetails?.length) {
+    return null;
+  }
+
+  return featuredGameDetails.map((game) => {
+    const goToGame = () => navigate(game.uri);
+
+    return (
+      <div
         className="hero"
         key={game.uri}
+        role="button"
+        tabIndex={0}
+        onClick={goToGame}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            goToGame();
+          }
+        }}
       >
-        <div className="hero__backdrop">
-          <img
-            src={game.libraryHeroImageUrl ?? undefined}
-            alt={game.description ?? ""}
-            className="hero__media"
-          />
+        <img
+          src={game.libraryHeroImageUrl ?? undefined}
+          alt={game.description ?? ""}
+          className="hero__media"
+          loading="eager"
+        />
+        <div className="hero__scrim" />
 
-          <div className="hero__content">
+        <div className="hero__content">
+          <span className="hero__eyebrow">{t("featured")}</span>
+
+          {game.logoImageUrl ? (
             <img
-              src={game.logoImageUrl ?? undefined}
-              width="250px"
-              alt={game.description ?? ""}
+              src={game.logoImageUrl}
+              alt={game.title}
               loading="eager"
               className="hero__logo"
             />
+          ) : (
+            <h1 className="hero__title">{game.title}</h1>
+          )}
+
+          {game.description && (
             <p className="hero__description">{game.description}</p>
+          )}
+
+          <div className="hero__actions">
+            <button
+              type="button"
+              className="hero__cta hero__cta--primary"
+              onClick={(event) => {
+                event.stopPropagation();
+                goToGame();
+              }}
+            >
+              {t("explore")}
+              <ArrowRightIcon size={16} />
+            </button>
+
+            <button
+              type="button"
+              className="hero__cta hero__cta--secondary"
+              onClick={(event) => {
+                event.stopPropagation();
+                navigate("/library");
+              }}
+            >
+              {t("library")}
+            </button>
           </div>
         </div>
-      </button>
-    ));
-  }
-
-  return null;
+      </div>
+    );
+  });
 }

@@ -5,11 +5,13 @@
   height: var(--status-h);
   min-height: var(--status-h);
   border-top: solid 1px var(--border);
-  background: var(--bg-elevated);
-  padding: 0 20px;
+  background: var(--nav-light);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  padding: 0 24px;
   display: flex;
   align-items: center;
-  transition: all ease 0.2s;
+  transition: all ease 0.25s;
   justify-content: space-between;
   position: relative;
   z-index: globals.$bottom-panel-z-index;
@@ -43,8 +45,7 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 6px rgba(217, 119, 87, 0.5);
+      background: var(--blue);
       flex-shrink: 0;
     }
   }

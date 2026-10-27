@@ -42,19 +42,19 @@ export class WindowManager {
       height: 860,
       minWidth: 1024,
       minHeight: 860,
-      backgroundColor: "#f5f4ee",
+      backgroundColor: "#f5f5f7",
       titleBarStyle: process.platform === "linux" ? "default" : "hidden",
       icon,
       trafficLightPosition: { x: 16, y: 16 },
       titleBarOverlay: {
-        // Match Claude Cream chrome — fully opaque overlay avoids black
+        // Match the light Apple-style chrome — opaque overlay avoids black
         // corners on some Windows builds.
-        symbolColor: "#30302a",
+        symbolColor: "#1d1d1f",
         color: "#ffffff",
         height: 34,
       },
       webPreferences: {
-        preload: path.join(__dirname, "../preload/index.mjs"),
+        preload: path.join(__dirname, "../preload/index.js"),
         sandbox: true,
         contextIsolation: true,
         nodeIntegration: false,
@@ -135,7 +135,7 @@ export class WindowManager {
       frame: false,
       resizable: false,
       center: true,
-      backgroundColor: "#f5f4ee",
+      backgroundColor: "#f5f5f7",
       title: "Leak Launcher",
       icon,
       webPreferences: { sandbox: true },
@@ -145,14 +145,14 @@ export class WindowManager {
     const html = `<!doctype html><html><head><meta charset="utf-8"><style>
       html,body{margin:0;height:100%;}
       body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
-        background:#f5f4ee;font-family:'Segoe UI',Roboto,sans-serif;color:#6b6558;
+        background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;color:#6e6e73;
         -webkit-app-region:drag;user-select:none;overflow:hidden;}
-      .logo{width:96px;height:96px;border-radius:22px;box-shadow:0 4px 24px rgba(48,45,38,.16);}
-      .name{font-size:21px;font-weight:700;color:#30302a;letter-spacing:.3px;}
-      .author{font-size:12px;color:#948c7c;margin-top:-14px;}
-      .spinner{width:26px;height:26px;border:3px solid rgba(48,45,38,.12);
-        border-top-color:#d97757;border-radius:50%;animation:spin .8s linear infinite;}
-      .status{font-size:13px;color:#948c7c;}
+      .logo{width:96px;height:96px;border-radius:22px;box-shadow:0 4px 24px rgba(0,0,0,.12);}
+      .name{font-size:21px;font-weight:600;color:#1d1d1f;letter-spacing:-.015em;}
+      .author{font-size:12px;color:#86868b;margin-top:-14px;}
+      .spinner{width:26px;height:26px;border:3px solid rgba(0,0,0,.1);
+        border-top-color:#0071e3;border-radius:50%;animation:spin .8s linear infinite;}
+      .status{font-size:13px;color:#86868b;}
       @keyframes spin{to{transform:rotate(360deg);}}
     </style></head><body>
       ${logoBase64 ? `<img class="logo" src="data:image/png;base64,${logoBase64}"/>` : ""}
@@ -322,7 +322,7 @@ export class WindowManager {
       const authWindow = new BrowserWindow({
         width: 600,
         height: 640,
-        backgroundColor: "#f5f4ee",
+        backgroundColor: "#f5f5f7",
         parent: this.mainWindow,
         modal: true,
         show: false,
@@ -477,7 +477,7 @@ export class WindowManager {
       y,
       show: false,
       webPreferences: {
-        preload: path.join(__dirname, "../preload/index.mjs"),
+        preload: path.join(__dirname, "../preload/index.js"),
         sandbox: true,
         contextIsolation: true,
         nodeIntegration: false,
@@ -525,17 +525,17 @@ export class WindowManager {
         height: 720,
         minWidth: 600,
         minHeight: 540,
-        backgroundColor: "#f5f4ee",
+        backgroundColor: "#f5f5f7",
         titleBarStyle: process.platform === "linux" ? "default" : "hidden",
         icon,
         trafficLightPosition: { x: 16, y: 16 },
         titleBarOverlay: {
-          symbolColor: "#30302a",
+          symbolColor: "#1d1d1f",
           color: "#ffffff",
           height: 34,
         },
         webPreferences: {
-          preload: path.join(__dirname, "../preload/index.mjs"),
+          preload: path.join(__dirname, "../preload/index.js"),
           sandbox: true,
           contextIsolation: true,
           nodeIntegration: false,
@@ -613,11 +613,11 @@ export class WindowManager {
       minimizable: false,
       fullscreenable: false,
       frame: false,
-      backgroundColor: "#f5f4ee",
+      backgroundColor: "#f5f5f7",
       icon,
       skipTaskbar: false,
       webPreferences: {
-        preload: path.join(__dirname, "../preload/index.mjs"),
+        preload: path.join(__dirname, "../preload/index.js"),
         sandbox: true,
         contextIsolation: true,
         nodeIntegration: false,

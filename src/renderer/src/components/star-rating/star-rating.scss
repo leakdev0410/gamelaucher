@@ -6,19 +6,19 @@
   gap: 2px;
 
   &__star {
-    color: globals.$border-strong;
+    color: var(--border-strong);
     transition: color ease 0.2s;
 
     &--filled {
-      color: globals.$brand-teal;
+      color: #f5a623;
     }
 
     &--empty {
-      color: globals.$border-strong;
+      color: #d2d2d7;
     }
 
     &--half {
-      color: globals.$brand-teal;
+      color: #f5a623;
       position: absolute;
       top: 0;
       left: 0;

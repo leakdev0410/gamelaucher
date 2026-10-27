@@ -21,12 +21,13 @@
   &__item {
     display: flex;
     flex-direction: column;
-    background-color: globals.$dark-background-color;
-    border-radius: 8px;
-    padding: calc(globals.$spacing-unit * 2);
-    gap: globals.$spacing-unit;
-    border: solid 1px globals.$border-color;
-    transition: all ease 0.2s;
+    background-color: var(--surface-0);
+    border-radius: 16px;
+    padding: 20px;
+    gap: 8px;
+    border: solid 1px var(--border);
+    box-shadow: var(--shadow-card);
+    transition: all ease 0.25s;
 
     &--syncing {
       opacity: globals.$disabled-opacity;

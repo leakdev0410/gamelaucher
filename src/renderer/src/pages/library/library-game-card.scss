@@ -8,14 +8,14 @@
       border-color 0.2s ease,
       filter 0.2s ease,
       opacity 0.2s ease;
-    box-shadow: 0 8px 10px -2px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
     width: 100%;
     aspect-ratio: 3 / 4;
     position: relative;
-    border: 1px solid globals.$border-color;
-    background: globals.$surface-0;
+    border: 1px solid var(--border);
+    background: var(--surface-0);
     padding: 0;
-    border-radius: globals.$radius-sm;
+    border-radius: 20px;
     overflow: hidden;
     display: block;
     container-type: inline-size;
@@ -28,16 +28,16 @@
     }
 
     &:focus-visible {
-      outline: 2px solid rgba(217, 119, 87, 0.45);
+      outline: 2px solid rgba(0, 113, 227, 0.45);
       outline-offset: 2px;
     }
 
     /* Installed: clearly brighter */
     &--installed {
-      border-color: globals.$border-strong;
+      border-color: var(--border-strong);
       box-shadow:
-        0 10px 18px -4px rgba(0, 0, 0, 0.2),
-        0 0 0 1px rgba(48, 45, 38, 0.05);
+        0 10px 30px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(0, 0, 0, 0.03);
 
       .library-game-card__game-image {
         filter: brightness(1.16) saturate(1.08) contrast(1.04);
@@ -49,15 +49,15 @@
       }
 
       &:hover {
-        border-color: rgba(48, 45, 38, 0.32);
+        border-color: rgba(0, 0, 0, 0.32);
       }
     }
 
     /* Not installed: dimmer so ready-to-play games pop harder */
     &--not-installed {
       opacity: 0.82;
-      border-color: rgba(48, 45, 38, 0.04);
-      box-shadow: 0 6px 10px -4px rgba(0, 0, 0, 0.16);
+      border-color: var(--border);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
 
       .library-game-card__game-image {
         filter: brightness(0.38) saturate(0.55) contrast(0.95);
@@ -98,10 +98,30 @@
     justify-content: space-between;
     height: 100%;
     width: 100%;
-    background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 20%, transparent 100%);
-    padding: 8px;
+    background: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.68) 20%,
+      transparent 100%
+    );
+    padding: 10px;
     z-index: 2;
     pointer-events: none;
+  }
+
+  &__title {
+    margin-top: auto;
+    color: #ffffff;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    width: 100%;
   }
 
   &__top-section {
@@ -117,12 +137,12 @@
     -webkit-backdrop-filter: blur(8px);
     color: rgba(255, 255, 255, 0.8);
     border: solid 1px rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
+    border-radius: 999px;
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    padding: 4px 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     transition: all ease 0.2s;
 
     &-long {
@@ -216,7 +236,7 @@
     white-space: nowrap;
   }
 
-  /* Play only on installed cards — Claude Cream pill */
+  /* Play only on installed cards — Apple-style pill */
   &__action-button {
     position: absolute;
     bottom: 10px;
@@ -239,7 +259,7 @@
       opacity 0.15s ease;
     box-shadow:
       0 4px 12px rgba(0, 0, 0, 0.2),
-      0 0 16px rgba(217, 119, 87, 0.3);
+      0 0 16px rgba(0, 113, 227, 0.3);
     opacity: 0;
     transform: scale(0.9);
     pointer-events: none;
@@ -254,7 +274,7 @@
       transform: scale(1.08);
       box-shadow:
         0 6px 16px rgba(0, 0, 0, 0.24),
-        0 0 20px rgba(217, 119, 87, 0.4);
+        0 0 20px rgba(0, 113, 227, 0.4);
     }
 
     &:active {
@@ -265,7 +285,7 @@
       opacity: 1;
       transform: scale(1);
       pointer-events: auto;
-      outline: 2px solid rgba(217, 119, 87, 0.55);
+      outline: 2px solid rgba(0, 113, 227, 0.55);
       outline-offset: 2px;
     }
   }
@@ -279,7 +299,7 @@
 
   &__game-image {
     object-fit: cover;
-    border-radius: globals.$radius-sm;
+    border-radius: 20px;
     width: 100%;
     height: 100%;
     min-width: 100%;
@@ -288,7 +308,7 @@
     top: 0;
     left: 0;
     z-index: 0;
-    transition: filter 0.25s globals.$ease;
+    transition: filter 0.3s var(--ease);
   }
 
   &__cover-placeholder {
@@ -303,8 +323,8 @@
       globals.$skeleton-highlight 50%,
       globals.$skeleton-base 100%
     );
-    border-radius: globals.$radius-sm;
-    color: globals.$text-dim;
+    border-radius: 20px;
+    color: var(--text-dim);
     display: flex;
     align-items: center;
     justify-content: center;

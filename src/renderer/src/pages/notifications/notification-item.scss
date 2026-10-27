@@ -5,10 +5,11 @@
   align-items: center;
   gap: calc(globals.$spacing-unit * 2);
   padding: calc(globals.$spacing-unit * 2);
-  background-color: globals.$dark-background-color;
-  border: 1px solid globals.$border-color;
-  border-radius: 8px;
-  transition: all ease 0.2s;
+  background-color: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+  transition: all ease 0.25s;
   position: relative;
   opacity: 1;
   width: 100%;
@@ -24,7 +25,7 @@
     opacity: 1;
     background: linear-gradient(
       90deg,
-      rgba(217, 119, 87, 0.08),
+      rgba(0, 113, 227, 0.08),
       transparent 40%
     );
 

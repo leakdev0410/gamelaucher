@@ -39,9 +39,9 @@
     bottom: 0;
     background: linear-gradient(
       135deg,
-      rgba(250, 249, 245, 0.86) 0%,
-      rgba(250, 249, 245, 0.9) 50%,
-      rgba(250, 249, 245, 0.94) 100%
+      rgba(255, 255, 255, 0.86) 0%,
+      rgba(255, 255, 255, 0.9) 50%,
+      rgba(255, 255, 255, 0.94) 100%
     );
     pointer-events: none;
     z-index: 1;
@@ -55,7 +55,7 @@
     bottom: 0;
     background: radial-gradient(
       ellipse at top right,
-      rgba(217, 119, 87, 0.14) 0%,
+      rgba(0, 113, 227, 0.14) 0%,
       transparent 50%
     );
     pointer-events: none;
@@ -90,17 +90,17 @@
     height: 100%;
     width: auto;
     max-width: 180px;
-    border-radius: 8px;
+    border-radius: 18px;
     object-fit: contain;
     flex-shrink: 0;
-    background-color: globals.$surface-2;
+    background-color: var(--surface-2);
   }
 
   &__cover-placeholder {
     height: 100%;
     width: 180px;
-    border-radius: 8px;
-    background-color: globals.$surface-2;
+    border-radius: 18px;
+    background-color: var(--surface-2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -209,24 +209,24 @@
 
   &__button {
     width: 100%;
-    background-color: globals.$brand-teal;
+    background-color: var(--blue);
     border: solid 1px transparent;
-    color: globals.$brand-ink;
-    border-radius: 8px;
-    padding: globals.$spacing-unit calc(globals.$spacing-unit * 2);
-    min-height: 40px;
-    font-size: 14px;
-    font-weight: 600;
+    color: #ffffff;
+    border-radius: var(--radius-pill);
+    padding: 11px 21px;
+    min-height: 42px;
+    font-size: 15px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all ease 0.2s;
+    transition: all ease 0.25s;
     font-family: inherit;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: calc(globals.$spacing-unit * 2);
+    margin-top: 16px;
 
     &:hover {
-      background-color: globals.$brand-hover;
+      background-color: var(--blue-hover);
     }
 
     &:active {

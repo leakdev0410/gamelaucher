@@ -6,17 +6,20 @@
   color: globals.$body-color;
   overflow: hidden;
   position: relative;
-  border-radius: globals.$radius-md;
-  border: 1px solid globals.$border-color;
+  border-radius: 18px;
+  border: 1px solid var(--border);
   min-height: 103px;
+  box-shadow: var(--shadow-card);
   transition:
-    border-color 0.15s,
-    background-color 0.15s,
-    transform 0.15s;
+    border-color 0.25s var(--ease),
+    background-color 0.25s var(--ease),
+    box-shadow 0.25s var(--ease),
+    transform 0.25s var(--ease);
 
   &:hover {
-    border-color: rgba(217, 119, 87, 0.22);
-    transform: translateY(-1px);
+    border-color: rgba(0, 113, 227, 0.22);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
   }
 
   &:hover .game-item__content-link {
@@ -93,7 +96,7 @@
     min-width: 200px;
     height: 103px;
     overflow: hidden;
-    border-right: 1px solid globals.$border-color;
+    border-right: 1px solid var(--border);
   }
 
   &__cover-placeholder {
@@ -174,7 +177,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
-    padding: calc(globals.$spacing-unit * 2) 0;
+    padding: 16px 16px 16px 0;
   }
 
   &__genres {

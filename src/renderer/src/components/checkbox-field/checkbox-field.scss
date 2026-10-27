@@ -4,7 +4,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: globals.$spacing-unit;
+  gap: 10px;
   cursor: pointer;
 
   &:has(input:disabled) {
@@ -17,32 +17,32 @@
     height: 20px;
     min-width: 20px;
     min-height: 20px;
-    border-radius: 4px;
-    background-color: globals.$dark-background-color;
+    border-radius: 6px;
+    background-color: var(--surface-0);
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
     transition:
-      border-color 0.2s ease,
-      background-color 0.2s ease,
-      color 0.2s ease;
-    border: solid 1px globals.$border-color;
-    color: globals.$body-color;
+      border-color 0.25s var(--ease),
+      background-color 0.25s var(--ease),
+      color 0.25s var(--ease);
+    border: solid 1px var(--border-mid);
+    color: var(--text-secondary);
 
     &:hover:not(:has(input:disabled)) {
-      border-color: rgba(48, 45, 38, 0.4);
+      border-color: var(--border-strong);
     }
 
     &.checked {
-      background-color: globals.$brand-teal;
-      border-color: globals.$brand-teal;
-      color: globals.$brand-ink;
+      background-color: var(--blue);
+      border-color: var(--blue);
+      color: #ffffff;
     }
 
     &:has(.checkbox-field__input:focus-visible) {
-      outline: 2px solid var(--color-primary);
-      outline-offset: 1px;
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
     }
   }
 
@@ -82,13 +82,13 @@
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    color: globals.$muted-color;
-    font-size: 13.5px;
+    color: var(--text);
+    font-size: 14px;
     line-height: 1.35;
 
     &:has(+ input:disabled) {
       cursor: not-allowed;
-      color: globals.$text-muted;
+      color: var(--text-muted);
     }
   }
 }

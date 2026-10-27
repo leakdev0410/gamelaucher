@@ -1,10 +1,10 @@
 @use "../../scss/globals.scss";
 
 .radio-field {
-  --radio-field-accent: var(--color-primary);
+  --radio-field-accent: var(--blue);
   display: inline-flex;
   align-items: center;
-  gap: globals.$spacing-unit;
+  gap: 10px;
   cursor: pointer;
   min-height: 24px;
 
@@ -14,10 +14,9 @@
   }
 
   &:has(.radio-field__input:focus-visible) {
-    outline: 2px solid
-      color-mix(in srgb, var(--radio-field-accent) 70%, #fff 30%);
-    outline-offset: 1px;
-    border-radius: 6px;
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+    border-radius: 8px;
   }
 
   &--selected .radio-field__control {
@@ -28,7 +27,7 @@
   &--selected .radio-field__dot {
     opacity: 1;
     transform: scale(1);
-    background: globals.$brand-teal;
+    background: #ffffff;
   }
 
   &__input {
@@ -42,14 +41,14 @@
     height: 20px;
     min-width: 20px;
     border-radius: 999px;
-    border: solid 1px globals.$border-color;
-    background: globals.$dark-background-color;
+    border: solid 1px var(--border-mid);
+    background: var(--surface-0);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     transition:
-      border-color 0.2s ease,
-      background-color 0.2s ease;
+      border-color 0.25s var(--ease),
+      background-color 0.25s var(--ease);
   }
 
   &__dot {
@@ -57,12 +56,12 @@
     width: 8px;
     height: 8px;
     border-radius: 999px;
-    background: var(--radio-field-accent);
+    background: #ffffff;
     opacity: 0;
     transform: scale(0);
     transition:
-      transform 0.15s ease,
-      opacity 0.15s ease;
+      transform 0.2s var(--ease),
+      opacity 0.2s var(--ease);
   }
 
   &__left-slot {
@@ -73,7 +72,7 @@
   &__label {
     line-height: 1.2;
     min-width: 0;
-    color: globals.$muted-color;
-    font-size: 13.5px;
+    color: var(--text);
+    font-size: 14px;
   }
 }

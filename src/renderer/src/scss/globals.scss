@@ -1,51 +1,55 @@
-// Claude Cream design system — warm cream surfaces + terracotta accent, matching claude.ai's light theme.
-// SCSS tokens map to CSS variables for runtime theming consistency.
+// Apple-inspired design system — SF typography, neutral surfaces, single blue accent.
+// SCSS tokens map to CSS variables in app.scss for runtime theming consistency.
 
-$background-color: #f5f4ee;
+$background-color: #f5f5f7;
 $dark-background-color: #ffffff;
 $surface-0: #ffffff;
-$surface-1: #faf9f5;
-$surface-2: #f0ede1;
-$surface-3: #e4dfd0;
+$surface-1: #f5f5f7;
+$surface-2: #ececef;
+$surface-3: #e2e2e7;
 
-$muted-color: #30302a;
-$body-color: #6b6558;
-$text-muted: #948c7c;
-$text-dim: #b8b2a3;
+$muted-color: #1d1d1f;
+$body-color: #6e6e73;
+$text-muted: #86868b;
+$text-dim: #a1a1a6;
 
-$border-color: rgba(48, 45, 38, 0.1);
-$border-mid: rgba(48, 45, 38, 0.14);
-$border-strong: rgba(48, 45, 38, 0.24);
+$border-color: rgba(0, 0, 0, 0.08);
+$border-mid: rgba(0, 0, 0, 0.12);
+$border-strong: rgba(0, 0, 0, 0.2);
 
-$success-color: #5f8767;
-$danger-color: #c0453a;
-$error-color: #c0453a;
-$warning-color: #b8862e;
+$success-color: #1a7f37;
+$danger-color: #d70015;
+$error-color: #d70015;
+$warning-color: #b25000;
 
-$brand-teal: #d97757;
-$brand-blue: #a69c87;
+$brand-teal: #0071e3;
+$brand-blue: #0071e3;
 $brand-ink: #ffffff;
-$brand-hover: #c35f3d;
+$brand-hover: #0077ed;
 
-$overlay-hover: rgba(48, 45, 38, 0.04);
-$overlay-active: rgba(48, 45, 38, 0.07);
-$overlay-strong: rgba(48, 45, 38, 0.12);
+$overlay-hover: rgba(0, 0, 0, 0.04);
+$overlay-active: rgba(0, 0, 0, 0.07);
+$overlay-strong: rgba(0, 0, 0, 0.12);
 
-$skeleton-base: #f0ede1;
-$skeleton-highlight: #e4dfd0;
+$skeleton-base: #e8e8ed;
+$skeleton-highlight: #f5f5f7;
 
-$disabled-opacity: 0.5;
+$disabled-opacity: 0.45;
 $active-opacity: 0.7;
 
 $spacing-unit: 8px;
 
-$radius-sm: 8px;
-$radius-md: 12px;
-$radius-lg: 16px;
-$radius-pill: 999px;
+$radius-sm: 12px;
+$radius-md: 18px;
+$radius-lg: 28px;
+$radius-pill: 980px;
 
-$font-display: "Sora", "Noto Sans", system-ui, sans-serif;
-$font-body: "Manrope", "Noto Sans", system-ui, sans-serif;
+$font-display:
+  -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter",
+  "Segoe UI", "Noto Sans", sans-serif;
+$font-body:
+  -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI",
+  "Noto Sans", sans-serif;
 
 $toast-z-index: 150;
 $bottom-panel-z-index: 3;
@@ -54,13 +58,13 @@ $backdrop-z-index: 4;
 $modal-z-index: 5;
 $topnav-z-index: 20;
 
-$body-font-size: 13.5px;
+$body-font-size: 14px;
 $small-font-size: 12px;
 
 $titlebar-h: 36px;
-$nav-h: 56px;
+$nav-h: 44px;
 $status-h: 32px;
 
 $app-container: app-container;
 
-$ease: cubic-bezier(0.22, 1, 0.36, 1);
+$ease: cubic-bezier(0.25, 0.1, 0.25, 1);

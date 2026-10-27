@@ -1,21 +1,21 @@
 @use "../../../scss/globals.scss";
 
 .sidebar-section {
-  background-color: globals.$surface-0;
-  border-radius: 12px;
-  border: 1px solid globals.$border-color;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: var(--surface-0);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
-  color: globals.$muted-color;
+  color: var(--text);
 
   &__header {
     display: flex;
     flex-direction: column;
-    padding: calc(globals.$spacing-unit * 2.5) calc(globals.$spacing-unit * 2);
+    padding: 18px 16px;
     gap: calc(globals.$spacing-unit / 2);
-    background-color: globals.$surface-0;
-    transition: background-color 0.2s ease;
-    color: globals.$muted-color;
+    background-color: var(--surface-0);
+    transition: background-color 0.25s var(--ease);
+    color: var(--text);
 
     &:has(.sidebar-section__button:hover) {
       background-color: globals.$overlay-hover;
@@ -27,13 +27,13 @@
     display: flex;
     align-items: center;
     background-color: transparent;
-    color: globals.$muted-color;
+    color: var(--text);
     width: 100%;
     cursor: pointer;
-    transition: all ease 0.2s;
+    transition: all ease 0.25s;
     gap: globals.$spacing-unit;
-    font-size: globals.$body-font-size;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: 600;
 
     &:active {
       opacity: globals.$active-opacity;
@@ -41,8 +41,8 @@
   }
 
   &__subtitle {
-    color: globals.$body-color;
-    font-size: globals.$small-font-size;
+    color: var(--text-muted);
+    font-size: 12px;
     display: inline-flex;
     align-items: center;
     gap: calc(globals.$spacing-unit / 2);
@@ -66,8 +66,8 @@
   &__content {
     overflow: hidden;
     transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
-    background-color: globals.$surface-1;
+    background-color: var(--surface-1);
     position: relative;
-    color: globals.$muted-color;
+    color: var(--text);
   }
 }

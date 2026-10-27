@@ -2,63 +2,66 @@
 
 .select-field {
   display: inline-flex;
-  transition: all ease 0.2s;
+  transition:
+    border-color 0.25s var(--ease),
+    box-shadow 0.25s var(--ease),
+    background-color 0.25s var(--ease);
   width: fit-content;
   align-items: center;
-  border-radius: 8px;
-  border: 1px solid globals.$border-color;
-  height: 40px;
-  min-height: 40px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-mid);
+  height: 44px;
+  min-height: 44px;
+  background-color: var(--surface-0);
 
   &__container {
     flex: 1;
   }
 
   &:hover {
-    border-color: rgba(48, 45, 38, 0.24);
+    border-color: var(--border-strong);
   }
 
   &--focused {
-    border-color: rgba(217, 119, 87, 0.45);
-    box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.12);
+    border-color: rgba(0, 113, 227, 0.55);
+    box-shadow: 0 0 0 4px var(--accent-soft);
   }
 
   &--primary {
-    background-color: globals.$surface-0;
+    background-color: var(--surface-0);
   }
 
   &--dark {
-    background-color: globals.$surface-1;
+    background-color: var(--surface-1);
   }
 
   &__option {
-    background-color: globals.$surface-0;
-    border-right: 4px solid;
-    border-color: transparent;
-    border-radius: 8px;
+    background-color: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
     width: 100%;
     min-width: 120px;
     height: 100%;
     outline: none;
-    color: globals.$muted-color;
-    -webkit-text-fill-color: globals.$muted-color;
+    color: var(--text);
+    -webkit-text-fill-color: var(--text);
     cursor: default;
     font-family: inherit;
-    font-size: globals.$body-font-size;
+    font-size: 14px;
     text-overflow: ellipsis;
-    padding: globals.$spacing-unit;
+    padding: 0 12px;
 
     option {
-      color: globals.$muted-color;
-      background-color: globals.$surface-0;
+      color: #1d1d1f;
+      background-color: #ffffff;
     }
   }
 
   &__label {
-    margin-bottom: globals.$spacing-unit;
+    margin-bottom: 6px;
     display: block;
-    color: globals.$body-color;
+    color: var(--text-secondary);
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
   }
 }

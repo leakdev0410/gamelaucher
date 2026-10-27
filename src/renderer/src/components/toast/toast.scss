@@ -1,14 +1,16 @@
 @use "../../scss/globals.scss";
 
 .toast {
-  animation-duration: 0.2s;
-  animation-timing-function: ease-in-out;
+  animation-duration: 0.28s;
+  animation-timing-function: var(--ease);
   position: absolute;
-  background-color: globals.$dark-background-color;
-  border-radius: 4px;
-  border: solid 1px globals.$border-color;
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-radius: 20px;
+  border: solid 1px var(--border);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
   right: calc(globals.$spacing-unit * 2);
-  // 28px is the height of the bottom panel
   bottom: calc(28px + globals.$spacing-unit * 2);
   overflow: hidden;
   display: flex;
@@ -26,64 +28,66 @@
 
   &__content {
     display: flex;
-    gap: calc(globals.$spacing-unit * 2);
-    padding: calc(globals.$spacing-unit * 2) calc(globals.$spacing-unit * 2);
+    gap: 16px;
+    padding: 18px 20px;
     justify-content: center;
     align-items: center;
   }
 
   &__message-container {
     display: flex;
-    gap: globals.$spacing-unit;
+    gap: 4px;
     flex-direction: column;
-    color: globals.$muted-color;
+    color: var(--text);
   }
 
   &__message {
-    font-weight: bold;
-    color: globals.$muted-color;
+    font-weight: 600;
+    color: var(--text);
   }
 
   &__description {
-    color: globals.$body-color;
+    color: var(--text-secondary);
   }
 
   &__progress {
     width: 100%;
-    height: 5px;
+    height: 3px;
 
     &::-webkit-progress-bar {
-      background-color: globals.$dark-background-color;
+      background-color: transparent;
     }
 
     &::-webkit-progress-value {
-      background-color: globals.$muted-color;
+      background-color: var(--blue);
     }
   }
 
   &__close-button {
-    color: globals.$body-color;
+    color: var(--text-muted);
     cursor: pointer;
-    padding: 0;
+    padding: 4px;
     margin: 0;
-    transition: color 0.2s ease-in-out;
+    border-radius: var(--radius-pill);
+    transition: all 0.25s var(--ease);
 
     &:hover {
-      color: globals.$muted-color;
+      color: var(--text);
+      background: var(--overlay-hover);
     }
   }
 
   &__icon {
     &--success {
-      color: globals.$success-color;
+      color: var(--success);
     }
 
     &--error {
-      color: globals.$danger-color;
+      color: var(--danger);
     }
 
     &--warning {
-      color: globals.$warning-color;
+      color: var(--warning);
     }
   }
 }

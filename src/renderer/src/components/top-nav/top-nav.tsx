@@ -290,7 +290,7 @@ export function TopNav() {
             <img src={appIcon} alt="" />
           </div>
           <div className="topnav__name">
-            Game <span>Launcher</span>
+            Leak <span>Launcher</span>
           </div>
         </button>
 

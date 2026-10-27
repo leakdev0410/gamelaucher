@@ -27,6 +27,14 @@ export default defineConfig(({ mode }) => {
       plugins: [externalizeDepsPlugin(), swcPlugin()],
     },
     preload: {
+      build: {
+        rollupOptions: {
+          output: {
+            format: "cjs",
+            entryFileNames: "[name].js",
+          },
+        },
+      },
       plugins: [externalizeDepsPlugin()],
     },
     renderer: {

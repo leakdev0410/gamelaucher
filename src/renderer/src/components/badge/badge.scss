@@ -1,19 +1,21 @@
 @use "../../scss/globals.scss";
 
 .badge {
-  color: globals.$muted-color;
-  font-size: 10px;
-  padding: calc(globals.$spacing-unit / 2) globals.$spacing-unit;
-  border: 1px solid rgba(48, 45, 38, 0.14);
-  border-radius: 6px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-pill);
   display: inline-flex;
   gap: 4px;
   align-items: center;
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all ease 0.2s;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: none;
+  transition: all ease 0.25s;
   max-width: 100%;
   box-sizing: border-box;
+  line-height: 1.2;
 }

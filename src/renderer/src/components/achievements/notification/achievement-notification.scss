@@ -175,7 +175,7 @@ $margin-bottom: 28px;
     display: grid;
     width: calc(360px - $margin-horizontal);
     overflow: clip;
-    border: 1px solid rgba(48, 45, 38, 0.12);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     animation:
       content-in 450ms ease-in-out,
       content-wait 450ms ease-in-out 450ms,

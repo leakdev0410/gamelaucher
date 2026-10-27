@@ -2,36 +2,41 @@
 
 .dropdown-menu {
   &__content {
-    background-color: globals.$surface-1;
-    border: 1px solid globals.$border-color;
-    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.94);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
     min-width: 200px;
     z-index: calc(globals.$modal-z-index + 1);
     flex-direction: column;
     align-items: center;
-    animation: dropdown-menu-fade-in 0.2s ease-out;
-    color: globals.$muted-color;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+    animation: dropdown-menu-fade-in 0.2s var(--ease);
+    color: var(--text);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
+    padding: 6px;
   }
 
   &__group {
     width: 100%;
-    padding: 4px;
-    color: globals.$muted-color;
+    padding: 2px;
+    color: var(--text);
   }
 
   &__title-bar {
     width: 100%;
-    padding: 4px 12px;
-    font-size: 14px;
-    font-weight: 500;
-    color: globals.$body-color;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
 
   &__separator {
     width: 100%;
     height: 1px;
-    background-color: globals.$border-color;
+    background-color: var(--border);
   }
 
   &__item {
@@ -41,29 +46,29 @@
     align-items: center;
     justify-content: flex-start;
     gap: 8px;
-    border-radius: 4px;
-    padding: 5px 12px;
+    border-radius: 8px;
+    padding: 7px 10px;
     cursor: pointer;
-    transition: background-color 0.1s ease-in-out;
+    transition: background-color 0.2s var(--ease);
     font-size: 14px;
-    color: globals.$muted-color;
+    color: var(--text);
   }
 
   &__item--disabled {
     cursor: default;
     opacity: 0.6;
-    color: globals.$text-muted;
+    color: var(--text-muted);
   }
 
   &:not(&__item--disabled) &__item:hover {
-    background-color: globals.$overlay-active;
-    color: globals.$muted-color;
+    background-color: var(--overlay-active);
+    color: var(--text);
   }
 
   &__item:focus {
-    background-color: globals.$overlay-active;
+    background-color: var(--overlay-active);
     outline: none;
-    color: globals.$muted-color;
+    color: var(--text);
   }
 
   &__item-icon {
@@ -79,7 +84,7 @@
 @keyframes dropdown-menu-fade-in {
   0% {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-6px);
   }
   100% {
     opacity: 1;

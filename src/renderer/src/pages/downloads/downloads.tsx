@@ -188,8 +188,10 @@ export default function Downloads() {
         deleteGame={handleDeleteGame}
       />
 
-      {hasItemsInLibrary ? (
-        <section className="downloads__container">
+      <section className="downloads__container">
+        <h1 className="downloads__title">{t("downloads_title")}</h1>
+
+        {hasItemsInLibrary ? (
           <div className="downloads__groups">
             {downloadGroups.map((group) => (
               <DownloadGroup
@@ -203,16 +205,16 @@ export default function Downloads() {
               />
             ))}
           </div>
-        </section>
-      ) : (
-        <div className="downloads__no-downloads">
-          <div className="downloads__arrow-icon">
-            <ArrowDownIcon size={24} />
+        ) : (
+          <div className="downloads__no-downloads">
+            <div className="downloads__arrow-icon">
+              <ArrowDownIcon size={24} />
+            </div>
+            <h2>{t("no_downloads_title")}</h2>
+            <p>{t("no_downloads_description")}</p>
           </div>
-          <h2>{t("no_downloads_title")}</h2>
-          <p>{t("no_downloads_description")}</p>
-        </div>
-      )}
+        )}
+      </section>
     </>
   );
 }

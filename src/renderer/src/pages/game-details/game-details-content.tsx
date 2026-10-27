@@ -153,11 +153,13 @@ export function GameDetailsContent() {
     >
       <section className="game-details__container">
         <div className="game-details__hero">
-          <img
-            src={heroImage}
-            className="game-details__hero-image"
-            alt={game?.title}
-          />
+          {heroImage && (
+            <img
+              src={heroImage}
+              className="game-details__hero-image"
+              alt={game?.title}
+            />
+          )}
 
           <div
             className="game-details__hero-logo-backdrop"

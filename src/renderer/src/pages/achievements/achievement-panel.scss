@@ -47,7 +47,7 @@
     }
 
     &::-webkit-progress-value {
-      background-color: globals.$muted-color;
+      background-color: var(--blue);
     }
 
     &--disabled {

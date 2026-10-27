@@ -5,7 +5,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 12px;
-    color: globals.$muted-color;
+    color: var(--text-secondary);
     font-weight: 600;
   }
 
@@ -73,12 +73,12 @@
       outline: none;
 
       &::-webkit-slider-thumb {
-        outline: 2px solid rgba(217, 119, 87, 0.45);
+        outline: 2px solid rgba(0, 113, 227, 0.45);
         outline-offset: 2px;
       }
 
       &::-moz-range-thumb {
-        outline: 2px solid rgba(217, 119, 87, 0.45);
+        outline: 2px solid rgba(0, 113, 227, 0.45);
         outline-offset: 2px;
       }
     }

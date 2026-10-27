@@ -27,14 +27,10 @@
     width: 100%;
     flex: 1;
     min-width: 0;
-    background: linear-gradient(
-      0deg,
-      globals.$background-color 50%,
-      globals.$dark-background-color 100%
-    );
-    padding: calc(globals.$spacing-unit * 1.5);
-    gap: calc(globals.$spacing-unit * 1.5);
-    color: globals.$muted-color;
+    background: transparent;
+    padding: 24px 24px 48px;
+    gap: 24px;
+    color: var(--text);
   }
 
   &__description-content {
@@ -45,12 +41,17 @@
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
+    background: var(--surface-0);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 24px;
   }
 
   &__description {
     user-select: text;
-    line-height: 22px;
-    font-size: globals.$body-font-size;
+    line-height: 1.6;
+    font-size: 15px;
     width: 100%;
     margin-left: auto;
     margin-right: auto;
@@ -59,11 +60,11 @@
     transition: max-height 0.3s ease-in-out;
 
     @media (min-width: 1280px) {
-      width: 60%;
+      width: 72%;
     }
 
     @media (min-width: 1536px) {
-      width: 50%;
+      width: 64%;
     }
 
     &--collapsed {
@@ -78,7 +79,7 @@
         left: 0;
         right: 0;
         height: 60px;
-        background: linear-gradient(transparent, globals.$background-color);
+        background: linear-gradient(transparent, var(--surface-0));
         pointer-events: none;
       }
     }
@@ -116,20 +117,19 @@
 
   &__description-toggle {
     background: none;
-    border: 1px solid globals.$border-color;
-    color: globals.$body-color;
-    padding: calc(globals.$spacing-unit * 0.75)
-      calc(globals.$spacing-unit * 1.5);
-    border-radius: 4px;
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    padding: 9px 18px;
+    border-radius: var(--radius-pill);
     cursor: pointer;
-    font-size: globals.$body-font-size;
-    margin-top: calc(globals.$spacing-unit * 1.5);
-    transition: all 0.2s ease;
+    font-size: 14px;
+    margin-top: 16px;
+    transition: all 0.25s var(--ease);
     align-self: center;
 
     &:hover {
-      background-color: globals.$overlay-hover;
-      border-color: globals.$border-color;
+      background-color: var(--blue);
+      color: #ffffff;
     }
   }
 
@@ -184,5 +184,28 @@
   }
   100% {
     background-position: -200% 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-details__hero {
+    width: calc(100% - 32px);
+    height: 360px;
+    min-height: 360px;
+    margin: 16px 16px 0;
+  }
+
+  .game-details__description-container {
+    padding: 16px;
+    flex-direction: column;
+  }
+
+  .game-details__description-content {
+    padding: 16px;
+  }
+
+  .content-sidebar {
+    width: 100%;
+    min-width: 0;
   }
 }

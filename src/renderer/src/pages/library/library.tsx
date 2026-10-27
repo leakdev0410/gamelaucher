@@ -498,6 +498,8 @@ export default function Library() {
     <section className="library__content">
       {hasGames && (
         <div className="library__page-header">
+          <h1 className="library__page-title">{t("library")}</h1>
+
           <div className="library__controls-row">
             <div className="library__controls-left">
               <FilterOptions sortBy={sortBy} onSortChange={handleSortChange} />
@@ -556,13 +558,16 @@ export default function Library() {
       )}
 
       {!hasGames && (
-        <div className="library__no-games">
-          <div className="library__telescope-icon">
-            <TelescopeIcon size={24} />
+        <>
+          <h1 className="library__page-title">{t("library")}</h1>
+          <div className="library__no-games">
+            <div className="library__telescope-icon">
+              <TelescopeIcon size={24} />
+            </div>
+            <h2>{t("no_games_title")}</h2>
+            <p>{t("no_games_description")}</p>
           </div>
-          <h2>{t("no_games_title")}</h2>
-          <p>{t("no_games_description")}</p>
-        </div>
+        </>
       )}
 
       {shouldShowFavoritesEmptyState && (

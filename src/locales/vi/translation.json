@@ -4,6 +4,9 @@
     "successfully_signed_in": "Đăng nhập thành công"
   },
   "home": {
+    "featured": "Nổi bật",
+    "explore": "Khám phá",
+    "library": "Thư viện",
     "surprise_me": "Gợi ý ngẫu nhiên",
     "no_results": "Không tìm thấy kết quả",
     "start_typing": "Bắt đầu gõ để tìm kiếm...",
@@ -155,6 +158,7 @@
     "installation_complete_message": "Đã cài các gói redistributable thành công"
   },
   "catalogue": {
+    "catalogue_title": "Kho game",
     "search": "Lọc…",
     "developers": "Nhà phát triển",
     "genres": "Thể loại",
@@ -606,6 +610,7 @@
     "delete_steam_shortcut": "Xóa lối tắt Steam"
   },
   "downloads": {
+    "downloads_title": "Tải xuống",
     "resume": "Tiếp tục",
     "pause": "Tạm dừng",
     "eta": "Hoàn tất {{eta}}",
@@ -663,6 +668,7 @@
     "real_debrid_api_token_label": "Mã API Real-Debrid",
     "quit_app_instead_hiding": "Không ẩn Leak Launcher khi đóng",
     "launch_with_system": "Khởi chạy Leak Launcher khi mở máy",
+    "launch_in_library_page": "Mở thư viện khi khởi động",
     "general": "Chung",
     "behavior": "Hành vi",
     "app_basics": "Cơ bản",

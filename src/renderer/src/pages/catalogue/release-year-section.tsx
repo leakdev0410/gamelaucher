@@ -114,12 +114,12 @@ export function ReleaseYearSection({
               style={{
                 background: `linear-gradient(
                   to right,
-                  rgba(255,255,255,0.12) 0%,
-                  rgba(255,255,255,0.12) ${gtePercent}%,
+                  rgba(0,0,0,0.08) 0%,
+                  rgba(0,0,0,0.08) ${gtePercent}%,
                   ${color} ${gtePercent}%,
                   ${color} ${ltePercent}%,
-                  rgba(255,255,255,0.12) ${ltePercent}%,
-                  rgba(255,255,255,0.12) 100%
+                  rgba(0,0,0,0.08) ${ltePercent}%,
+                  rgba(0,0,0,0.08) 100%
                 )`,
               }}
             />

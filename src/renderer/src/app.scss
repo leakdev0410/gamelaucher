@@ -1,6 +1,8 @@
 @use "./scss/globals.scss";
 
 :root {
+  --bg-light: #f5f5f7;
+  --bg-dark: #000000;
   --bg: #{globals.$background-color};
   --bg-elevated: #ffffff;
   --surface-0: #{globals.$surface-0};
@@ -10,17 +12,27 @@
   --border: #{globals.$border-color};
   --border-mid: #{globals.$border-mid};
   --border-strong: #{globals.$border-strong};
+  --overlay-hover: #{globals.$overlay-hover};
+  --overlay-active: #{globals.$overlay-active};
+  --overlay-strong: #{globals.$overlay-strong};
+  --skeleton-base: #{globals.$skeleton-base};
+  --skeleton-highlight: #{globals.$skeleton-highlight};
   --text: #{globals.$muted-color};
+  --text-on-dark: #f5f5f7;
   --text-primary: #{globals.$muted-color};
   --text-secondary: #{globals.$body-color};
   --text-muted: #{globals.$text-muted};
   --text-dim: #{globals.$text-dim};
+  --blue: #{globals.$brand-teal};
+  --blue-hover: #{globals.$brand-hover};
+  --nav-light: rgba(255, 255, 255, 0.8);
+  --nav-dark: rgba(22, 22, 23, 0.8);
   --accent: #{globals.$brand-teal};
-  --accent-soft: rgba(217, 119, 87, 0.1);
+  --accent-soft: rgba(0, 113, 227, 0.1);
   --accent-ink: #{globals.$brand-ink};
   --accent-hover: #{globals.$brand-hover};
   --color-primary: #{globals.$brand-teal};
-  --color-primary-rgb: 217, 119, 87;
+  --color-primary-rgb: 0, 113, 227;
   --color-text: #{globals.$muted-color};
   --color-text-primary: #{globals.$muted-color};
   --color-text-secondary: #{globals.$body-color};
@@ -35,16 +47,24 @@
   --radius-sm: #{globals.$radius-sm};
   --radius-md: #{globals.$radius-md};
   --radius-lg: #{globals.$radius-lg};
+  --radius-pill: #{globals.$radius-pill};
   --font-display: #{globals.$font-display};
   --font-body: #{globals.$font-body};
   --ease: #{globals.$ease};
   --titlebar-h: #{globals.$titlebar-h};
   --nav-h: #{globals.$nav-h};
   --status-h: #{globals.$status-h};
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.04);
+  --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.12);
 }
 
 * {
   box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(0, 113, 227, 0.22);
+  color: var(--text);
 }
 
 ::-webkit-scrollbar {
@@ -58,12 +78,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(48, 45, 38, 0.16);
+  background: rgba(0, 0, 0, 0.16);
   border-radius: 99px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(48, 45, 38, 0.26);
+  background: rgba(0, 0, 0, 0.28);
 }
 
 html,
@@ -78,14 +98,17 @@ body {
   user-select: none;
   font-family: var(--font-body);
   font-size: globals.$body-font-size;
+  line-height: 1.47;
+  letter-spacing: -0.01em;
   color: var(--text);
   margin: 0;
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   -webkit-text-fill-color: inherit;
 }
 
-/* Global Claude Cream text — prevent “missing” labels after theme inversion */
+/* Global text color inheritance — keeps labels readable after theme swaps */
 button,
 input,
 select,
@@ -109,12 +132,24 @@ button {
   font-family: inherit;
 }
 
+button,
+a,
+input,
+select,
+textarea {
+  &:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+  }
+}
+
 input,
 select,
 textarea {
   color: var(--text);
   -webkit-text-fill-color: var(--text);
   caret-color: var(--text);
+  font-family: inherit;
 }
 
 input::placeholder,
@@ -126,7 +161,7 @@ textarea::placeholder {
 
 /* Native <select> options on Chromium/Windows */
 option {
-  color: #30302a;
+  color: #1d1d1f;
   background-color: #ffffff;
 }
 
@@ -145,12 +180,12 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   color: var(--text);
 }
 
 p {
-  line-height: 1.45;
+  line-height: 1.47;
   color: var(--text-secondary);
 }
 
@@ -165,18 +200,7 @@ small {
 #root {
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(
-      1200px 600px at 80% -10%,
-      rgba(217, 119, 87, 0.06),
-      transparent 55%
-    ),
-    radial-gradient(
-      900px 500px at -5% 40%,
-      rgba(217, 119, 87, 0.03),
-      transparent 50%
-    ),
-    var(--bg);
+  background: var(--bg);
 }
 
 main {
@@ -212,7 +236,9 @@ progress[value] {
   width: 100%;
   height: var(--titlebar-h);
   min-height: var(--titlebar-h);
-  background: var(--bg-elevated);
+  background: var(--nav-light);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
@@ -228,26 +254,19 @@ progress[value] {
     font-family: var(--font-display);
     font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
     color: var(--text-secondary);
   }
 
   &__dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 8px rgba(217, 119, 87, 0.45);
+    background: var(--blue);
   }
 
   &__cloud-text {
-    background: linear-gradient(
-      270deg,
-      globals.$brand-teal 0%,
-      globals.$brand-blue 100%
-    );
-    background-clip: text;
-    color: transparent;
+    color: var(--text);
   }
 }
 
@@ -272,14 +291,14 @@ progress[value] {
     height: 100%;
     min-height: 0;
     background: transparent;
-    animation: view-in 0.28s var(--ease);
+    animation: view-in 0.3s var(--ease);
   }
 }
 
 @keyframes view-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -287,28 +306,28 @@ progress[value] {
   }
 }
 
-/* Shared page primitives (design parity) */
+/* Shared page primitives */
 .page-head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   width: 100%;
 
   &__title {
     font-family: var(--font-display);
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
+    font-size: clamp(28px, 2.6vw, 40px);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.07;
     color: var(--text);
   }
 
   &__sub {
-    margin-top: 4px;
+    margin-top: 6px;
     color: var(--text-muted);
-    font-size: 13px;
+    font-size: 17px;
   }
 
   &__actions {
@@ -323,15 +342,15 @@ progress[value] {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 28px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: var(--surface-1);
-  border: 1px solid var(--border-mid);
-  font-size: 12px;
-  font-weight: 600;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text-secondary);
-  transition: all 0.15s;
+  transition: all 0.25s var(--ease);
   cursor: pointer;
 
   &:hover {
@@ -342,16 +361,27 @@ progress[value] {
   &.is-active,
   &--active {
     background: var(--accent-soft);
-    border-color: rgba(217, 119, 87, 0.35);
-    color: var(--accent);
+    border-color: rgba(0, 113, 227, 0.25);
+    color: var(--blue);
   }
 }
 
-/* Claude Cream safety net — neutralize leftover panels from custom themes/legacy */
+/* Legacy shell panels remain hidden — the app uses TopNav only */
 .header {
   display: none !important;
 }
 
 .sidebar {
   display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

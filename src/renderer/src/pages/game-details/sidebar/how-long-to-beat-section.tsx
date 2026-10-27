@@ -28,7 +28,7 @@ export function HowLongToBeatSection({
   if (!howLongToBeatData && !isLoading) return null;
 
   return (
-    <SkeletonTheme baseColor="#f0ede1" highlightColor="#e4dfd0">
+    <SkeletonTheme baseColor="#e8e8ed" highlightColor="#f5f5f7">
       <SidebarSection title="HowLongToBeat">
         <ul className="how-long-to-beat__categories-list">
           {howLongToBeatData

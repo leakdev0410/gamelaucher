@@ -3,9 +3,9 @@
 .download-group {
   display: flex;
   flex-direction: column;
-  gap: calc(globals.$spacing-unit * 2);
-  margin-inline: calc(globals.$spacing-unit * 3);
-  padding-block: calc(globals.$spacing-unit * 3);
+  gap: 16px;
+  margin-inline: 0;
+  padding-block: 24px;
 
   &--queued {
     padding-bottom: 0;
@@ -28,17 +28,19 @@
 
       h2 {
         margin: 0;
-        font-size: 20px;
-        font-weight: 700;
-        color: globals.$muted-color;
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        color: var(--text);
       }
     }
 
     &-count {
-      background-color: globals.$surface-2;
-      color: globals.$body-color;
-      padding: 4px 8px;
-      border-radius: 6px;
+      background-color: var(--surface-2);
+      color: var(--text-secondary);
+      padding: 4px 10px;
+      border-radius: 999px;
       font-size: 12px;
       font-weight: 600;
       min-width: 24px;
@@ -127,7 +129,7 @@
       }
 
       &:focus {
-        outline: 2px solid rgba(217, 119, 87, 0.45);
+        outline: 2px solid rgba(0, 113, 227, 0.45);
         outline-offset: 4px;
         border-radius: 4px;
       }
@@ -156,7 +158,7 @@
     h1 {
       font-size: 20px;
       font-weight: 700;
-      color: #ececee;
+      color: #f5f5f7;
       text-shadow: 2px 2px 12px rgba(0, 0, 0, 0.9);
       margin: 0;
       cursor: pointer;
@@ -167,7 +169,7 @@
       }
 
       &:focus {
-        outline: 2px solid rgba(217, 119, 87, 0.45);
+        outline: 2px solid rgba(0, 113, 227, 0.45);
         outline-offset: 4px;
         border-radius: 4px;
       }
@@ -212,10 +214,10 @@
     gap: 8px;
     padding: 10px 16px;
     border-radius: 999px;
-    background-color: rgba(250, 249, 245, 0.9);
+    background-color: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(16px);
     border: 1px solid globals.$border-color;
-    box-shadow: 0 4px 16px rgba(48, 45, 38, 0.14);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
     color: globals.$muted-color;
     font-size: 13px;
     font-weight: 600;
@@ -225,7 +227,7 @@
       border-color 0.2s ease;
 
     &:hover {
-      background-color: rgba(250, 249, 245, 0.98);
+      background-color: rgba(255, 255, 255, 0.98);
       border-color: globals.$border-strong;
     }
   }
@@ -300,12 +302,13 @@
   &__hero-stats {
     display: flex;
     gap: calc(globals.$spacing-unit * 4);
-    padding: calc(globals.$spacing-unit * 2);
-    border-radius: globals.$radius-md;
-    border: 1px solid globals.$border-color;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    margin-top: calc(globals.$spacing-unit * 2);
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    margin-top: 16px;
   }
 
   &__stats-column {
@@ -378,18 +381,25 @@
   &__simple-card {
     display: flex;
     align-items: center;
-    gap: calc(globals.$spacing-unit * 2);
-    border-radius: 8px;
+    gap: 16px;
+    border-radius: 20px;
+    padding: 16px;
+    background: var(--surface-0);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    transition:
+      box-shadow 0.25s var(--ease),
+      border-color 0.25s var(--ease);
   }
 
   &__simple-thumbnail {
     width: 200px;
     height: 100px;
-    border-radius: 6px;
+    border-radius: 14px;
     overflow: hidden;
     flex-shrink: 0;
-    background-color: globals.$surface-2;
-    border: 1px solid globals.$border-color;
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
     padding: 0;
     cursor: pointer;
     transition:
@@ -402,7 +412,7 @@
 
     &:focus,
     &:focus-visible {
-      outline: 2px solid rgba(217, 119, 87, 0.45);
+      outline: 2px solid rgba(0, 113, 227, 0.45);
       outline-offset: 2px;
     }
 
@@ -437,9 +447,9 @@
   }
 
   &__simple-title {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
-    color: globals.$muted-color;
+    color: var(--text);
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -476,7 +486,7 @@
   }
 
   &__simple-seeding {
-    color: #4ade80;
+    color: #1a7f37;
     font-weight: 600;
     font-size: 11px;
     text-transform: uppercase;
@@ -509,7 +519,7 @@
   &__simple-menu-btn {
     padding: calc(globals.$spacing-unit);
     min-height: unset;
-    border-radius: 8px;
+    border-radius: 999px;
   }
 
   &__simple-action-btn {
@@ -517,7 +527,7 @@
     min-height: unset;
     gap: calc(globals.$spacing-unit);
     min-width: 120px;
-    border-radius: 8px;
+    border-radius: 999px;
   }
 
   &__progress-wrapper {
@@ -529,14 +539,14 @@
 
   &__progress-bar {
     width: 100%;
-    height: 8px;
-    background-color: rgba(140, 132, 115, 0.3);
-    border-radius: 4px;
+    height: 6px;
+    background-color: rgba(0, 0, 0, 0.08);
+    border-radius: 999px;
     overflow: hidden;
     margin-top: calc(globals.$spacing-unit / 2);
 
     &--small {
-      height: 6px;
+      height: 4px;
     }
   }
 

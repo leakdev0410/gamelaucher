@@ -469,6 +469,8 @@ export default function Notifications() {
 
     return (
       <div className="notifications">
+        <h1 className="notifications__title">{t("title")}</h1>
+
         <div className="notifications__header">
           {renderFilterTabs()}
           <div className="notifications__actions">

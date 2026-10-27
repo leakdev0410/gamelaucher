@@ -2,15 +2,15 @@
 
 .library {
   &__content {
-    padding: 20px 24px 32px;
+    padding: 32px 40px 48px;
     height: 100%;
     width: 100%;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
     align-items: flex-start;
-    color: globals.$muted-color;
+    color: var(--text);
   }
 
   &__header {
@@ -29,11 +29,12 @@
 
   &__page-title {
     margin: 0;
-    font-family: globals.$font-display;
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    color: globals.$muted-color;
+    font-family: var(--font-display);
+    font-size: clamp(28px, 2.6vw, 40px);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.07;
+    color: var(--text);
   }
 
   &__controls-row {
@@ -91,10 +92,11 @@
     display: flex;
     align-items: center;
     gap: calc(globals.$spacing-unit);
-    background: globals.$surface-0;
-    border: 1px solid globals.$border-color;
+    background: var(--surface-0);
+    border: 1px solid var(--border);
     border-radius: 999px;
     padding: 8px 16px;
+    box-shadow: var(--shadow-card);
   }
 
   &__count-label {
@@ -172,18 +174,18 @@
     display: flex;
     align-items: center;
     gap: calc(globals.$spacing-unit);
-    border: 1px solid globals.$border-color;
-    background: globals.$surface-1;
-    color: globals.$body-color;
-    border-radius: globals.$radius-sm;
-    padding: 8px 12px;
+    border: 1px solid var(--border);
+    background: var(--surface-0);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 9px 16px;
     cursor: pointer;
     min-width: 0;
     transition:
-      background-color 0.15s ease,
-      border-color 0.15s ease,
-      color 0.15s ease,
-      box-shadow 0.15s ease;
+      background-color 0.25s var(--ease),
+      border-color 0.25s var(--ease),
+      color 0.25s var(--ease),
+      box-shadow 0.25s var(--ease);
 
     &:hover {
       background: globals.$overlay-hover;
@@ -192,18 +194,18 @@
     }
 
     &:focus-visible {
-      outline: 2px solid rgba(217, 119, 87, 0.45);
+      outline: 2px solid rgba(0, 113, 227, 0.45);
       outline-offset: 2px;
     }
 
     &--active {
-      border-color: rgba(217, 119, 87, 0.35);
-      background: rgba(217, 119, 87, 0.1);
+      border-color: rgba(0, 113, 227, 0.35);
+      background: rgba(0, 113, 227, 0.1);
       color: globals.$brand-teal;
-      box-shadow: 0 0 0 1px rgba(217, 119, 87, 0.15);
+      box-shadow: 0 0 0 1px rgba(0, 113, 227, 0.15);
 
       &:hover {
-        background: rgba(217, 119, 87, 0.16);
+        background: rgba(0, 113, 227, 0.16);
         color: globals.$brand-hover;
       }
     }
@@ -237,7 +239,7 @@
     margin: 0;
     padding: 0;
     display: grid;
-    gap: calc(globals.$spacing-unit * 2);
+    gap: 20px;
     width: 100%;
 
     // Grid view - larger cards
@@ -294,7 +296,7 @@
   &__games-list {
     display: flex;
     flex-direction: column;
-    gap: calc(globals.$spacing-unit * 2);
+    gap: 20px;
     width: 100%;
 
     // Large view - 2 columns grid
@@ -318,5 +320,11 @@
     display: flex;
     justify-content: flex-end;
     gap: calc(globals.$spacing-unit);
+  }
+}
+
+@media (max-width: 768px) {
+  .library__content {
+    padding: 20px 16px 32px;
   }
 }

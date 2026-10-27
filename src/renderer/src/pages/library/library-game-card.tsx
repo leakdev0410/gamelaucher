@@ -172,6 +172,7 @@ export const LibraryGameCard = memo(function LibraryGameCard({
             </div>
           </div>
         )}
+        <div className="library-game-card__title">{game.title}</div>
       </div>
 
       {isInstalled && (

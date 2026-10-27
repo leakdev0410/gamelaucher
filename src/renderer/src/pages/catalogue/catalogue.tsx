@@ -49,14 +49,14 @@ type CompatibilityThreshold<Value extends string> = {
 };
 
 const filterCategoryColors = {
-  genres: "hsl(262deg 50% 47%)",
-  tags: "hsl(95deg 50% 20%)",
-  downloadSourceFingerprints: "hsl(27deg 50% 40%)",
-  developers: "hsl(340deg 50% 46%)",
-  publishers: "hsl(200deg 50% 30%)",
-  protondbSupportBadges: "#F50057",
-  deckCompatibility: "#F50057",
-  releaseYear: "hsl(38deg 50% 40%)",
+  genres: "#0071e3",
+  tags: "#0071e3",
+  downloadSourceFingerprints: "#0071e3",
+  developers: "#0071e3",
+  publishers: "#0071e3",
+  protondbSupportBadges: "#0071e3",
+  deckCompatibility: "#0071e3",
+  releaseYear: "#0071e3",
 };
 
 const PAGE_SIZE = 30;
@@ -466,6 +466,10 @@ export default function Catalogue() {
   return (
     <div className="catalogue" ref={cataloguePageRef}>
       <div className="catalogue__header">
+        <div className="catalogue__title-row">
+          <h1 className="catalogue__title">{t("catalogue_title")}</h1>
+        </div>
+
         <div className="catalogue__header-row">
           <div className="catalogue__header-summary">
             <span className="catalogue__result-count">
@@ -559,7 +563,7 @@ export default function Catalogue() {
       <div className="catalogue__content">
         <div className="catalogue__games-container">
           {isLoading ? (
-            <SkeletonTheme baseColor="#f0ede1" highlightColor="#e4dfd0">
+            <SkeletonTheme baseColor="#e8e8ed" highlightColor="#f5f5f7">
               {Array.from({ length: PAGE_SIZE }).map((_, i) => (
                 <Skeleton key={i} className="catalogue__skeleton" />
               ))}

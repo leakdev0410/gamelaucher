@@ -42,7 +42,7 @@
     }
 
     &--active {
-      background: rgba(217, 119, 87, 0.12);
+      background: rgba(0, 113, 227, 0.12);
       color: globals.$brand-teal;
     }
 
@@ -330,8 +330,8 @@
   }
 
   &--selected {
-    border-color: rgba(217, 119, 87, 0.5) !important;
-    background: rgba(217, 119, 87, 0.1) !important;
+    border-color: rgba(0, 113, 227, 0.5) !important;
+    background: rgba(0, 113, 227, 0.1) !important;
   }
 
   &--nospace {
@@ -405,7 +405,7 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    background: linear-gradient(90deg, #22c55e, #4ade80);
+    background: var(--blue);
     opacity: 0.9;
     border-radius: 0 2px 2px 0;
     box-shadow: 0 0 6px rgba(74, 222, 128, 0.4);

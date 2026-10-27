@@ -4,6 +4,9 @@
     "successfully_signed_in": "Successfully signed in"
   },
   "home": {
+    "featured": "Featured",
+    "explore": "Explore",
+    "library": "Library",
     "surprise_me": "Surprise me",
     "no_results": "No results found",
     "start_typing": "Start typing to search...",
@@ -155,6 +158,7 @@
     "installation_complete_message": "Common redistributables installed successfully"
   },
   "catalogue": {
+    "catalogue_title": "Catalogue",
     "search": "Filter…",
     "developers": "Developers",
     "genres": "Genres",
@@ -606,6 +610,7 @@
     "delete_steam_shortcut": "Delete Steam shortcut"
   },
   "downloads": {
+    "downloads_title": "Downloads",
     "resume": "Resume",
     "pause": "Pause",
     "eta": "Completion {{eta}}",
@@ -663,6 +668,7 @@
     "real_debrid_api_token_label": "Real-Debrid API token",
     "quit_app_instead_hiding": "Don't hide Leak Launcher when closing",
     "launch_with_system": "Launch Leak Launcher on system start-up",
+    "launch_in_library_page": "Open library on launch",
     "general": "General",
     "behavior": "Behavior",
     "app_basics": "App basics",

@@ -14,16 +14,20 @@ $logo-max-width: 200px;
   transition: all ease 0.3s;
 
   &__hero {
-    width: 100%;
-    height: $hero-height;
-    min-height: $hero-height;
+    width: calc(100% - 48px);
+    height: 260px;
+    min-height: 260px;
     display: flex;
     flex-direction: column;
     position: relative;
-    transition: all ease 0.2s;
+    margin: 24px 24px 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    transition: all ease 0.25s;
 
     &-content {
-      padding: globals.$spacing-unit * 2;
+      padding: 24px;
       width: 100%;
       display: flex;
       justify-content: space-between;
@@ -83,33 +87,36 @@ $logo-max-width: 200px;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: globals.$spacing-unit * 2;
-    padding: globals.$spacing-unit * 2;
+    gap: 12px;
+    padding: 24px;
     width: 100%;
-    background-color: globals.$background-color;
+    background-color: transparent;
   }
 
   &__item {
     display: flex;
-    transition: all ease 0.1s;
-    color: globals.$muted-color;
+    transition: all ease 0.2s;
+    color: var(--text);
     width: 100%;
     overflow: hidden;
-    border-radius: 4px;
-    padding: globals.$spacing-unit globals.$spacing-unit;
-    gap: globals.$spacing-unit * 2;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: var(--surface-0);
+    box-shadow: var(--shadow-card);
+    padding: 14px 16px;
+    gap: 16px;
     align-items: center;
     text-align: left;
 
     &:hover {
-      background-color: globals.$overlay-active;
+      background-color: var(--overlay-hover);
       text-decoration: none;
     }
 
     &-image {
       width: 54px;
       height: 54px;
-      border-radius: 4px;
+      border-radius: 12px;
       object-fit: cover;
 
       &--locked {
@@ -215,28 +222,28 @@ $logo-max-width: 200px;
 
   &__progress-bar {
     width: 100%;
-    height: 8px;
-    transition: all ease 0.2s;
+    height: 6px;
+    transition: all ease 0.25s;
 
     &::-webkit-progress-bar {
-      background-color: globals.$border-color;
-      border-radius: 4px;
+      background-color: var(--surface-2);
+      border-radius: 999px;
     }
 
     &::-webkit-progress-value {
-      background-color: globals.$brand-teal;
-      border-radius: 4px;
+      background-color: var(--blue);
+      border-radius: 999px;
     }
   }
 
   &__profile-avatar {
     height: 54px;
     width: 54px;
-    border-radius: 4px;
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: globals.$background-color;
+    background-color: var(--surface-2);
     position: relative;
     object-fit: cover;
 
